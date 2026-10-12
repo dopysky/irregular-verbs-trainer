@@ -1,4 +1,11 @@
-V10 — разделённая версия.
-Файлы: index.html, style.css, app.js, manifest.webmanifest, sw.js.
-Важно: index.html теперь полный и не содержит встроенного обрезанного JavaScript.
-После загрузки на GitHub обновится cache-name до v10.
+Тренажёр неправильных глаголов — v12
+
+Файлы для GitHub Pages:
+index.html
+style.css
+app.js
+manifest.webmanifest
+sw.js
+
+Обновление исправляет структуру главной страницы, аудиогалочку, словарь и тренировку «Мои слова».
+Service Worker: cache irregular-verbs-v12.
