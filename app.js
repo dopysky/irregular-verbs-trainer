@@ -1,13 +1,15 @@
 const verbs=[{"n":1,"inf":"arise","past":"arose","part":"arisen","ru":"возникать","ipa":"ɜːraɪz","pastIpa":"ɜːroʊz","partIpa":"ɜːrɪzən"},{"n":2,"inf":"awake","past":"awoke","part":"awoken","ru":"просыпаться","ipa":"əweɪk","pastIpa":"əwoʊk","partIpa":""},{"n":3,"inf":"be","past":"was/were","part":"been","ru":"быть","ipa":"biː","pastIpa":"wɑːz / wɜːr","partIpa":"bɪn"},{"n":4,"inf":"bear","past":"bore","part":"borne/born","ru":"переносить, рожать","ipa":"ber","pastIpa":"bɔːr","partIpa":"bɔːrn / bɔːrn"},{"n":5,"inf":"beat","past":"beat","part":"beaten","ru":"бить","ipa":"biːt","pastIpa":"biːt","partIpa":"biːtən"},{"n":6,"inf":"become","past":"became","part":"become","ru":"становиться","ipa":"bɪkʌm","pastIpa":"bɪkeɪm","partIpa":"bɪkʌm"},{"n":7,"inf":"begin","past":"began","part":"begun","ru":"начинать","ipa":"bɪɡɪn","pastIpa":"bɪɡæn","partIpa":"bɪɡʌn"},{"n":8,"inf":"bend","past":"bent","part":"bent","ru":"сгибать","ipa":"bend","pastIpa":"bent","partIpa":"bent"},{"n":9,"inf":"bet","past":"bet","part":"bet","ru":"держать пари","ipa":"bet","pastIpa":"bet","partIpa":"bet"},{"n":10,"inf":"bind","past":"bound","part":"bound","ru":"связывать","ipa":"baɪnd","pastIpa":"baʊnd","partIpa":"baʊnd"},{"n":11,"inf":"bite","past":"bit","part":"bitten","ru":"кусать","ipa":"baɪt","pastIpa":"bɪt","partIpa":"bɪtən"},{"n":12,"inf":"bleed","past":"bled","part":"bled","ru":"кровоточить","ipa":"bliːd","pastIpa":"bled","partIpa":"bled"},{"n":13,"inf":"blow","past":"blew","part":"blown","ru":"дуть","ipa":"bloʊ","pastIpa":"bluː","partIpa":"bloʊn"},{"n":14,"inf":"break","past":"broke","part":"broken","ru":"ломать","ipa":"breɪk","pastIpa":"broʊk","partIpa":"broʊkən"},{"n":15,"inf":"breed","past":"bred","part":"bred","ru":"разводить","ipa":"briːd","pastIpa":"bred","partIpa":"bred"},{"n":16,"inf":"bring","past":"brought","part":"brought","ru":"приносить","ipa":"brɪŋ","pastIpa":"brɔːt","partIpa":"brɔːt"},{"n":17,"inf":"broadcast","past":"broadcast","part":"broadcast","ru":"транслировать","ipa":"brɔːdkæst","pastIpa":"brɔːdkæst","partIpa":"brɔːdkæst"},{"n":18,"inf":"build","past":"built","part":"built","ru":"строить","ipa":"bɪld","pastIpa":"bɪlt","partIpa":"bɪlt"},{"n":19,"inf":"burn","past":"burnt/burned","part":"burnt/burned","ru":"гореть, сжигать","ipa":"bɜːrn","pastIpa":"bɜːrnt / bɜːrnd","partIpa":"bɜːrnt / bɜːrnd"},{"n":20,"inf":"burst","past":"burst","part":"burst","ru":"лопаться","ipa":"bɜːrst","pastIpa":"bɜːrst","partIpa":"bɜːrst"},{"n":21,"inf":"buy","past":"bought","part":"bought","ru":"покупать","ipa":"baɪ","pastIpa":"bɑːt","partIpa":"bɑːt"},{"n":22,"inf":"catch","past":"caught","part":"caught","ru":"ловить","ipa":"kætʃ","pastIpa":"kɑːt","partIpa":"kɑːt"},{"n":23,"inf":"choose","past":"chose","part":"chosen","ru":"выбирать","ipa":"tʃuːz","pastIpa":"tʃoʊz","partIpa":"tʃoʊzən"},{"n":24,"inf":"come","past":"came","part":"come","ru":"приходить","ipa":"kʌm","pastIpa":"keɪm","partIpa":"kʌm"},{"n":25,"inf":"cost","past":"cost","part":"cost","ru":"стоить","ipa":"kɑːst","pastIpa":"kɑːst","partIpa":"kɑːst"},{"n":26,"inf":"creep","past":"crept","part":"crept","ru":"ползти","ipa":"kriːp","pastIpa":"krept","partIpa":"krept"},{"n":27,"inf":"cut","past":"cut","part":"cut","ru":"резать","ipa":"kʌt","pastIpa":"kʌt","partIpa":"kʌt"},{"n":28,"inf":"deal","past":"dealt","part":"dealt","ru":"иметь дело","ipa":"diːl","pastIpa":"delt","partIpa":"delt"},{"n":29,"inf":"dig","past":"dug","part":"dug","ru":"копать","ipa":"dɪɡ","pastIpa":"dʌɡ","partIpa":"dʌɡ"},{"n":30,"inf":"do","past":"did","part":"done","ru":"делать","ipa":"duː","pastIpa":"dɪd","partIpa":"dʌn"},{"n":31,"inf":"draw","past":"drew","part":"drawn","ru":"рисовать, тянуть","ipa":"drɔː","pastIpa":"druː","partIpa":"drɔːn"},{"n":32,"inf":"dream","past":"dreamt/dreamed","part":"dreamt/dreamed","ru":"мечтать","ipa":"driːm","pastIpa":"dremt / driːmd","partIpa":"dremt / driːmd"},{"n":33,"inf":"drink","past":"drank","part":"drunk","ru":"пить","ipa":"drɪŋk","pastIpa":"dræŋk","partIpa":"drʌŋk"},{"n":34,"inf":"drive","past":"drove","part":"driven","ru":"водить","ipa":"draɪv","pastIpa":"droʊv","partIpa":"drɪvən"},{"n":35,"inf":"eat","past":"ate","part":"eaten","ru":"есть","ipa":"iːt","pastIpa":"eɪt","partIpa":"iːtən"},{"n":36,"inf":"fall","past":"fell","part":"fallen","ru":"падать","ipa":"fɔːl","pastIpa":"fel","partIpa":"fɑːlən"},{"n":37,"inf":"feed","past":"fed","part":"fed","ru":"кормить","ipa":"fiːd","pastIpa":"fed","partIpa":"fed"},{"n":38,"inf":"feel","past":"felt","part":"felt","ru":"чувствовать","ipa":"fiːl","pastIpa":"felt","partIpa":"felt"},{"n":39,"inf":"fight","past":"fought","part":"fought","ru":"драться, бороться","ipa":"faɪt","pastIpa":"fɔːt","partIpa":"fɔːt"},{"n":40,"inf":"find","past":"found","part":"found","ru":"находить","ipa":"faɪnd","pastIpa":"faʊnd","partIpa":"faʊnd"},{"n":41,"inf":"flee","past":"fled","part":"fled","ru":"убегать","ipa":"fliː","pastIpa":"fled","partIpa":"fled"},{"n":42,"inf":"fly","past":"flew","part":"flown","ru":"летать","ipa":"flaɪ","pastIpa":"fluː","partIpa":"floʊn"},{"n":43,"inf":"forbid","past":"forbade","part":"forbidden","ru":"запрещать","ipa":"fɜːrbɪd","pastIpa":"fɜːrbeɪd","partIpa":"fɔːrbɪdən"},{"n":44,"inf":"forget","past":"forgot","part":"forgotten","ru":"забывать","ipa":"fɜːrɡet","pastIpa":"fɜːrɡɑːt","partIpa":"fɜːrɡɑːtən"},{"n":45,"inf":"forgive","past":"forgave","part":"forgiven","ru":"прощать","ipa":"fɜːrɡɪv","pastIpa":"fɜːrɡeɪv","partIpa":"fɜːrɡɪvən"},{"n":46,"inf":"freeze","past":"froze","part":"frozen","ru":"замерзать","ipa":"friːz","pastIpa":"froʊz","partIpa":"froʊzən"},{"n":47,"inf":"get","past":"got","part":"got/gotten","ru":"получать","ipa":"ɡet","pastIpa":"ɡɑːt","partIpa":"ɡɑːt / ɡɑːtən"},{"n":48,"inf":"give","past":"gave","part":"given","ru":"давать","ipa":"ɡɪv","pastIpa":"ɡeɪv","partIpa":"ɡɪvən"},{"n":49,"inf":"go","past":"went","part":"gone","ru":"идти, ехать","ipa":"ɡoʊ","pastIpa":"went","partIpa":"ɡɔːn"},{"n":50,"inf":"grow","past":"grew","part":"grown","ru":"расти","ipa":"ɡroʊ","pastIpa":"ɡruː","partIpa":"ɡroʊn"},{"n":51,"inf":"hang","past":"hung","part":"hung","ru":"висеть, вешать","ipa":"hæŋ","pastIpa":"hʌŋ","partIpa":"hʌŋ"},{"n":52,"inf":"have","past":"had","part":"had","ru":"иметь","ipa":"hæv","pastIpa":"hæd","partIpa":"hæd"},{"n":53,"inf":"hear","past":"heard","part":"heard","ru":"слышать","ipa":"hiːr","pastIpa":"hɜːrd","partIpa":"hɜːrd"},{"n":54,"inf":"hide","past":"hid","part":"hidden","ru":"прятать","ipa":"haɪd","pastIpa":"hɪd","partIpa":"hɪdən"},{"n":55,"inf":"hit","past":"hit","part":"hit","ru":"ударять","ipa":"hɪt","pastIpa":"hɪt","partIpa":"hɪt"},{"n":56,"inf":"hold","past":"held","part":"held","ru":"держать","ipa":"hoʊld","pastIpa":"held","partIpa":"held"},{"n":57,"inf":"hurt","past":"hurt","part":"hurt","ru":"причинять боль","ipa":"hɜːrt","pastIpa":"hɜːrt","partIpa":"hɜːrt"},{"n":58,"inf":"keep","past":"kept","part":"kept","ru":"хранить, держать","ipa":"kiːp","pastIpa":"kept","partIpa":"kept"},{"n":59,"inf":"kneel","past":"knelt/kneeled","part":"knelt/kneeled","ru":"становиться на колени","ipa":"niːl","pastIpa":"nelt / ","partIpa":"nelt / "},{"n":60,"inf":"know","past":"knew","part":"known","ru":"знать","ipa":"noʊ","pastIpa":"nuː","partIpa":"noʊn"},{"n":61,"inf":"lay","past":"laid","part":"laid","ru":"класть","ipa":"leɪ","pastIpa":"leɪd","partIpa":"leɪd"},{"n":62,"inf":"lead","past":"led","part":"led","ru":"вести","ipa":"led","pastIpa":"led","partIpa":"led"},{"n":63,"inf":"lean","past":"leant/leaned","part":"leant/leaned","ru":"наклоняться","ipa":"liːn","pastIpa":"liːənt / liːnd","partIpa":"liːənt / liːnd"},{"n":64,"inf":"leap","past":"leapt/leaped","part":"leapt/leaped","ru":"прыгать","ipa":"liːp","pastIpa":"lept / lept","partIpa":"lept / lept"},{"n":65,"inf":"learn","past":"learnt/learned","part":"learnt/learned","ru":"учить, узнавать","ipa":"lɜːrn","pastIpa":"lɜːrnt / lɜːrnd","partIpa":"lɜːrnt / lɜːrnd"},{"n":66,"inf":"leave","past":"left","part":"left","ru":"уходить, оставлять","ipa":"liːv","pastIpa":"left","partIpa":"left"},{"n":67,"inf":"lend","past":"lent","part":"lent","ru":"одалживать","ipa":"lend","pastIpa":"lent","partIpa":"lent"},{"n":68,"inf":"let","past":"let","part":"let","ru":"позволять","ipa":"let","pastIpa":"let","partIpa":"let"},{"n":69,"inf":"lie","past":"lay","part":"lain","ru":"лежать","ipa":"laɪ","pastIpa":"leɪ","partIpa":"leɪn"},{"n":70,"inf":"light","past":"lit/lighted","part":"lit/lighted","ru":"зажигать","ipa":"laɪt","pastIpa":"lɪt / laɪtəd","partIpa":"lɪt / laɪtəd"},{"n":71,"inf":"lose","past":"lost","part":"lost","ru":"терять","ipa":"luːz","pastIpa":"lɔːst","partIpa":"lɔːst"},{"n":72,"inf":"make","past":"made","part":"made","ru":"делать, создавать","ipa":"meɪk","pastIpa":"meɪd","partIpa":"meɪd"},{"n":73,"inf":"mean","past":"meant","part":"meant","ru":"означать, иметь в виду","ipa":"miːn","pastIpa":"ment","partIpa":"ment"},{"n":74,"inf":"meet","past":"met","part":"met","ru":"встречать","ipa":"miːt","pastIpa":"met","partIpa":"met"},{"n":75,"inf":"mistake","past":"mistook","part":"mistaken","ru":"ошибаться","ipa":"mɪsteɪk","pastIpa":"mɪstʊk","partIpa":"mɪsteɪkən"},{"n":76,"inf":"pay","past":"paid","part":"paid","ru":"платить","ipa":"peɪ","pastIpa":"peɪd","partIpa":"peɪd"},{"n":77,"inf":"prove","past":"proved","part":"proven/proved","ru":"доказывать","ipa":"pruːv","pastIpa":"pruːvd","partIpa":"pruːvən / pruːvd"},{"n":78,"inf":"put","past":"put","part":"put","ru":"класть","ipa":"pʊt","pastIpa":"pʊt","partIpa":"pʊt"},{"n":79,"inf":"quit","past":"quit/quitted","part":"quit/quitted","ru":"бросать, прекращать","ipa":"kwɪt","pastIpa":"kwɪt / ","partIpa":"kwɪt / "},{"n":80,"inf":"read","past":"read","part":"read","ru":"читать","ipa":"red","pastIpa":"red","partIpa":"red"},{"n":81,"inf":"ride","past":"rode","part":"ridden","ru":"ездить","ipa":"raɪd","pastIpa":"roʊd","partIpa":"rɪdən"},{"n":82,"inf":"ring","past":"rang","part":"rung","ru":"звонить","ipa":"rɪŋ","pastIpa":"ræŋ","partIpa":"rʌŋ"},{"n":83,"inf":"rise","past":"rose","part":"risen","ru":"подниматься","ipa":"raɪz","pastIpa":"roʊz","partIpa":"rɪzən"},{"n":84,"inf":"run","past":"ran","part":"run","ru":"бегать","ipa":"rʌn","pastIpa":"ræn","partIpa":"rʌn"},{"n":85,"inf":"say","past":"said","part":"said","ru":"говорить","ipa":"seɪ","pastIpa":"sed","partIpa":"sed"},{"n":86,"inf":"see","past":"saw","part":"seen","ru":"видеть","ipa":"siː","pastIpa":"sɔː","partIpa":"siːn"},{"n":87,"inf":"seek","past":"sought","part":"sought","ru":"искать","ipa":"siːk","pastIpa":"sɔːt","partIpa":"sɔːt"},{"n":88,"inf":"sell","past":"sold","part":"sold","ru":"продавать","ipa":"sel","pastIpa":"soʊld","partIpa":"soʊld"},{"n":89,"inf":"send","past":"sent","part":"sent","ru":"отправлять","ipa":"send","pastIpa":"sent","partIpa":"sent"},{"n":90,"inf":"set","past":"set","part":"set","ru":"устанавливать, ставить","ipa":"set","pastIpa":"set","partIpa":"set"},{"n":91,"inf":"shake","past":"shook","part":"shaken","ru":"трясти","ipa":"ʃeɪk","pastIpa":"ʃʊk","partIpa":"ʃeɪkən"},{"n":92,"inf":"shine","past":"shone/shined","part":"shone/shined","ru":"светить","ipa":"ʃaɪn","pastIpa":"ʃoʊn / ʃaɪnd","partIpa":"ʃoʊn / ʃaɪnd"},{"n":93,"inf":"shoot","past":"shot","part":"shot","ru":"стрелять","ipa":"ʃuːt","pastIpa":"ʃɑːt","partIpa":"ʃɑːt"},{"n":94,"inf":"show","past":"showed","part":"shown/showed","ru":"показывать","ipa":"ʃoʊ","pastIpa":"ʃoʊd","partIpa":"ʃoʊn / ʃoʊd"},{"n":95,"inf":"shut","past":"shut","part":"shut","ru":"закрывать","ipa":"ʃʌt","pastIpa":"ʃʌt","partIpa":"ʃʌt"},{"n":96,"inf":"sing","past":"sang","part":"sung","ru":"петь","ipa":"sɪŋ","pastIpa":"sæŋ","partIpa":"sʌŋ"},{"n":97,"inf":"sink","past":"sank/sunk","part":"sunk","ru":"тонуть","ipa":"sɪŋk","pastIpa":"sæŋk / sʌŋk","partIpa":"sʌŋk"},{"n":98,"inf":"sit","past":"sat","part":"sat","ru":"сидеть","ipa":"sɪt","pastIpa":"sæt","partIpa":"sæt"},{"n":99,"inf":"sleep","past":"slept","part":"slept","ru":"спать","ipa":"sliːp","pastIpa":"slept","partIpa":"slept"},{"n":100,"inf":"slide","past":"slid","part":"slid","ru":"скользить","ipa":"slaɪd","pastIpa":"slɪd","partIpa":"slɪd"},{"n":101,"inf":"smell","past":"smelt/smelled","part":"smelt/smelled","ru":"пахнуть","ipa":"smel","pastIpa":"smelt / smeld","partIpa":"smelt / smeld"},{"n":102,"inf":"speak","past":"spoke","part":"spoken","ru":"говорить","ipa":"spiːk","pastIpa":"spoʊk","partIpa":"spoʊkən"},{"n":103,"inf":"spell","past":"spelt/spelled","part":"spelt/spelled","ru":"писать по буквам","ipa":"spel","pastIpa":" / speld","partIpa":" / speld"},{"n":104,"inf":"spend","past":"spent","part":"spent","ru":"тратить, проводить","ipa":"spend","pastIpa":"spent","partIpa":"spent"},{"n":105,"inf":"spill","past":"spilt/spilled","part":"spilt/spilled","ru":"проливать","ipa":"spɪl","pastIpa":"spɪlt / spɪld","partIpa":"spɪlt / spɪld"},{"n":106,"inf":"spin","past":"spun","part":"spun","ru":"вращать","ipa":"spɪn","pastIpa":"spʌn","partIpa":"spʌn"},{"n":107,"inf":"spit","past":"spat/spit","part":"spat/spit","ru":"плевать","ipa":"spɪt","pastIpa":"spæt / spɪt","partIpa":"spæt / spɪt"},{"n":108,"inf":"split","past":"split","part":"split","ru":"разделять","ipa":"splɪt","pastIpa":"splɪt","partIpa":"splɪt"},{"n":109,"inf":"spoil","past":"spoilt/spoiled","part":"spoilt/spoiled","ru":"портить","ipa":"spɔɪl","pastIpa":" / spɔɪld","partIpa":" / spɔɪld"},{"n":110,"inf":"spread","past":"spread","part":"spread","ru":"распространять","ipa":"spred","pastIpa":"spred","partIpa":"spred"},{"n":111,"inf":"stand","past":"stood","part":"stood","ru":"стоять","ipa":"stænd","pastIpa":"stʊd","partIpa":"stʊd"},{"n":112,"inf":"steal","past":"stole","part":"stolen","ru":"красть","ipa":"stiːl","pastIpa":"stoʊl","partIpa":"stoʊlən"},{"n":113,"inf":"stick","past":"stuck","part":"stuck","ru":"приклеивать, застревать","ipa":"stɪk","pastIpa":"stʌk","partIpa":"stʌk"},{"n":114,"inf":"sting","past":"stung","part":"stung","ru":"жалить","ipa":"stɪŋ","pastIpa":"stʌŋ","partIpa":"stʌŋ"},{"n":115,"inf":"stink","past":"stank/stunk","part":"stunk","ru":"вонять","ipa":"stɪŋk","pastIpa":"stæŋk / stʌŋk","partIpa":"stʌŋk"},{"n":116,"inf":"strike","past":"struck","part":"struck/stricken","ru":"ударять","ipa":"straɪk","pastIpa":"strʌk","partIpa":"strʌk / strɪkən"},{"n":117,"inf":"swear","past":"swore","part":"sworn","ru":"клясться","ipa":"swer","pastIpa":"swɔːr","partIpa":"swɔːrn"},{"n":118,"inf":"sweep","past":"swept","part":"swept","ru":"подметать","ipa":"swiːp","pastIpa":"swept","partIpa":"swept"},{"n":119,"inf":"swim","past":"swam","part":"swum","ru":"плавать","ipa":"swɪm","pastIpa":"swæm","partIpa":"swʌm"},{"n":120,"inf":"swing","past":"swung","part":"swung","ru":"качаться","ipa":"swɪŋ","pastIpa":"swʌŋ","partIpa":"swʌŋ"},{"n":121,"inf":"take","past":"took","part":"taken","ru":"брать","ipa":"teɪk","pastIpa":"tʊk","partIpa":"teɪkən"},{"n":122,"inf":"teach","past":"taught","part":"taught","ru":"учить","ipa":"tiːtʃ","pastIpa":"tɔːt","partIpa":"tɔːt"},{"n":123,"inf":"tear","past":"tore","part":"torn","ru":"рвать","ipa":"ter","pastIpa":"tɔːr","partIpa":"tɔːrn"},{"n":124,"inf":"tell","past":"told","part":"told","ru":"рассказывать, говорить","ipa":"tel","pastIpa":"toʊld","partIpa":"toʊld"},{"n":125,"inf":"think","past":"thought","part":"thought","ru":"думать","ipa":"θɪŋk","pastIpa":"θɔːt","partIpa":"θɔːt"},{"n":126,"inf":"throw","past":"threw","part":"thrown","ru":"бросать","ipa":"θroʊ","pastIpa":"θruː","partIpa":"θroʊn"},{"n":127,"inf":"undergo","past":"underwent","part":"undergone","ru":"подвергаться","ipa":"ʌndɜːrɡoʊ","pastIpa":"ʌndɜːrwent","partIpa":"ʌndɜːrɡɔːn"},{"n":128,"inf":"understand","past":"understood","part":"understood","ru":"понимать","ipa":"ʌndɜːrstænd","pastIpa":"ʌndɜːrstʊd","partIpa":"ʌndɜːrstʊd"},{"n":129,"inf":"wake","past":"woke","part":"woken","ru":"просыпаться, будить","ipa":"weɪk","pastIpa":"woʊk","partIpa":"woʊkən"},{"n":130,"inf":"wear","past":"wore","part":"worn","ru":"носить","ipa":"wer","pastIpa":"wɔːr","partIpa":"wɔːrn"},{"n":131,"inf":"weep","past":"wept","part":"wept","ru":"плакать","ipa":"wiːp","pastIpa":"wept","partIpa":"wept"},{"n":132,"inf":"win","past":"won","part":"won","ru":"выигрывать","ipa":"wɪn","pastIpa":"wʌn","partIpa":"wʌn"},{"n":133,"inf":"wind","past":"wound","part":"wound","ru":"заводить, наматывать","ipa":"waɪnd","pastIpa":"waʊnd","partIpa":"waʊnd"},{"n":134,"inf":"withdraw","past":"withdrew","part":"withdrawn","ru":"забирать, снимать","ipa":"wɪðdrɔː","pastIpa":"wɪθdruː","partIpa":"wɪθdrɔːn"},{"n":135,"inf":"withstand","past":"withstood","part":"withstood","ru":"противостоять","ipa":"wɪθstænd","pastIpa":"wɪθstʊd","partIpa":"wɪθstʊd"},{"n":136,"inf":"wring","past":"wrung","part":"wrung","ru":"выкручивать","ipa":"rɪŋ","pastIpa":"rʌŋ","partIpa":"rʌŋ"},{"n":137,"inf":"write","past":"wrote","part":"written","ru":"писать","ipa":"raɪt","pastIpa":"roʊt","partIpa":"rɪtən"},{"n":138,"inf":"overcome","past":"overcame","part":"overcome","ru":"преодолевать","ipa":"oʊvɜːrkʌm","pastIpa":"oʊvɜːrkeɪm","partIpa":"oʊvɜːrkʌm"},{"n":139,"inf":"overtake","past":"overtook","part":"overtaken","ru":"обгонять","ipa":"oʊvɜːrteɪk","pastIpa":"oʊvɜːrtʊk","partIpa":"oʊvɜːrteɪkən"},{"n":140,"inf":"overthrow","past":"overthrew","part":"overthrown","ru":"свергать","ipa":"oʊvɜːrθroʊ","pastIpa":"oʊvɜːrθruː","partIpa":"oʊvɜːrθroʊn"},{"n":141,"inf":"overdo","past":"overdid","part":"overdone","ru":"перестараться","ipa":"oʊvɜːrduː","pastIpa":"oʊvɜːrdɪd","partIpa":"oʊvɜːrdʌn"},{"n":142,"inf":"redo","past":"redid","part":"redone","ru":"переделывать","ipa":"riːduː","pastIpa":"riːdɪd","partIpa":"riːdʌn"},{"n":143,"inf":"remake","past":"remade","part":"remade","ru":"переделывать, переснимать","ipa":"riːmeɪk","pastIpa":"riːmeɪd","partIpa":"riːmeɪd"},{"n":144,"inf":"retake","past":"retook","part":"retaken","ru":"пересдавать, переснимать","ipa":"riːteɪk","pastIpa":"riːtʊk","partIpa":"riːteɪkən"},{"n":145,"inf":"rewrite","past":"rewrote","part":"rewritten","ru":"переписывать","ipa":"riːraɪt","pastIpa":"riːroʊt","partIpa":"riːrɪtən"},{"n":146,"inf":"foresee","past":"foresaw","part":"foreseen","ru":"предвидеть","ipa":"fɔːrsiː","pastIpa":"fɔːrsɔː","partIpa":"fɔːrsiːn"},{"n":147,"inf":"forecast","past":"forecast","part":"forecast","ru":"прогнозировать","ipa":"fɔːrkæst","pastIpa":"fɔːrkæst","partIpa":"fɔːrkæst"},{"n":148,"inf":"misunderstand","past":"misunderstood","part":"misunderstood","ru":"неправильно понимать","ipa":"mɪsəndɜːrstænd","pastIpa":"mɪsəndɜːrstʊd","partIpa":"mɪsəndɜːrstʊd"},{"n":149,"inf":"undertake","past":"undertook","part":"undertaken","ru":"предпринимать","ipa":"ʌndɜːrteɪk","pastIpa":"ʌndɜːrtʊk","partIpa":"ʌndɜːrteɪkən"},{"n":150,"inf":"uphold","past":"upheld","part":"upheld","ru":"поддерживать, отстаивать","ipa":"əphoʊld","pastIpa":"əpheld","partIpa":"əpheld"},{"n":151,"inf":"upset","past":"upset","part":"upset","ru":"расстраивать","ipa":"əpset","pastIpa":"əpset","partIpa":"əpset"}];
 
 const BLOCK_SIZE=15;
-const KEY='irregular_trainer_v9';
+const KEY='irregular_trainer_v11';
 let state=JSON.parse(localStorage.getItem(KEY)||'{}');
 
 if(!state.v){
-  const oldState=JSON.parse(localStorage.getItem('irregular_trainer_v7')||localStorage.getItem('irregular-verbs-trainer-v6')||'null');
+  const oldState=JSON.parse(localStorage.getItem('irregular_trainer_v10')||localStorage.getItem('irregular_trainer_v9')||localStorage.getItem('irregular_trainer_v7')||localStorage.getItem('irregular-verbs-trainer-v6')||'null');
   if(oldState&&typeof oldState==='object'){
     state.v={};
+    state.customFolders=oldState.customFolders||{};
+    state.myWords=oldState.myWords||{};
     Object.keys(oldState).forEach(function(k){
       if(/^\d+$/.test(k)){
         const x=oldState[k]||{};
@@ -67,12 +69,16 @@ function selectBlock(n){
 function renderBlocks(){
   const box=document.getElementById('blocks');
   const homeAuto=document.getElementById('auto-sound');
-  if(homeAuto){homeAuto.checked=autoSound;homeAuto.onchange=()=>{autoSound=homeAuto.checked;save()};}
+  if(homeAuto){
+    homeAuto.checked=autoSound;
+    homeAuto.onchange=()=>{autoSound=homeAuto.checked;save()};
+  }
   box.innerHTML='';
   const mainN=selectedBlock;
-  const order=[mainN,...Array.from({length:blockCount()},(_,i)=>i+1).filter(n=>n!==mainN)];
-  for(const n of order){
-    const vs=blockVerbs(n),p=blockPercent(n),sel=n===mainN;
+  const rest=Array.from({length:blockCount()},(_,i)=>i+1).filter(n=>n!==mainN);
+  const order=[mainN,...rest];
+  order.forEach((n,idx)=>{
+    const vs=blockVerbs(n),p=blockPercent(n),sel=idx===0;
     const card=document.createElement('div');
     card.className='block-card'+(sel?' selected main-block':' compact-block');
     const last=vs.at(-1).n;
@@ -81,27 +87,27 @@ function renderBlocks(){
     if(sel){
       card.innerHTML=`
         <div class="block-head">
-          <div><div class="block-title">Блок ${n}</div><div class="block-meta">глаголы ${vs[0].n}–${last} · ${vs.length} глаголов</div></div>
+          <div><div class="block-title">Блок ${n} · глаголы ${vs[0].n}–${last}</div><div class="block-meta">${vs.length} глаголов</div></div>
           <span class="badge ${p>=100?'good':''}">${p}%</span>
         </div>
         <div class="block-progress"><div class="progress"><div class="bar ${p>=100?'good':''}" style="width:${p}%"></div></div></div>
-        <div class="block-status">${masteredCount} из ${vs.length} закреплено${dueCount?` · к повторению: ${dueCount}`:''}</div>
+        <div class="block-status">Закреплено: ${masteredCount} из ${vs.length}${dueCount?` · сегодня пора повторить: ${dueCount}`:''}</div>
         <div class="block-actions"><button class="primary" data-train="${n}">${p>=100?'Повторить блок':'Начать тренировку'}</button><button data-study="${n}">Слова</button></div>`;
       card.onclick=()=>selectBlock(n);
       card.querySelector('[data-train]').onclick=e=>{e.stopPropagation();selectedBlock=n;save();startMixed(p>=100?'blockRepeat':'new',n)};
       card.querySelector('[data-study]').onclick=e=>{e.stopPropagation();selectedBlock=n;save();startStudy(n)};
     }else{
+      // У маленьких карточек только прогресс: клик по карточке делает её главным блоком.
       card.innerHTML=`
         <div class="block-head">
-          <div><div class="block-title">Блок ${n}</div><div class="block-meta">глаголы ${vs[0].n}–${last}</div></div>
+          <div><div class="block-title">Блок ${n} · глаголы ${vs[0].n}–${last}</div></div>
           <span class="badge ${p>=100?'good':''}">${p}%</span>
         </div>
-        <div class="block-progress"><div class="progress"><div class="bar ${p>=100?'good':''}" style="width:${p}%"></div></div></div>
-        <div class="block-status">${masteredCount} из ${vs.length} закреплено${dueCount?` · к повторению: ${dueCount}`:''}</div>`;
+        <div class="block-progress"><div class="progress"><div class="bar ${p>=100?'good':''}" style="width:${p}%"></div></div></div>`;
       card.onclick=()=>selectBlock(n);
     }
     box.appendChild(card);
-  }
+  });
 }
 
 function renderHome(){renderBlocks()}
@@ -117,16 +123,16 @@ function startStudy(n=selectedBlock){selectedBlock=n;save();show('learn')}
 function renderLearn(){
   const vs=blockVerbs();
   document.getElementById('learn-title').textContent=`Блок ${selectedBlock} · глаголы ${vs[0].n}–${vs.at(-1).n}`;
-  document.getElementById('learn-note').textContent='Все три формы показаны сразу. Английские слова можно прослушать.';
+  document.getElementById('learn-note').textContent='Все три формы показаны в одну строку. Английские слова можно прослушать.';
   document.getElementById('learn-list').innerHTML=vs.map(v=>`
     <div class="learn-card">
       <div class="learn-word-head">
-        <div><b>${v.inf}</b><div class="ipa">/${v.ipa||''}/</div><div class="muted">${v.ru}</div></div>
+        <div class="learn-word-main">
+          <div class="learn-forms-line"><b>${v.inf}</b><b>${v.past}</b><b>${v.part}</b></div>
+          <div class="ipa">/${v.ipa||''}/</div>
+          <div class="muted">${v.ru}</div>
+        </div>
         <button class="listen-button" data-speak="${v.n}">🔊 Прослушать</button>
-      </div>
-      <div class="learn-forms">
-        <div><small>V2</small><b>${v.past}</b>${v.pastIpa?`<span class="ipa">/${v.pastIpa}/</span>`:''}</div>
-        <div><small>V3</small><b>${v.part}</b>${v.partIpa?`<span class="ipa">/${v.partIpa}/</span>`:''}</div>
       </div>
     </div>`).join('');
   document.querySelectorAll('[data-speak]').forEach(b=>b.onclick=()=>speak(verbs.find(v=>v.n==b.dataset.speak).inf));
@@ -352,10 +358,10 @@ function checkCurrent(force=false){
 }
 
 function dontKnow(){if(session.answered)return;checkCurrent(true)}
-function nextQ(){if(!session||!session.answered)return;session.index++;if(session.index>=session.items.length)finishSession();else renderQ()}
+function nextQ(){if(!session||!session.answered)return;session.index++;if(session.index>=session.items.length){if(session.folder)finishFolderTraining();else finishSession();}else if(session.folder)renderQFolder();else renderQ()}
 function giveHint(){
   const q=session.items[session.index],v=q.v;q.hintLevel=(q.hintLevel||0)+1;
-  const partial=(w,n)=>{w=String(w).split('/')[0].trim();const letters=[...w];return n>=letters.length?w:letters.slice(0,n).join('')+'_'.repeat(Math.max(0,letters.length-n));};
+  const partial=(w,n)=>{w=String(w).split('/')[0].trim();const letters=[...w];if(!letters.length)return '';const take=Math.min(letters.length,Math.max(1,n));return take>=letters.length?w:letters.slice(0,take).join('')+'_'.repeat(letters.length-take);};
   const level=q.hintLevel;
   let text='';
   if(q.mode==='write'){
@@ -368,6 +374,10 @@ function giveHint(){
     text=`Слово: ${partial(v.inf,Math.min(level,v.inf.length))}`;
   }else if(q.mode==='enToRu'){
     text=`Перевод: ${partial(v.ru,Math.min(level,[...v.ru].length))}`;
+  }else if(q.mode==='customRuToEn'){
+    text=`Слово: ${partial(v.word,Math.min(level,[...v.word].length))}`;
+  }else if(q.mode==='customEnToRu'){
+    text=`Перевод: ${partial(v.translation,Math.min(level,[...v.translation].length))}`;
   }else text='Послушай ещё раз.';
   document.getElementById('q-hint').textContent=text;
 }
@@ -429,20 +439,17 @@ function renderDictionary(){
   document.getElementById('dict-title').textContent=selected.name;
   document.getElementById('dict-tools').innerHTML=`
     <button class="primary" id="train-folder">Тренировать папку</button>
-    <button id="mix-folder">+ Подмешать случайные</button>
     ${selected.id!=='irregular'?'<button id="add-to-current">+ Добавить слово</button>':''}`;
   document.getElementById('train-folder').onclick=()=>startFolderTraining(false);
-  document.getElementById('mix-folder').onclick=()=>startFolderTraining(true);
   if(document.getElementById('add-to-current'))document.getElementById('add-to-current').onclick=addWord;
 
   const words=wordsInFolder(selected.id);
   if(selected.id==='irregular'){
     document.getElementById('dict-list').innerHTML=words.map(v=>`
       <div class="word-item dict-verb-item">
-        <div><b>V1</b><strong>${v.inf}</strong><div class="ipa">/${v.ipa||''}/</div></div>
-        <div><b>V2</b><strong>${v.past}</strong>${v.pastIpa?`<div class="ipa">/${v.pastIpa}/</div>`:''}</div>
-        <div><b>V3</b><strong>${v.part}</strong>${v.partIpa?`<div class="ipa">/${v.partIpa}/</div>`:''}</div>
-        <div class="dict-verb-actions"><span>${v.ru}</span><button class="listen-button" data-dict-speak="${htmlEscape(v.inf)}">🔊 Прослушать</button></div>
+        <div class="dict-forms-line"><b>${v.inf}</b><b>${v.past}</b><b>${v.part}</b></div>
+        <div class="dict-ru">${v.ru}</div>
+        <button class="listen-button" data-dict-speak="${htmlEscape(v.inf)}">🔊 Прослушать</button>
       </div>`).join('');
   }else{
     document.getElementById('dict-list').innerHTML=words.length?words.map(w=>`
@@ -513,15 +520,23 @@ function deleteWord(wordId){
   Object.values(state.customFolders||{}).forEach(f=>f.wordIds=f.wordIds.filter(id=>id!==wordId));
   save();renderDictionary();
 }
-function startFolderTraining(mix){
-  const base=wordsInFolder(selectedFolder);
-  if(!base.length){alert('В этой папке пока нет слов.');return;}
-  let words=shuffle(base).slice(0,15);
-  if(mix){
-    const all=verbs.filter(v=>!words.some(w=>w.n===v.n));
-    words=words.concat(shuffle(all).slice(0,Math.min(5,all.length)));
+function allCustomWords(){return Object.values(state.myWords||{}).filter(w=>w&&w.word&&w.translation)}
+function customDistractors(v,field){
+  const custom=allCustomWords().filter(w=>w.id!==v.id);
+  const values=field==='word'?custom.map(w=>w.word):custom.map(w=>w.translation);
+  const unique=[...new Set(values.map(x=>String(x).trim()).filter(Boolean))];
+  if(field==='word'){
+    unique.push(...verbs.filter(x=>normalize(x.inf)!==normalize(v.word)).map(x=>x.inf));
+  }else{
+    unique.push(...verbs.filter(x=>normalize(x.ru)!==normalize(v.translation)).map(x=>x.ru));
   }
-  session={items:shuffle(words.map(w=>({v:w,mode:selectedFolder==='irregular'?(Math.random()<.5?'enToRu':'ruToEn'):'custom'}))),index:0,score:0,kind:'folder',block:selectedBlock,answered:false,folder:true};
+  return [...new Set(unique.map(x=>String(x).trim()).filter(Boolean))];
+}
+function startFolderTraining(){
+  const base=wordsInFolder(selectedFolder).filter(w=>w&&w.word&&w.translation);
+  if(!base.length){alert('В этой папке пока нет слов.');return;}
+  const words=shuffle(base).slice(0,15);
+  session={items:shuffle(words.map(v=>({v,mode:Math.random()<.5?'customRuToEn':'customEnToRu',hintLevel:0}))),index:0,score:0,kind:'folder',block:selectedBlock,answered:false,folder:true,folderId:selectedFolder};
   show('quiz');renderQFolder();
 }
 function renderQFolder(){
@@ -530,42 +545,39 @@ function renderQFolder(){
   document.getElementById('q-bar').style.width=(session.index/session.items.length*100)+'%';
   document.getElementById('q-feedback').innerHTML='';document.getElementById('q-hint').textContent='';
   document.getElementById('q-word').textContent='';document.getElementById('q-ipa').textContent='';document.getElementById('q-ru').textContent='';
-  document.getElementById('sound-btn').classList.add('hidden');
+  const sound=document.getElementById('sound-btn');sound.classList.add('hidden');
   document.getElementById('finish-folder').classList.remove('hidden');
-  if(q.mode==='custom'){
-    document.getElementById('q-mode').textContent='Перевод → слово';
-    document.getElementById('q-ru').textContent=v.translation;
-    const pool=wordsInFolder(selectedFolder).filter(x=>x.id!==v.id);
-    const opts=shuffle([v.word,...shuffle(pool).slice(0,3).map(x=>x.word)]);
-    document.getElementById('q-body').innerHTML=`<div class="option-list">${opts.map(x=>`<button class="option" data-option="${htmlEscape(x)}">${htmlEscape(x)}</button>`).join('')}</div>`;
-  }else if(q.mode==='enToRu'){
+  if(q.mode==='customEnToRu'){
     document.getElementById('q-mode').textContent='Перевод → русский';
-    document.getElementById('q-word').textContent=v.inf;document.getElementById('q-ipa').textContent='/'+(v.ipa||'')+'/';
-    document.getElementById('q-body').innerHTML=translationEnToRu(v);
-    document.getElementById('sound-btn').classList.remove('hidden');
-    document.getElementById('sound-btn').onclick=()=>speak(v.inf);
-    if(autoSound)setTimeout(()=>speak(v.inf),180);
+    document.getElementById('q-word').textContent=v.word;
+    document.getElementById('q-body').innerHTML=customEnToRu(v);
+    sound.classList.remove('hidden');sound.onclick=()=>speak(v.word);
+    if(autoSound)setTimeout(()=>speak(v.word),180);
   }else{
     document.getElementById('q-mode').textContent='Перевод → английский';
-    document.getElementById('q-ru').textContent=v.ru;
-    document.getElementById('q-body').innerHTML=translationRuToEn(v);
+    document.getElementById('q-ru').textContent=v.translation;
+    document.getElementById('q-body').innerHTML=customRuToEn(v);
   }
   bindFolderOptions();
 }
-
+function customRuToEn(v){
+  const opts=shuffle([v.word,...shuffle(customDistractors(v,'word')).slice(0,3)]);
+  return `<div class="option-list">${optionSet(v.word,opts.filter(x=>normalize(x)!==normalize(v.word)).slice(0,3))}</div>`;
+}
+function customEnToRu(v){
+  const opts=shuffle([v.translation,...shuffle(customDistractors(v,'translation')).slice(0,3)]);
+  return `<div class="option-list">${optionSet(v.translation,opts.filter(x=>normalize(x)!==normalize(v.translation)).slice(0,3))}</div>`;
+}
 function bindFolderOptions(){
   document.querySelectorAll('.option').forEach(btn=>btn.onclick=()=>{
     if(session.answered)return;
     document.querySelectorAll('.option').forEach(x=>x.classList.remove('selected'));
     btn.classList.add('selected');
     const q=session.items[session.index],v=q.v;
-    const correct=q.mode==='custom'?normalize(btn.dataset.option)===normalize(v.word):
-      q.mode==='enToRu'?normalize(btn.dataset.option)===normalize(v.ru):
-      btn.dataset.option===`${v.inf} — ${v.past} — ${v.part}`;
+    const correct=q.mode==='customEnToRu'?normalize(btn.dataset.option)===normalize(v.translation):normalize(btn.dataset.option)===normalize(v.word);
     document.querySelectorAll('.option').forEach(x=>{
-      if((q.mode==='custom'&&normalize(x.dataset.option)===normalize(v.word))||
-         (q.mode==='enToRu'&&normalize(x.dataset.option)===normalize(v.ru))||
-         (q.mode==='ruToEn'&&x.dataset.option===`${v.inf} — ${v.past} — ${v.part}`))x.classList.add('correct');
+      const right=q.mode==='customEnToRu'?normalize(x.dataset.option)===normalize(v.translation):normalize(x.dataset.option)===normalize(v.word);
+      if(right)x.classList.add('correct');
     });
     if(!correct)btn.classList.add('wrong');
     session.answered=true;if(correct)session.score++;
@@ -573,6 +585,7 @@ function bindFolderOptions(){
     setTimeout(nextQ,correct?430:1100);
   });
 }
+
 function renderErrors(){
   const es=verbs.filter(v=>st(v).wrong>0).sort((a,b)=>st(b).wrong-st(a).wrong);
   document.getElementById('error-list').innerHTML=es.length?`

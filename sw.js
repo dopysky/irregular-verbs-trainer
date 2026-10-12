@@ -1,4 +1,4 @@
-const CACHE="irregular-verbs-trainer-v10";
+const CACHE="irregular-verbs-trainer-v11";
 const ASSETS=["./","./index.html","./style.css","./app.js","./manifest.webmanifest"];
 
 self.addEventListener("install",event=>{

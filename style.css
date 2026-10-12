@@ -14,3 +14,24 @@
 .word-actions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}
 .learn-forms{margin-top:10px;padding:10px 12px;border-top:1px solid var(--line);line-height:1.8}
 .home-top{display:flex;justify-content:space-between;align-items:center;gap:16px}.main-block{grid-column:1/-1}.compact-block .block-actions{display:none}.compact-block{min-height:0}.learn-word-head{display:flex;justify-content:space-between;align-items:center;gap:12px}.learn-forms{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.learn-forms>div{border:1px solid var(--line);border-radius:10px;padding:10px}.learn-forms small{display:block;color:var(--muted);margin-bottom:4px}.learn-forms b{font-size:20px}.dict-verb-item{grid-template-columns:1fr 1fr 1fr 1.4fr}.dict-verb-item strong{display:block;font-size:18px;margin-top:3px}.dict-verb-item b{display:block;color:var(--muted);font-size:12px}.dict-verb-actions{display:flex;justify-content:space-between;align-items:center;gap:8px}.target-cloze{margin:16px auto;max-width:700px}.cloze-label{color:var(--muted);font-size:14px}.error-summary{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--soft);margin-bottom:10px}@media(max-width:800px){.home-top{align-items:flex-start;flex-direction:column}.main-block{grid-column:auto}.learn-forms{grid-template-columns:1fr}.dict-verb-item{grid-template-columns:1fr 1fr}.dict-verb-actions{grid-column:1/-1}.error-summary{align-items:stretch;flex-direction:column}}
+
+/* v11 layout refinements */
+.learn-word-main{flex:1;min-width:0}
+.learn-forms-line{display:flex;gap:18px;align-items:baseline;flex-wrap:wrap;font-size:22px;line-height:1.35}
+.learn-forms-line b{font-size:22px;font-weight:700}
+.single-answer{display:flex;justify-content:center;width:100%}
+.single-answer label{width:min(520px,100%);text-align:center}
+.single-answer input{text-align:center}
+.target-cloze{max-width:520px}
+.dict-verb-item{display:grid;grid-template-columns:minmax(0,2fr) minmax(180px,1.2fr) auto;align-items:center}
+.dict-forms-line{display:flex;gap:18px;align-items:baseline;flex-wrap:wrap}
+.dict-forms-line b{font-size:20px;font-weight:700}
+.dict-ru{font-size:16px}
+.dict-verb-item .listen-button{justify-self:end}
+.compact-block .block-head{padding-bottom:10px}
+.compact-block .block-progress{padding-bottom:14px}
+@media(max-width:800px){
+  .dict-verb-item{grid-template-columns:1fr auto}
+  .dict-ru{grid-column:1/-1}
+  .dict-verb-item .listen-button{grid-column:2;grid-row:1}
+}
