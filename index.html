@@ -2,210 +2,311 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#315efb">
-<link rel="manifest" href="manifest.webmanifest">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Тренажёр неправильных глаголов</title>
 <style>
-:root{--bg:#f5f6f8;--card:#fff;--text:#20242b;--muted:#6d7480;--line:#e1e4e8;--accent:#315efb;--good:#17864b;--bad:#c93636}
-*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,Segoe UI,Arial,sans-serif}
-.wrap{max-width:1000px;margin:auto;padding:24px}
+:root{--bg:#f5f6f8;--card:#fff;--text:#20242b;--muted:#68707d;--line:#dfe3e8;--accent:#315efb;--good:#17864b;--bad:#c93636;--warn:#b77900}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,Segoe UI,Arial,sans-serif}
+.wrap{max-width:1050px;margin:auto;padding:24px}
 header{display:flex;justify-content:space-between;gap:20px;align-items:flex-start;margin-bottom:18px}
-h1{font-size:28px;margin:0 0 6px}.sub{color:var(--muted)}
+h1{font-size:28px;margin:0 0 6px} h2{margin-top:0} .sub{color:var(--muted)}
 nav{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}
 button{border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:10px;padding:11px 14px;font-size:15px;cursor:pointer}
-button:hover{border-color:#b8bec7} button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
-button.danger{color:var(--bad)} button:disabled{opacity:.55;cursor:not-allowed}
+button:hover{border-color:#aeb6c1} button.primary{background:var(--accent);border-color:var(--accent);color:#fff} button.danger{color:var(--bad)} button:disabled{opacity:.5;cursor:not-allowed}
 .panel{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;box-shadow:0 4px 20px #00000008}
-.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:16px 0}
-.stat{padding:15px;border:1px solid var(--line);border-radius:12px}.stat b{display:block;font-size:24px;margin-top:4px}
-.muted{color:var(--muted)} .verb{font-size:34px;font-weight:700;margin:8px 0}.ru{font-size:20px;margin:8px 0 18px}
-.forms{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.form{border:1px solid var(--line);padding:15px;border-radius:12px}.form small{display:block;color:var(--muted);margin-bottom:5px}
+.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:16px 0} .stat{padding:15px;border:1px solid var(--line);border-radius:12px} .stat b{display:block;font-size:24px;margin-top:4px}
+.muted{color:var(--muted)} .verb{font-size:38px;font-weight:750;margin:8px 0} .ru{font-size:19px;margin:8px 0 18px}
+.progress{height:8px;background:#e8eaee;border-radius:99px;overflow:hidden;margin:14px 0} .bar{height:100%;background:var(--accent);width:0;transition:width .2s}
+.big{font-size:22px;font-weight:700} .center{text-align:center} .hidden{display:none!important}
 .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
-.answers{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}.answer{text-align:left;min-height:58px}
-.answer.correct{border-color:var(--good);background:#effaf3}.answer.wrong{border-color:var(--bad);background:#fff0f0}
-.progress{height:8px;background:#e8eaee;border-radius:99px;overflow:hidden;margin:14px 0}.bar{height:100%;background:var(--accent);width:0}
-.big{font-size:22px;font-weight:700}.center{text-align:center}.hidden{display:none!important}
-.list{display:grid;gap:8px}.row{display:grid;grid-template-columns:40px 1fr 1fr 1fr 1.4fr;gap:8px;padding:10px;border-bottom:1px solid var(--line);align-items:center}
-input{padding:11px;border:1px solid var(--line);border-radius:10px;font-size:15px;width:100%}
-@media(max-width:700px){.grid{grid-template-columns:1fr 1fr}.forms{grid-template-columns:1fr}.answers{grid-template-columns:1fr}.row{grid-template-columns:30px 1fr 1fr}.row .hide-m{display:none}}
+.answers{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px} .answer{text-align:left;min-height:58px}
+.answer.correct{border-color:var(--good);background:#effaf3} .answer.wrong{border-color:var(--bad);background:#fff0f0}
+.feedback{margin-top:14px;min-height:24px} .good{color:var(--good)} .bad{color:var(--bad)}
+.study-list{display:grid;gap:10px;margin-top:15px} .study-card{border:1px solid var(--line);border-radius:12px;padding:14px}
+.study-top{display:flex;justify-content:space-between;gap:12px;align-items:center} .forms{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.form{border:1px solid var(--line);padding:11px;border-radius:10px} .form small{display:block;color:var(--muted);margin-bottom:4px}
+.badge{display:inline-block;padding:4px 8px;border-radius:999px;background:#eef1f5;font-size:12px;color:var(--muted)}
+.badge.good{background:#eaf7ef;color:var(--good)} .badge.bad{background:#fff0f0;color:var(--bad)} .badge.due{background:#fff6df;color:var(--warn)}
+.session-info{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+input{padding:12px;border:1px solid var(--line);border-radius:10px;font-size:18px;width:100%} .type-answer{max-width:520px;margin:18px auto 0}
+.hint{font-size:13px;color:var(--muted);margin-top:8px} .list{display:grid;gap:8px} .row{display:grid;grid-template-columns:40px 1fr 1fr 1fr 1.4fr;gap:8px;padding:10px;border-bottom:1px solid var(--line);align-items:center}
+.section-note{background:#f7f8fa;border:1px solid var(--line);padding:12px;border-radius:10px;margin:12px 0}
+@media(max-width:800px){.grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:700px){.forms{grid-template-columns:1fr}.answers{grid-template-columns:1fr}.row{grid-template-columns:30px 1fr 1fr}.row .hide-m{display:none}.wrap{padding:14px}.verb{font-size:32px}}
 </style>
+<link rel="manifest" href="./manifest.webmanifest">
 </head>
 <body>
 <div class="wrap">
 <header>
-<div><h1>Тренажёр неправильных глаголов</h1><div class="sub">151 глагол из твоего документа</div></div>
+<div><h1>Тренажёр неправильных глаголов</h1><div class="sub">151 глагол из твоего документа. Обучение идёт блоками, а закрепление — по памяти.</div></div>
 </header>
 <nav>
 <button id="nav-home">Главная</button>
-<button id="nav-learn">Изучение</button>
+<button id="nav-learn">Учебный блок</button>
 <button id="nav-quiz">Тренировка</button>
-<button id="nav-errors">Повторить ошибки</button>
+<button id="nav-review">Интервальное повторение</button>
+<button id="nav-errors">Ошибки</button>
 <button id="nav-list">Все глаголы</button>
 </nav>
 
 <section id="home" class="panel">
-<h2>Прогресс</h2>
+<h2>Текущий прогресс</h2>
 <div class="grid">
-<div class="stat">Всего<b id="s-total">151</b></div>
-<div class="stat">Изучено<b id="s-known">0</b></div>
+<div class="stat">Текущий блок<b id="s-block">1–15</b></div>
+<div class="stat">Закреплено<b id="s-known">0</b></div>
+<div class="stat">К повторению<b id="s-due">0</b></div>
 <div class="stat">Ошибки<b id="s-bad">0</b></div>
 <div class="stat">Ответов<b id="s-answers">0</b></div>
 </div>
-<p class="muted">Начнём с первых 15 глаголов. Программа сама будет учитывать правильные и неправильные ответы.</p>
-<div class="actions"><button id="start-quiz" class="primary">Начать тренировку</button><button id="start-learn">Посмотреть первые 15</button></div>
+<div class="section-note" id="home-note"></div>
+<div class="actions">
+<button id="start-quiz" class="primary">Начать тренировку</button>
+<button id="start-learn">Изучить текущий блок</button>
+<button id="start-review">Повторить то, что пора повторить</button>
+<button id="start-errors">Повторить ошибки</button>
+</div>
 </section>
 
 <section id="learn" class="panel hidden">
-<h2>Первые 15 глаголов</h2>
-<div id="learn-list" class="list"></div>
+<h2 id="learn-title">Учебный блок</h2>
+<p class="muted">Здесь не нужно просто смотреть список. Открой форму каждого глагола, произнеси её вслух и попробуй вспомнить V2 и V3 до того, как нажмёшь «Показать».</p>
+<div id="learn-list" class="study-list"></div>
 </section>
 
 <section id="quiz" class="panel hidden">
-<div class="muted" id="q-count"></div>
+<div class="session-info"><span class="badge" id="session-mode">Новые глаголы</span><span class="badge" id="q-progress"></span></div>
 <div class="progress"><div class="bar" id="q-bar"></div></div>
 <div class="center">
 <div class="big" id="q-type"></div>
 <div class="verb" id="q-word"></div>
 <div class="ru" id="q-ru"></div>
 </div>
+<div id="type-wrap" class="type-answer hidden"><input id="type-input" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Введи ответ и нажми Enter"><div class="hint" id="type-hint"></div></div>
 <div id="answers" class="answers"></div>
 <div class="actions"><button id="next" class="primary" disabled>Далее</button><button id="finish">Закончить</button></div>
-<div id="feedback" class="muted" style="margin-top:14px"></div>
+<div id="feedback" class="feedback"></div>
 </section>
 
 <section id="list" class="panel hidden">
 <h2>Все 151 глагол</h2>
-<input id="search" placeholder="Поиск..." oninput="renderList()">
+<input id="search" placeholder="Поиск...">
 <div id="all-list" class="list" style="margin-top:12px"></div>
 </section>
 </div>
 
 <script>
 const verbs = [{"n": 1, "inf": "arise", "past": "arose", "part": "arisen", "ru": "возникать"}, {"n": 2, "inf": "awake", "past": "awoke", "part": "awoken", "ru": "просыпаться"}, {"n": 3, "inf": "be", "past": "was/were", "part": "been", "ru": "быть"}, {"n": 4, "inf": "bear", "past": "bore", "part": "borne/born", "ru": "переносить, рожать"}, {"n": 5, "inf": "beat", "past": "beat", "part": "beaten", "ru": "бить"}, {"n": 6, "inf": "become", "past": "became", "part": "become", "ru": "становиться"}, {"n": 7, "inf": "begin", "past": "began", "part": "begun", "ru": "начинать"}, {"n": 8, "inf": "bend", "past": "bent", "part": "bent", "ru": "сгибать"}, {"n": 9, "inf": "bet", "past": "bet", "part": "bet", "ru": "держать пари"}, {"n": 10, "inf": "bind", "past": "bound", "part": "bound", "ru": "связывать"}, {"n": 11, "inf": "bite", "past": "bit", "part": "bitten", "ru": "кусать"}, {"n": 12, "inf": "bleed", "past": "bled", "part": "bled", "ru": "кровоточить"}, {"n": 13, "inf": "blow", "past": "blew", "part": "blown", "ru": "дуть"}, {"n": 14, "inf": "break", "past": "broke", "part": "broken", "ru": "ломать"}, {"n": 15, "inf": "breed", "past": "bred", "part": "bred", "ru": "разводить"}, {"n": 16, "inf": "bring", "past": "brought", "part": "brought", "ru": "приносить"}, {"n": 17, "inf": "broadcast", "past": "broadcast", "part": "broadcast", "ru": "транслировать"}, {"n": 18, "inf": "build", "past": "built", "part": "built", "ru": "строить"}, {"n": 19, "inf": "burn", "past": "burnt/burned", "part": "burnt/burned", "ru": "гореть, сжигать"}, {"n": 20, "inf": "burst", "past": "burst", "part": "burst", "ru": "лопаться"}, {"n": 21, "inf": "buy", "past": "bought", "part": "bought", "ru": "покупать"}, {"n": 22, "inf": "catch", "past": "caught", "part": "caught", "ru": "ловить"}, {"n": 23, "inf": "choose", "past": "chose", "part": "chosen", "ru": "выбирать"}, {"n": 24, "inf": "come", "past": "came", "part": "come", "ru": "приходить"}, {"n": 25, "inf": "cost", "past": "cost", "part": "cost", "ru": "стоить"}, {"n": 26, "inf": "creep", "past": "crept", "part": "crept", "ru": "ползти"}, {"n": 27, "inf": "cut", "past": "cut", "part": "cut", "ru": "резать"}, {"n": 28, "inf": "deal", "past": "dealt", "part": "dealt", "ru": "иметь дело"}, {"n": 29, "inf": "dig", "past": "dug", "part": "dug", "ru": "копать"}, {"n": 30, "inf": "do", "past": "did", "part": "done", "ru": "делать"}, {"n": 31, "inf": "draw", "past": "drew", "part": "drawn", "ru": "рисовать, тянуть"}, {"n": 32, "inf": "dream", "past": "dreamt/dreamed", "part": "dreamt/dreamed", "ru": "мечтать"}, {"n": 33, "inf": "drink", "past": "drank", "part": "drunk", "ru": "пить"}, {"n": 34, "inf": "drive", "past": "drove", "part": "driven", "ru": "водить"}, {"n": 35, "inf": "eat", "past": "ate", "part": "eaten", "ru": "есть"}, {"n": 36, "inf": "fall", "past": "fell", "part": "fallen", "ru": "падать"}, {"n": 37, "inf": "feed", "past": "fed", "part": "fed", "ru": "кормить"}, {"n": 38, "inf": "feel", "past": "felt", "part": "felt", "ru": "чувствовать"}, {"n": 39, "inf": "fight", "past": "fought", "part": "fought", "ru": "драться, бороться"}, {"n": 40, "inf": "find", "past": "found", "part": "found", "ru": "находить"}, {"n": 41, "inf": "flee", "past": "fled", "part": "fled", "ru": "убегать"}, {"n": 42, "inf": "fly", "past": "flew", "part": "flown", "ru": "летать"}, {"n": 43, "inf": "forbid", "past": "forbade", "part": "forbidden", "ru": "запрещать"}, {"n": 44, "inf": "forget", "past": "forgot", "part": "forgotten", "ru": "забывать"}, {"n": 45, "inf": "forgive", "past": "forgave", "part": "forgiven", "ru": "прощать"}, {"n": 46, "inf": "freeze", "past": "froze", "part": "frozen", "ru": "замерзать"}, {"n": 47, "inf": "get", "past": "got", "part": "got/gotten", "ru": "получать"}, {"n": 48, "inf": "give", "past": "gave", "part": "given", "ru": "давать"}, {"n": 49, "inf": "go", "past": "went", "part": "gone", "ru": "идти, ехать"}, {"n": 50, "inf": "grow", "past": "grew", "part": "grown", "ru": "расти"}, {"n": 51, "inf": "hang", "past": "hung", "part": "hung", "ru": "висеть, вешать"}, {"n": 52, "inf": "have", "past": "had", "part": "had", "ru": "иметь"}, {"n": 53, "inf": "hear", "past": "heard", "part": "heard", "ru": "слышать"}, {"n": 54, "inf": "hide", "past": "hid", "part": "hidden", "ru": "прятать"}, {"n": 55, "inf": "hit", "past": "hit", "part": "hit", "ru": "ударять"}, {"n": 56, "inf": "hold", "past": "held", "part": "held", "ru": "держать"}, {"n": 57, "inf": "hurt", "past": "hurt", "part": "hurt", "ru": "причинять боль"}, {"n": 58, "inf": "keep", "past": "kept", "part": "kept", "ru": "хранить, держать"}, {"n": 59, "inf": "kneel", "past": "knelt/kneeled", "part": "knelt/kneeled", "ru": "становиться на колени"}, {"n": 60, "inf": "know", "past": "knew", "part": "known", "ru": "знать"}, {"n": 61, "inf": "lay", "past": "laid", "part": "laid", "ru": "класть"}, {"n": 62, "inf": "lead", "past": "led", "part": "led", "ru": "вести"}, {"n": 63, "inf": "lean", "past": "leant/leaned", "part": "leant/leaned", "ru": "наклоняться"}, {"n": 64, "inf": "leap", "past": "leapt/leaped", "part": "leapt/leaped", "ru": "прыгать"}, {"n": 65, "inf": "learn", "past": "learnt/learned", "part": "learnt/learned", "ru": "учить, узнавать"}, {"n": 66, "inf": "leave", "past": "left", "part": "left", "ru": "уходить, оставлять"}, {"n": 67, "inf": "lend", "past": "lent", "part": "lent", "ru": "одалживать"}, {"n": 68, "inf": "let", "past": "let", "part": "let", "ru": "позволять"}, {"n": 69, "inf": "lie", "past": "lay", "part": "lain", "ru": "лежать"}, {"n": 70, "inf": "light", "past": "lit/lighted", "part": "lit/lighted", "ru": "зажигать"}, {"n": 71, "inf": "lose", "past": "lost", "part": "lost", "ru": "терять"}, {"n": 72, "inf": "make", "past": "made", "part": "made", "ru": "делать, создавать"}, {"n": 73, "inf": "mean", "past": "meant", "part": "meant", "ru": "означать, иметь в виду"}, {"n": 74, "inf": "meet", "past": "met", "part": "met", "ru": "встречать"}, {"n": 75, "inf": "mistake", "past": "mistook", "part": "mistaken", "ru": "ошибаться"}, {"n": 76, "inf": "pay", "past": "paid", "part": "paid", "ru": "платить"}, {"n": 77, "inf": "prove", "past": "proved", "part": "proven/proved", "ru": "доказывать"}, {"n": 78, "inf": "put", "past": "put", "part": "put", "ru": "класть"}, {"n": 79, "inf": "quit", "past": "quit/quitted", "part": "quit/quitted", "ru": "бросать, прекращать"}, {"n": 80, "inf": "read", "past": "read", "part": "read", "ru": "читать"}, {"n": 81, "inf": "ride", "past": "rode", "part": "ridden", "ru": "ездить"}, {"n": 82, "inf": "ring", "past": "rang", "part": "rung", "ru": "звонить"}, {"n": 83, "inf": "rise", "past": "rose", "part": "risen", "ru": "подниматься"}, {"n": 84, "inf": "run", "past": "ran", "part": "run", "ru": "бегать"}, {"n": 85, "inf": "say", "past": "said", "part": "said", "ru": "говорить"}, {"n": 86, "inf": "see", "past": "saw", "part": "seen", "ru": "видеть"}, {"n": 87, "inf": "seek", "past": "sought", "part": "sought", "ru": "искать"}, {"n": 88, "inf": "sell", "past": "sold", "part": "sold", "ru": "продавать"}, {"n": 89, "inf": "send", "past": "sent", "part": "sent", "ru": "отправлять"}, {"n": 90, "inf": "set", "past": "set", "part": "set", "ru": "устанавливать, ставить"}, {"n": 91, "inf": "shake", "past": "shook", "part": "shaken", "ru": "трясти"}, {"n": 92, "inf": "shine", "past": "shone/shined", "part": "shone/shined", "ru": "светить"}, {"n": 93, "inf": "shoot", "past": "shot", "part": "shot", "ru": "стрелять"}, {"n": 94, "inf": "show", "past": "showed", "part": "shown/showed", "ru": "показывать"}, {"n": 95, "inf": "shut", "past": "shut", "part": "shut", "ru": "закрывать"}, {"n": 96, "inf": "sing", "past": "sang", "part": "sung", "ru": "петь"}, {"n": 97, "inf": "sink", "past": "sank/sunk", "part": "sunk", "ru": "тонуть"}, {"n": 98, "inf": "sit", "past": "sat", "part": "sat", "ru": "сидеть"}, {"n": 99, "inf": "sleep", "past": "slept", "part": "slept", "ru": "спать"}, {"n": 100, "inf": "slide", "past": "slid", "part": "slid", "ru": "скользить"}, {"n": 101, "inf": "smell", "past": "smelt/smelled", "part": "smelt/smelled", "ru": "пахнуть"}, {"n": 102, "inf": "speak", "past": "spoke", "part": "spoken", "ru": "говорить"}, {"n": 103, "inf": "spell", "past": "spelt/spelled", "part": "spelt/spelled", "ru": "писать по буквам"}, {"n": 104, "inf": "spend", "past": "spent", "part": "spent", "ru": "тратить, проводить"}, {"n": 105, "inf": "spill", "past": "spilt/spilled", "part": "spilt/spilled", "ru": "проливать"}, {"n": 106, "inf": "spin", "past": "spun", "part": "spun", "ru": "вращать"}, {"n": 107, "inf": "spit", "past": "spat/spit", "part": "spat/spit", "ru": "плевать"}, {"n": 108, "inf": "split", "past": "split", "part": "split", "ru": "разделять"}, {"n": 109, "inf": "spoil", "past": "spoilt/spoiled", "part": "spoilt/spoiled", "ru": "портить"}, {"n": 110, "inf": "spread", "past": "spread", "part": "spread", "ru": "распространять"}, {"n": 111, "inf": "stand", "past": "stood", "part": "stood", "ru": "стоять"}, {"n": 112, "inf": "steal", "past": "stole", "part": "stolen", "ru": "красть"}, {"n": 113, "inf": "stick", "past": "stuck", "part": "stuck", "ru": "приклеивать, застревать"}, {"n": 114, "inf": "sting", "past": "stung", "part": "stung", "ru": "жалить"}, {"n": 115, "inf": "stink", "past": "stank/stunk", "part": "stunk", "ru": "вонять"}, {"n": 116, "inf": "strike", "past": "struck", "part": "struck/stricken", "ru": "ударять"}, {"n": 117, "inf": "swear", "past": "swore", "part": "sworn", "ru": "клясться"}, {"n": 118, "inf": "sweep", "past": "swept", "part": "swept", "ru": "подметать"}, {"n": 119, "inf": "swim", "past": "swam", "part": "swum", "ru": "плавать"}, {"n": 120, "inf": "swing", "past": "swung", "part": "swung", "ru": "качаться"}, {"n": 121, "inf": "take", "past": "took", "part": "taken", "ru": "брать"}, {"n": 122, "inf": "teach", "past": "taught", "part": "taught", "ru": "учить"}, {"n": 123, "inf": "tear", "past": "tore", "part": "torn", "ru": "рвать"}, {"n": 124, "inf": "tell", "past": "told", "part": "told", "ru": "рассказывать, говорить"}, {"n": 125, "inf": "think", "past": "thought", "part": "thought", "ru": "думать"}, {"n": 126, "inf": "throw", "past": "threw", "part": "thrown", "ru": "бросать"}, {"n": 127, "inf": "undergo", "past": "underwent", "part": "undergone", "ru": "подвергаться"}, {"n": 128, "inf": "understand", "past": "understood", "part": "understood", "ru": "понимать"}, {"n": 129, "inf": "wake", "past": "woke", "part": "woken", "ru": "просыпаться, будить"}, {"n": 130, "inf": "wear", "past": "wore", "part": "worn", "ru": "носить"}, {"n": 131, "inf": "weep", "past": "wept", "part": "wept", "ru": "плакать"}, {"n": 132, "inf": "win", "past": "won", "part": "won", "ru": "выигрывать"}, {"n": 133, "inf": "wind", "past": "wound", "part": "wound", "ru": "заводить, наматывать"}, {"n": 134, "inf": "withdraw", "past": "withdrew", "part": "withdrawn", "ru": "забирать, снимать"}, {"n": 135, "inf": "withstand", "past": "withstood", "part": "withstood", "ru": "противостоять"}, {"n": 136, "inf": "wring", "past": "wrung", "part": "wrung", "ru": "выкручивать"}, {"n": 137, "inf": "write", "past": "wrote", "part": "written", "ru": "писать"}, {"n": 138, "inf": "overcome", "past": "overcame", "part": "overcome", "ru": "преодолевать"}, {"n": 139, "inf": "overtake", "past": "overtook", "part": "overtaken", "ru": "обгонять"}, {"n": 140, "inf": "overthrow", "past": "overthrew", "part": "overthrown", "ru": "свергать"}, {"n": 141, "inf": "overdo", "past": "overdid", "part": "overdone", "ru": "перестараться"}, {"n": 142, "inf": "redo", "past": "redid", "part": "redone", "ru": "переделывать"}, {"n": 143, "inf": "remake", "past": "remade", "part": "remade", "ru": "переделывать, переснимать"}, {"n": 144, "inf": "retake", "past": "retook", "part": "retaken", "ru": "пересдавать, переснимать"}, {"n": 145, "inf": "rewrite", "past": "rewrote", "part": "rewritten", "ru": "переписывать"}, {"n": 146, "inf": "foresee", "past": "foresaw", "part": "foreseen", "ru": "предвидеть"}, {"n": 147, "inf": "forecast", "past": "forecast", "part": "forecast", "ru": "прогнозировать"}, {"n": 148, "inf": "misunderstand", "past": "misunderstood", "part": "misunderstood", "ru": "неправильно понимать"}, {"n": 149, "inf": "undertake", "past": "undertook", "part": "undertaken", "ru": "предпринимать"}, {"n": 150, "inf": "uphold", "past": "upheld", "part": "upheld", "ru": "поддерживать, отстаивать"}, {"n": 151, "inf": "upset", "past": "upset", "part": "upset", "ru": "расстраивать"}];
-const KEY='irregular_verbs_progress_v1';
-let state=JSON.parse(localStorage.getItem(KEY)||'{}');
-let quiz=[], qi=0, selected=false;
+const KEY='irregular_verbs_progress_v2';
+const INTERVALS=[10*60*1000, 24*60*60*1000, 3*24*60*60*1000, 7*24*60*60*1000, 14*24*60*60*1000];
+const BLOCK=15;
+let state=loadState();
+let session={items:[],index:0,answered:false,mode:'new',wrongQueue:[]};
 
-function save(){localStorage.setItem(KEY,JSON.stringify(state));updateStats()}
-function rec(v,ok){
-  const x=state[v.n]||{ok:0,bad:0};
-  ok?x.ok++:x.bad++;
-  state[v.n]=x; save();
+function loadState(){
+  try{
+    const raw=JSON.parse(localStorage.getItem(KEY)||'{}');
+    return raw;
+  }catch(e){return {}}
 }
+function now(){return Date.now()}
+function get(v){
+  if(!state[v.n]) state[v.n]={level:0,correct:0,wrong:0,lastAnswer:0,due:0};
+  return state[v.n];
+}
+function save(){localStorage.setItem(KEY,JSON.stringify(state));updateStats()}
+function isMastered(v){return get(v).level>=3}
+function currentBlock(){
+  let unlocked=1;
+  for(let start=1;start<=151;start+=BLOCK){
+    const end=Math.min(start+BLOCK-1,151);
+    const arr=verbs.filter(v=>v.n>=start&&v.n<=end);
+    const mastered=arr.filter(isMastered).length;
+    if(mastered===arr.length) unlocked=end+1;
+    else break;
+  }
+  const start=Math.min(Math.floor((unlocked-1)/BLOCK)*BLOCK+1,151);
+  return {start,end:Math.min(start+BLOCK-1,151)};
+}
+function dueVerbs(){return verbs.filter(v=>get(v).due>0 && get(v).due<=now())}
+function errorVerbs(){return verbs.filter(v=>get(v).wrong>0 && !isMastered(v))}
 function updateStats(){
-  const vals=Object.values(state);
-  document.getElementById('s-known').textContent=vals.filter(x=>x.ok>=3 && x.bad===0).length;
-  document.getElementById('s-bad').textContent=vals.filter(x=>x.bad>0).length;
-  document.getElementById('s-answers').textContent=vals.reduce((a,x)=>a+x.ok+x.bad,0);
+  const known=verbs.filter(isMastered).length;
+  const due=dueVerbs().length;
+  const bad=errorVerbs().length;
+  const answers=verbs.reduce((a,v)=>a+get(v).correct+get(v).wrong,0);
+  const b=currentBlock();
+  document.getElementById('s-block').textContent=`${b.start}–${b.end}`;
+  document.getElementById('s-known').textContent=known;
+  document.getElementById('s-due').textContent=due;
+  document.getElementById('s-bad').textContent=bad;
+  document.getElementById('s-answers').textContent=answers;
+  document.getElementById('home-note').innerHTML=`<b>Как работает система:</b> новые глаголы идут только из текущего блока. Ошибочный глагол возвращается в эту же тренировку позже, а после правильного ответа получает более длинный интервал повторения. Следующий блок открывается только после закрепления текущего.`;
 }
 function show(id){
   document.querySelectorAll('section').forEach(x=>x.classList.add('hidden'));
   document.getElementById(id).classList.remove('hidden');
-  if(id==='learn') renderLearn();
-  if(id==='list') renderList();
+  if(id==='learn')renderLearn();
+  if(id==='list')renderList();
   updateStats();
 }
+function statusText(v){
+  const x=get(v);
+  if(x.wrong>0 && !isMastered(v)) return `<span class="badge bad">ошибок: ${x.wrong}</span>`;
+  if(x.due>0 && x.due<=now() && !isMastered(v)) return `<span class="badge due">пора повторить</span>`;
+  if(isMastered(v)) return `<span class="badge good">закреплён</span>`;
+  return `<span class="badge">уровень ${x.level}/3</span>`;
+}
 function renderLearn(){
-  document.getElementById('learn-list').innerHTML=verbs.slice(0,15).map(v=>`
-  <div class="row"><b>${v.n}</b><b>${v.inf}</b><span>${v.past}</span><span>${v.part}</span><span>${v.ru}</span></div>`).join('');
+  const b=currentBlock();
+  document.getElementById('learn-title').textContent=`Учебный блок: ${b.start}–${b.end}`;
+  document.getElementById('learn-list').innerHTML=verbs.filter(v=>v.n>=b.start&&v.n<=b.end).map(v=>`
+    <div class="study-card">
+      <div class="study-top"><div><b>${v.n}. ${v.inf}</b> — ${v.ru}</div><div>${statusText(v)}</div></div>
+      <div class="actions" style="margin-top:10px"><button class="reveal" data-n="${v.n}">Показать формы</button></div>
+      <div class="forms hidden" id="forms-${v.n}">
+        <div class="form"><small>Past Simple (V2)</small><b>${v.past}</b></div>
+        <div class="form"><small>Past Participle (V3)</small><b>${v.part}</b></div>
+        <div class="form"><small>Перевод</small><b>${v.ru}</b></div>
+      </div>
+    </div>`).join('');
+  document.querySelectorAll('.reveal').forEach(btn=>btn.onclick=()=>{document.getElementById('forms-'+btn.dataset.n).classList.remove('hidden');btn.disabled=true;btn.textContent='Формы показаны'});
 }
 function renderList(){
   const s=(document.getElementById('search').value||'').toLowerCase();
-  document.getElementById('all-list').innerHTML=verbs.filter(v=>
-    [v.inf,v.past,v.part,v.ru].join(' ').toLowerCase().includes(s)
-  ).map(v=>`
-  <div class="row"><b>${v.n}</b><b>${v.inf}</b><span>${v.past}</span><span>${v.part}</span><span>${v.ru}</span></div>`).join('');
+  document.getElementById('all-list').innerHTML=verbs.filter(v=>[v.inf,v.past,v.part,v.ru].join(' ').toLowerCase().includes(s)).map(v=>`
+  <div class="row"><b>${v.n}</b><b>${v.inf}</b><span>${v.past}</span><span>${v.part}</span><span>${v.ru} ${statusText(v)}</span></div>`).join('');
 }
-function weightedPool(errorsOnly=false){
-  let pool=[];
-  verbs.forEach(v=>{
-    const x=state[v.n]||{ok:0,bad:0};
-    if(errorsOnly && x.bad===0)return;
-    let w=1+x.bad*3+(x.ok<2?2:0);
-    for(let i=0;i<w;i++) pool.push(v);
-  });
-  return pool;
-}
-function pick(pool){
-  return pool[Math.floor(Math.random()*pool.length)];
-}
-function startQuiz(errorsOnly=false){
-  let pool=weightedPool(errorsOnly);
-  if(!pool.length){alert('Пока нет ошибок для повторения.'); return;}
-  quiz=[]; let used=new Set();
-  const target=Math.min(10, errorsOnly?Math.min(10,new Set(pool.map(v=>v.n)).size):10);
-  while(quiz.length<target){
-    const v=pick(pool); if(!used.has(v.n)){used.add(v.n);quiz.push(makeQuestion(v));}
+function shuffle(a){return a.slice().sort(()=>Math.random()-.5)}
+function unique(a){return [...new Map(a.map(v=>[v.n,v])).values()]}
+function makeQuestion(v, forceType=null){
+  const x=get(v);
+  let kind=forceType||(['past','part','inf'][Math.floor(Math.random()*3)]);
+  let prompt, display, correct;
+  if(kind==='past'){prompt='Вспомни Past Simple (V2)';display=v.inf;correct=v.past}
+  if(kind==='part'){prompt='Вспомни Past Participle (V3)';display=v.inf;correct=v.part}
+  if(kind==='inf'){prompt='Какой infinitive соответствует переводу?';display=v.ru;correct=v.inf}
+  // Earlier levels use recognition; level 1+ increasingly uses typed recall.
+  const inputMode=x.level>=1 || x.wrong>0 ? 'type' : 'choice';
+  if(inputMode==='choice'){
+    const choices=[correct];
+    const pool=verbs.filter(o=>o.n!==v.n);
+    while(choices.length<4){const c=pool[Math.floor(Math.random()*pool.length)];const val=kind==='past'?c.past:kind==='part'?c.part:c.inf;if(!choices.includes(val))choices.push(val)}
+    return {v,kind,prompt,display,correct,mode:'choice',choices:shuffle(choices)};
   }
-  qi=0; show('quiz'); renderQ();
+  return {v,kind,prompt,display,correct,mode:'type'};
 }
-function makeQuestion(v){
-  const modes=['past','part','ru'];
-  const mode=modes[Math.floor(Math.random()*modes.length)];
-  let correct, prompt, type;
-  if(mode==='past'){correct=v.past;prompt='Выбери Past Simple';type=v.inf}
-  if(mode==='part'){correct=v.part;prompt='Выбери Past Participle';type=v.inf}
-  if(mode==='ru'){correct=v.inf;prompt='Выбери глагол по переводу';type=v.ru}
-  let choices=[correct];
-  const others=verbs.filter(x=>x.n!==v.n);
-  while(choices.length<4){
-    const c=others[Math.floor(Math.random()*others.length)];
-    const val=mode==='past'?c.past:mode==='part'?c.part:c.inf;
-    if(!choices.includes(val)) choices.push(val);
-  }
-  choices.sort(()=>Math.random()-.5);
-  return {v,correct,choices,prompt,type};
+function buildSession(reviewOnly=false, errorsOnly=false){
+  const b=currentBlock();
+  let base;
+  if(errorsOnly) base=errorVerbs();
+  else if(reviewOnly) base=dueVerbs();
+  else base=verbs.filter(v=>v.n>=b.start&&v.n<=b.end&&!isMastered(v));
+  // Prioritize weak/error items, but keep every new item in the session once.
+  base=base.sort((a,b)=>{const x=get(a),y=get(b);return (y.wrong*4+y.level)-(x.wrong*4+x.level)});
+  const first=base.slice(0,15);
+  const items=shuffle(first).map(v=>makeQuestion(v));
+  session={items,index:0,answered:false,mode:errorsOnly?'errors':(reviewOnly?'review':'new'),wrongQueue:[]};
+  return items.length>0;
+}
+function startQuiz(reviewOnly=false, errorsOnly=false){
+  if(!buildSession(reviewOnly,errorsOnly)){alert(errorsOnly?'Сейчас нет неотработанных ошибок.':reviewOnly?'Сейчас нет глаголов, которым пора повторение.':'Текущий блок уже закреплён. Если есть повторения — используй соответствующий режим.');return}
+  show('quiz');renderQ();
 }
 function renderQ(){
-  selected=false; document.getElementById('next').disabled=true;
-  const q=quiz[qi];
-  document.getElementById('q-count').textContent=`Вопрос ${qi+1} из ${quiz.length}`;
-  document.getElementById('q-bar').style.width=((qi)/quiz.length*100)+'%';
+  session.answered=false;
+  document.getElementById('next').disabled=true;
+  const q=session.items[session.index];
+  document.getElementById('session-mode').textContent=session.mode==='errors'?'Ошибки':(session.mode==='review'?'Интервальное повторение':'Текущий блок');
+  document.getElementById('q-progress').textContent=`Вопрос ${session.index+1} из ${session.items.length}`;
+  document.getElementById('q-bar').style.width=(session.index/session.items.length*100)+'%';
   document.getElementById('q-type').textContent=q.prompt;
-  document.getElementById('q-word').textContent=q.type;
-  document.getElementById('q-ru').textContent=q.prompt.includes('переводу')?'':q.v.ru;
+  document.getElementById('q-word').textContent=q.display;
+  document.getElementById('q-ru').textContent=q.kind==='inf'?'':'Перевод: '+q.v.ru;
   document.getElementById('feedback').textContent='';
-  document.getElementById('answers').innerHTML=q.choices.map((a,i)=>
-    `<button class="answer" data-answer="${htmlAttr(a)}">${String.fromCharCode(65+i)}. ${a}</button>`
-  ).join('');
+  const tw=document.getElementById('type-wrap'), answers=document.getElementById('answers');
+  if(q.mode==='type'){
+    tw.classList.remove('hidden'); answers.innerHTML='';
+    const inp=document.getElementById('type-input');inp.disabled=false;inp.value='';inp.focus();
+    document.getElementById('type-hint').textContent='Введи форму полностью. Для вариантов со слэшем достаточно одного из указанных вариантов.';
+  } else {
+    tw.classList.add('hidden');
+    answers.innerHTML=q.choices.map((a,i)=>`<button class="answer" data-answer="${htmlAttr(a)}">${String.fromCharCode(65+i)}. ${a}</button>`).join('');
+  }
 }
-function answer(btn,val){
-  if(selected)return; selected=true;
-  const q=quiz[qi], ok=val===q.correct;
-  document.querySelectorAll('.answer').forEach(b=>{
-    const t=b.textContent.replace(/^[A-D]\.\s*/,'');
-    if(t===q.correct)b.classList.add('correct');
-  });
-  if(!ok)btn.classList.add('wrong');
-  rec(q.v,ok);
-  document.getElementById('feedback').textContent=ok?'Правильно.':`Ошибка. Правильно: ${q.correct}`;
+function normalize(s){return String(s).trim().toLowerCase().replace(/[’']/g,"'").replace(/\s+/g,' ')}
+function accepted(user, correct){
+  const u=normalize(user), c=normalize(correct);
+  if(u===c)return true;
+  // Source contains alternatives separated by /. Any listed form is accepted.
+  return c.split('/').map(x=>normalize(x)).includes(u);
+}
+function answer(user){
+  if(session.answered)return;
+  session.answered=true;
+  const q=session.items[session.index], ok=accepted(user,q.correct), x=get(q.v);
+  if(ok){
+    x.correct++;
+    x.level=Math.min(5,x.level+1);
+    x.due=now()+INTERVALS[Math.max(0,x.level-1)];
+    x.lastAnswer=now();
+    document.getElementById('feedback').innerHTML=`<span class="good"><b>Правильно.</b> Уровень ${x.level}/3.</span>`;
+  } else {
+    x.wrong++;
+    x.level=Math.max(0,x.level-1);
+    x.due=now()+INTERVALS[0];
+    x.lastAnswer=now();
+    document.getElementById('feedback').innerHTML=`<span class="bad"><b>Ошибка.</b> Правильный ответ: <b>${q.correct}</b>. Этот глагол вернётся в текущую тренировку.</span>`;
+    // Reinsert the same verb after 2–3 other questions instead of immediately.
+    const insertAt=Math.min(session.items.length,session.index+3+Math.floor(Math.random()*2));
+    session.items.splice(insertAt,0,makeQuestion(q.v, q.kind));
+  }
+  if(q.mode==='choice'){
+    document.querySelectorAll('.answer').forEach(b=>{
+      const val=b.dataset.answer;
+      if(accepted(val,q.correct))b.classList.add('correct');
+      if(!accepted(val,q.correct)&&accepted(val,user))b.classList.add('wrong');
+      b.disabled=true;
+    });
+  } else {
+    document.getElementById('type-input').disabled=true;
+  }
+  save();
   document.getElementById('next').disabled=false;
 }
 function nextQ(){
-  if(!selected)return;
-  qi++;
-  if(qi>=quiz.length){document.getElementById('q-bar').style.width='100%';alert('Тренировка закончена. Прогресс сохранён.');show('home');return;}
+  if(!session.answered)return;
+  session.index++;
+  if(session.index>=session.items.length){
+    document.getElementById('q-bar').style.width='100%';
+    const b=currentBlock();
+    const allCurrent=verbs.filter(v=>v.n>=b.start&&v.n<=b.end).every(isMastered);
+    alert(allCurrent?'Блок закреплён. Открыт следующий блок.':'Сессия закончена. Ошибочные глаголы уже отмечены и будут возвращаться в тренировках.');
+    show('home');
+    return;
+  }
   renderQ();
 }
-function htmlAttr(v){return String(v).replace(/&/g,'&amp;').replace(/\"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function htmlAttr(v){return String(v).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 
-document.getElementById('nav-home').addEventListener('click',()=>show('home'));
-document.getElementById('nav-learn').addEventListener('click',()=>show('learn'));
-document.getElementById('nav-quiz').addEventListener('click',()=>startQuiz(false));
-document.getElementById('nav-errors').addEventListener('click',()=>startQuiz(true));
-document.getElementById('nav-list').addEventListener('click',()=>show('list'));
-document.getElementById('start-quiz').addEventListener('click',()=>startQuiz(false));
-document.getElementById('start-learn').addEventListener('click',()=>show('learn'));
-document.getElementById('next').addEventListener('click',nextQ);
-document.getElementById('finish').addEventListener('click',()=>show('home'));
-document.getElementById('answers').addEventListener('click',(e)=>{
-  const btn=e.target.closest('.answer');
-  if(!btn)return;
-  answer(btn, btn.dataset.answer);
-});
-renderLearn(); renderList(); updateStats();
+document.getElementById('nav-home').onclick=()=>show('home');
+document.getElementById('nav-learn').onclick=()=>show('learn');
+document.getElementById('nav-quiz').onclick=()=>startQuiz(false);
+document.getElementById('nav-review').onclick=()=>startQuiz(true);
+document.getElementById('nav-errors').onclick=()=>startQuiz(false,true);
+document.getElementById('nav-list').onclick=()=>show('list');
+document.getElementById('start-quiz').onclick=()=>startQuiz(false);
+document.getElementById('start-learn').onclick=()=>show('learn');
+document.getElementById('start-review').onclick=()=>startQuiz(true);
+document.getElementById('start-errors').onclick=()=>startQuiz(false,true);
+document.getElementById('next').onclick=nextQ;
+document.getElementById('finish').onclick=()=>show('home');
+document.getElementById('answers').onclick=e=>{const btn=e.target.closest('.answer');if(btn)answer(btn.dataset.answer)};
+document.getElementById('type-input').addEventListener('keydown',e=>{if(e.key==='Enter'&&!session.answered)answer(e.target.value)});
+document.getElementById('search').addEventListener('input',renderList);
+renderLearn();renderList();updateStats();
 </script>
-<script>if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");</script>
+<script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js"));}</script>
 </body>
 </html>
