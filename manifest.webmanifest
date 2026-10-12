@@ -1,0 +1,11 @@
+{
+  "name": "Тренажёр неправильных глаголов",
+  "short_name": "Irregular Verbs",
+  "description": "Тренажёр английских неправильных глаголов",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f5f6f8",
+  "theme_color": "#315efb",
+  "lang": "ru",
+  "icons": []
+}
