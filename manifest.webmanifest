@@ -1,9 +1,1 @@
-{
-  "name": "Тренажёр неправильных глаголов",
-  "short_name": "Irregular Verbs",
-  "start_url": "./",
-  "display": "standalone",
-  "background_color": "#f5f6f8",
-  "theme_color": "#3560f5",
-  "lang": "ru"
-}
+{"name":"Тренажёр английских слов","short_name":"English Trainer","start_url":"./","display":"standalone","background_color":"#f5f6f8","theme_color":"#315efb","lang":"ru"}
