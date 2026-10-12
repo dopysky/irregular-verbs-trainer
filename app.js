@@ -66,35 +66,44 @@ function selectBlock(n){
 }
 function renderBlocks(){
   const box=document.getElementById('blocks');
+  const homeAuto=document.getElementById('auto-sound');
+  if(homeAuto){homeAuto.checked=autoSound;homeAuto.onchange=()=>{autoSound=homeAuto.checked;save()};}
   box.innerHTML='';
-  for(let n=1;n<=blockCount();n++){
-    const vs=blockVerbs(n),p=blockPercent(n),sel=n===selectedBlock;
+  const mainN=selectedBlock;
+  const order=[mainN,...Array.from({length:blockCount()},(_,i)=>i+1).filter(n=>n!==mainN)];
+  for(const n of order){
+    const vs=blockVerbs(n),p=blockPercent(n),sel=n===mainN;
     const card=document.createElement('div');
-    card.className='block-card'+(sel?' selected':'');
+    card.className='block-card'+(sel?' selected main-block':' compact-block');
     const last=vs.at(-1).n;
     const masteredCount=vs.filter(mastered).length;
     const dueCount=vs.filter(due).length;
-    const repeat=p>=100;
-    card.innerHTML=`
-      <div class="block-head">
-        <div>
-          <div class="block-title">Блок ${n}</div>
-          <div class="block-meta">${vs[0].n}–${last} · ${vs.length} глаголов</div>
+    if(sel){
+      card.innerHTML=`
+        <div class="block-head">
+          <div><div class="block-title">Блок ${n}</div><div class="block-meta">глаголы ${vs[0].n}–${last} · ${vs.length} глаголов</div></div>
+          <span class="badge ${p>=100?'good':''}">${p}%</span>
         </div>
-        <span class="badge ${repeat?'good':''}">${p}%</span>
-      </div>
-      <div class="block-progress"><div class="progress"><div class="bar ${repeat?'good':''}" style="width:${p}%"></div></div></div>
-      <div class="block-status">${masteredCount} из ${vs.length} закреплено${dueCount?` · к повторению сегодня: ${dueCount}`:''}</div>
-      <div class="block-actions">
-        <button class="primary" data-train="${n}">${repeat?'Повторить блок':'Начать тренировку'}</button>
-        <button data-study="${n}">Показать слова</button>
-      </div>`;
-    card.onclick=function(){selectBlock(n)};
-    card.querySelector('[data-train]').onclick=function(e){e.stopPropagation();selectedBlock=n;save();startMixed(repeat?'blockRepeat':'new',n)};
-    card.querySelector('[data-study]').onclick=function(e){e.stopPropagation();selectedBlock=n;save();startStudy(n)};
+        <div class="block-progress"><div class="progress"><div class="bar ${p>=100?'good':''}" style="width:${p}%"></div></div></div>
+        <div class="block-status">${masteredCount} из ${vs.length} закреплено${dueCount?` · к повторению: ${dueCount}`:''}</div>
+        <div class="block-actions"><button class="primary" data-train="${n}">${p>=100?'Повторить блок':'Начать тренировку'}</button><button data-study="${n}">Слова</button></div>`;
+      card.onclick=()=>selectBlock(n);
+      card.querySelector('[data-train]').onclick=e=>{e.stopPropagation();selectedBlock=n;save();startMixed(p>=100?'blockRepeat':'new',n)};
+      card.querySelector('[data-study]').onclick=e=>{e.stopPropagation();selectedBlock=n;save();startStudy(n)};
+    }else{
+      card.innerHTML=`
+        <div class="block-head">
+          <div><div class="block-title">Блок ${n}</div><div class="block-meta">глаголы ${vs[0].n}–${last}</div></div>
+          <span class="badge ${p>=100?'good':''}">${p}%</span>
+        </div>
+        <div class="block-progress"><div class="progress"><div class="bar ${p>=100?'good':''}" style="width:${p}%"></div></div></div>
+        <div class="block-status">${masteredCount} из ${vs.length} закреплено${dueCount?` · к повторению: ${dueCount}`:''}</div>`;
+      card.onclick=()=>selectBlock(n);
+    }
     box.appendChild(card);
   }
 }
+
 function renderHome(){renderBlocks()}
 
 function show(id){
@@ -108,38 +117,42 @@ function startStudy(n=selectedBlock){selectedBlock=n;save();show('learn')}
 function renderLearn(){
   const vs=blockVerbs();
   document.getElementById('learn-title').textContent=`Блок ${selectedBlock} · глаголы ${vs[0].n}–${vs.at(-1).n}`;
-  document.getElementById('learn-note').textContent='Здесь английские слова открыты полностью, поэтому рядом можно показывать транскрипцию и прослушивание.';
+  document.getElementById('learn-note').textContent='Все три формы показаны сразу. Английские слова можно прослушать.';
   document.getElementById('learn-list').innerHTML=vs.map(v=>`
     <div class="learn-card">
-      <div class="row">
+      <div class="learn-word-head">
         <div><b>${v.inf}</b><div class="ipa">/${v.ipa||''}/</div><div class="muted">${v.ru}</div></div>
         <button class="listen-button" data-speak="${v.n}">🔊 Прослушать</button>
       </div>
-      <div class="actions"><button data-open="${v.n}">Показать формы</button></div>
-      <div id="learn-${v.n}" class="hidden learn-forms">
-        <div><b>V2:</b> ${v.past} <span class="ipa">/${v.pastIpa||''}/</span></div>
-        <div><b>V3:</b> ${v.part} <span class="ipa">/${v.partIpa||''}/</span></div>
+      <div class="learn-forms">
+        <div><small>V2</small><b>${v.past}</b>${v.pastIpa?`<span class="ipa">/${v.pastIpa}/</span>`:''}</div>
+        <div><small>V3</small><b>${v.part}</b>${v.partIpa?`<span class="ipa">/${v.partIpa}/</span>`:''}</div>
       </div>
     </div>`).join('');
   document.querySelectorAll('[data-speak]').forEach(b=>b.onclick=()=>speak(verbs.find(v=>v.n==b.dataset.speak).inf));
-  document.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>{
-    const el=document.getElementById('learn-'+b.dataset.open);
-    el.classList.toggle('hidden');
-    b.textContent=el.classList.contains('hidden')?'Показать формы':'Скрыть формы';
-  });
 }
+
 function makeItem(v,mode){return {v,mode,letterForm:Math.random()<.5?'past':'part',hintLevel:0}}
-function chooseModes(vs){
-  let pool=[];
-  for(const v of vs){
-    const x=st(v);
-    let modes=['write','letters','cloze','ruToEn','enToRu','listen'];
-    if(x.wrongV2>x.wrongV3&&x.wrongV2>0)modes=['write','letters','cloze','write','ruToEn','listen'];
-    if(x.wrongV3>x.wrongV2&&x.wrongV3>0)modes=['write','letters','cloze','cloze','enToRu','listen'];
-    pool.push(makeItem(v,modes[Math.floor(Math.random()*modes.length)]));
-  }
-  return shuffle(pool);
+function pickMode(v,avoid=''){
+  const x=st(v);
+  let modes=['write','letters','cloze','ruToEn','enToRu','listen'];
+  if((x.wrongV2||0)>0 && (x.wrongV2||0)>=(x.wrongV3||0)) modes=['letters','cloze','write','ruToEn','listen','enToRu'];
+  if((x.wrongV3||0)>(x.wrongV2||0)) modes=['cloze','letters','write','enToRu','listen','ruToEn'];
+  modes=modes.filter(m=>m!==avoid);
+  return modes[Math.floor(Math.random()*modes.length)]||'write';
 }
+function chooseModes(vs,avoid=''){
+  return shuffle(vs.map(v=>makeItem(v,pickMode(v,avoid))));
+}
+function chooseErrorItems(vs){
+  const items=[];
+  for(const v of shuffle(vs)){
+    const first=pickMode(v);
+    items.push(makeItem(v,first));
+  }
+  return items;
+}
+
 function startMixed(kind='new',blockN=selectedBlock){
   let vs=blockVerbs(blockN),base;
   if(kind==='errors')base=vs.filter(v=>st(v).wrong>0);
@@ -147,25 +160,24 @@ function startMixed(kind='new',blockN=selectedBlock){
   else if(kind==='blockRepeat')base=vs;
   else base=vs.filter(v=>!mastered(v));
   if(!base.length)base=vs;
-  let items=chooseModes(base);
+  let items=kind==='errors'?chooseErrorItems(base):chooseModes(base);
   if(items.length<10){
-    const extra=chooseModes(shuffle(vs).slice(0,Math.min(10-items.length,vs.length)));
+    const extra=kind==='errors'?chooseErrorItems(shuffle(vs).slice(0,Math.min(10-items.length,vs.length))):chooseModes(shuffle(vs).slice(0,Math.min(10-items.length,vs.length)));
     items=items.concat(extra);
   }
-  session={items:shuffle(items).slice(0,Math.max(10,Math.min(18,items.length))),index:0,score:0,kind,block:blockN,answered:false};
+  session={items:shuffle(items).slice(0,Math.max(10,Math.min(18,items.length))),index:0,score:0,kind,block:blockN,answered:false,folder:false};
   selectedBlock=blockN;save();show('quiz');renderQ();
 }
+
 function renderQ(){
   const q=session.items[session.index],v=q.v;
   session.answered=false;
-  document.getElementById('q-meta').innerHTML=`<span class="badge">Блок ${session.block}</span><span class="badge">${session.index+1} / ${session.items.length}</span><span class="badge">${Math.round(st(v).level/3*100)}% у глагола</span>`;
+  document.getElementById('q-meta').innerHTML=`<span class="badge">${session.folder?'Словарь':'Блок '+session.block}</span><span class="badge">${session.index+1} / ${session.items.length}</span><span class="badge">${Math.round(st(v).level/3*100)}% у глагола</span>`;
   document.getElementById('q-bar').style.width=(session.index/session.items.length*100)+'%';
-  document.getElementById('q-feedback').innerHTML='';
-  document.getElementById('q-hint').textContent='';
-  document.getElementById('q-word').textContent='';
-  document.getElementById('q-ipa').textContent='';
-  document.getElementById('q-ru').textContent='';
-  document.getElementById('sound-btn').classList.add('hidden');
+  document.getElementById('q-feedback').innerHTML='';document.getElementById('q-hint').textContent='';
+  document.getElementById('q-word').textContent='';document.getElementById('q-ipa').textContent='';document.getElementById('q-ru').textContent='';
+  const sound=document.getElementById('sound-btn');sound.classList.add('hidden');
+  document.getElementById('finish-folder').classList.toggle('hidden',!session.folder);
   let title='',body='';
   if(q.mode==='write'){
     title='Напиши V2 и V3';document.getElementById('q-word').textContent=v.inf;document.getElementById('q-ipa').textContent='/'+(v.ipa||'')+'/';document.getElementById('q-ru').textContent=v.ru;body=writeTask(v);
@@ -182,9 +194,15 @@ function renderQ(){
   }
   document.getElementById('q-mode').textContent=title;
   document.getElementById('q-body').innerHTML=body;
+  // Если английское слово открыто и оно не является ответом, его можно прослушать.
+  const englishVisible=!!document.getElementById('q-word').textContent;
+  sound.classList.toggle('hidden',!englishVisible);
+  sound.onclick=()=>speak(v.inf);
   bindLetters();bindOptions();bindInputs();
   if(q.mode==='listen' && autoSound)setTimeout(()=>speak(v.inf),250);
+  if(autoSound && englishVisible)setTimeout(()=>speak(v.inf),180);
 }
+
 function formsHtml(v,target,cloze=false){
   const arr=[['Infinitive',v.inf],['V2',v.past],['V3',v.part]];
   return `<div class="forms-row">${arr.map(([lab,val])=>`
@@ -212,9 +230,9 @@ function clozePattern(word){
 }
 function clozeTask(v,form){
   const target=form==='past'?v.past:v.part;
-  return formsHtml(v,form==='past'?'V2':'V3',true)+
-    `<div class="single-answer"><label>Введи полное слово<input id="ans-cloze" autocomplete="off"></label></div>`;
+  return `<div class="target-cloze"><div class="cloze-label">${form==='past'?'V2':'V3'}</div><div class="cloze">${clozePattern(target)}</div></div><div class="single-answer"><label>Введи полное слово<input id="ans-cloze" autocomplete="off"></label></div>`;
 }
+
 function optionSet(correct,others){return shuffle([correct,...others]).map(x=>`<button class="option" data-option="${htmlEscape(x)}">${x}</button>`).join('')}
 function htmlEscape(s){return String(s).replaceAll('&','&amp;').replaceAll('"','&quot;').replaceAll('<','&lt;').replaceAll('>','&gt;')}
 function translationRuToEn(v){
@@ -279,7 +297,7 @@ function bindInputs(){
   });
 }
 function markAttempt(v,ok,mode){
-  const x=st(v);x.attempts=(x.attempts||0)+1;x.today=(x.today||0)+1;x.last=Date.now();
+  const x=st(v);x.attempts=(x.attempts||0)+1;x.today=(x.today||0)+1;x.last=Date.now();x.skill=x.skill||{};x.skill[mode]=(x.skill[mode]||0)+(ok?1:-1);
   const intervals=[10*60*1000,24*60*60*1000,3*24*60*60*1000,7*24*60*60*1000];
   if(ok){
     x.streak=(x.streak||0)+1;x.level=Math.min(3,x.level+1);x.due=Date.now()+intervals[Math.min(x.level-1,intervals.length-1)];
@@ -287,10 +305,11 @@ function markAttempt(v,ok,mode){
     x.streak=0;x.level=0;x.due=Date.now()+10*60*1000;x.wrong=(x.wrong||0)+1;
     if(mode==='write'){x.wrongV2=(x.wrongV2||0)+1;x.wrongV3=(x.wrongV3||0)+1}
     if(mode==='letters'){if(session.items[session.index].letterForm==='past')x.wrongV2=(x.wrongV2||0)+1;else x.wrongV3=(x.wrongV3||0)+1}
-    if(mode==='cloze')x.spelling=(x.spelling||0)+1;
+    if(mode==='cloze'){if(session.items[session.index].letterForm==='past')x.wrongV2=(x.wrongV2||0)+1;else x.wrongV3=(x.wrongV3||0)+1;x.spelling=(x.spelling||0)+1}
   }
   save();
 }
+
 function checkCurrent(force=false){
   if(session.answered)return;
   const q=session.items[session.index],v=q.v,a=currentAnswers();
@@ -300,8 +319,7 @@ function checkCurrent(force=false){
     detail='Ответ: '+(q.mode==='write'?v.past+' — '+v.part:q.mode==='letters'?(q.letterForm==='past'?v.past:v.part):q.mode==='cloze'?(q.letterForm==='past'?v.past:v.part):q.mode==='ruToEn'?v.inf+' — '+v.past+' — '+v.part:q.mode==='enToRu'?v.ru:v.inf);
   }else if(q.mode==='write'){
     const a2=accepted(a.v2,v.past),a3=accepted(a.v3,v.part);
-    document.getElementById('ans-v2').classList.toggle('correct',a2);
-    document.getElementById('ans-v3').classList.toggle('correct',a3);
+    document.getElementById('ans-v2').classList.toggle('correct',a2);document.getElementById('ans-v3').classList.toggle('correct',a3);
     if(!(a2&&a3))return;ok=true;detail='V2 и V3 правильно';
   }else if(q.mode==='letters'){
     ok=accepted(a.letters,q.letterForm==='past'?v.past:v.part);detail=ok?'✓ Правильно':'Правильно: '+(q.letterForm==='past'?v.past:v.part);
@@ -315,9 +333,12 @@ function checkCurrent(force=false){
     ok=normalize(a.option)===normalize(v.inf);detail=ok?'✓ Правильно':'Правильно: '+v.inf;
   }
   markAttempt(v,ok,q.mode);
-  if(!ok&&!force&&q.mode!=='write'){
-    const pos=Math.min(session.items.length,session.index+3);
-    session.items.splice(pos,0,makeItem(v,q.mode));
+  if(!ok&&!force){
+    // Ошибку возвращаем не тем же самым заданием, а другим типом.
+    const newMode=pickMode(v,q.mode);
+    const retry=makeItem(v,newMode);
+    const pos=Math.min(session.items.length,session.index+3+Math.floor(Math.random()*2));
+    session.items.splice(pos,0,retry);
   }
   session.answered=true;if(ok)session.score++;
   document.querySelectorAll('.option').forEach(btn=>{
@@ -329,24 +350,35 @@ function checkCurrent(force=false){
   setTimeout(nextQ,ok||force?430:1400);
   renderHome();
 }
+
 function dontKnow(){if(session.answered)return;checkCurrent(true)}
 function nextQ(){if(!session||!session.answered)return;session.index++;if(session.index>=session.items.length)finishSession();else renderQ()}
 function giveHint(){
   const q=session.items[session.index],v=q.v;q.hintLevel=(q.hintLevel||0)+1;
+  const partial=(w,n)=>{w=String(w).split('/')[0].trim();const letters=[...w];return n>=letters.length?w:letters.slice(0,n).join('')+'_'.repeat(Math.max(0,letters.length-n));};
+  const level=q.hintLevel;
   let text='';
-  const partial=(w,n)=>{w=w.split('/')[0];return n>=w.length?w:w.slice(0,n)+'_'.repeat(w.length-n)};
-  if(q.mode==='write')text=`V2: ${partial(v.past,Math.min(q.hintLevel,3))} · V3: ${partial(v.part,Math.min(q.hintLevel,3))}`;
-  else if(q.mode==='letters')text=`Начало формы: ${partial(q.letterForm==='past'?v.past:v.part,Math.min(q.hintLevel,3))}`;
-  else if(q.mode==='cloze')text=`Форма: ${partial(q.letterForm==='past'?v.past:v.part,Math.min(q.hintLevel+1,4))}`;
-  else if(q.mode==='ruToEn')text=`Начальная буква: ${v.inf[0].toUpperCase()}`;
-  else if(q.mode==='enToRu')text=`Первая буква перевода: ${v.ru[0]}`;
-  else text='Послушай ещё раз и сравни первые звуки.';
+  if(q.mode==='write'){
+    text=`V2: ${partial(v.past,Math.min(level,v.past.length))} · V3: ${partial(v.part,Math.min(level,v.part.length))}`;
+  }else if(q.mode==='letters'){
+    const target=q.letterForm==='past'?v.past:v.part;text=`${q.letterForm==='past'?'V2':'V3'}: ${partial(target,Math.min(level,target.split('/')[0].length))}`;
+  }else if(q.mode==='cloze'){
+    const target=q.letterForm==='past'?v.past:v.part;text=`${q.letterForm==='past'?'V2':'V3'}: ${partial(target,Math.min(level,target.split('/')[0].length))}`;
+  }else if(q.mode==='ruToEn'){
+    text=`Слово: ${partial(v.inf,Math.min(level,v.inf.length))}`;
+  }else if(q.mode==='enToRu'){
+    text=`Перевод: ${partial(v.ru,Math.min(level,[...v.ru].length))}`;
+  }else text='Послушай ещё раз.';
   document.getElementById('q-hint').textContent=text;
 }
+
 function speak(text){
   if(!('speechSynthesis' in window))return;
   window.speechSynthesis.cancel();
   const u=new SpeechSynthesisUtterance(text);u.lang='en-US';u.rate=.82;window.speechSynthesis.speak(u);
+}
+function finishFolderTraining(){
+  session=null;show('dictionary');
 }
 function finishSession(){
   const total=session.items.length,score=session.score,p=blockPercent(session.block);
@@ -406,10 +438,11 @@ function renderDictionary(){
   const words=wordsInFolder(selected.id);
   if(selected.id==='irregular'){
     document.getElementById('dict-list').innerHTML=words.map(v=>`
-      <div class="word-item">
-        <div><b>${v.inf}</b><div class="ipa">/${v.ipa||''}/</div></div>
-        <div>${v.ru}</div>
-        <button class="listen-button" data-dict-speak="${htmlEscape(v.inf)}">🔊 Прослушать</button>
+      <div class="word-item dict-verb-item">
+        <div><b>V1</b><strong>${v.inf}</strong><div class="ipa">/${v.ipa||''}/</div></div>
+        <div><b>V2</b><strong>${v.past}</strong>${v.pastIpa?`<div class="ipa">/${v.pastIpa}/</div>`:''}</div>
+        <div><b>V3</b><strong>${v.part}</strong>${v.partIpa?`<div class="ipa">/${v.partIpa}/</div>`:''}</div>
+        <div class="dict-verb-actions"><span>${v.ru}</span><button class="listen-button" data-dict-speak="${htmlEscape(v.inf)}">🔊 Прослушать</button></div>
       </div>`).join('');
   }else{
     document.getElementById('dict-list').innerHTML=words.length?words.map(w=>`
@@ -417,12 +450,14 @@ function renderDictionary(){
         <div><b>${htmlEscape(w.word)}</b></div>
         <div>${htmlEscape(w.translation)}</div>
         <div class="word-actions">
-          <button data-word-folders="${w.id}">Папки</button>
+          <button class="listen-button" data-custom-speak="${htmlEscape(w.word)}">🔊 Прослушать</button>
+          <button data-word-folders="${w.id}">Перенести</button>
           <button class="danger" data-remove-word="${w.id}">${selected.id==='myWords'?'Удалить':'Убрать'}</button>
         </div>
       </div>`).join(''):'<div class="section-note">В этой папке пока нет слов.</div>';
   }
   document.querySelectorAll('[data-dict-speak]').forEach(b=>b.onclick=()=>speak(b.dataset.dictSpeak));
+  document.querySelectorAll('[data-custom-speak]').forEach(b=>b.onclick=()=>speak(b.dataset.customSpeak));
   document.querySelectorAll('[data-word-folders]').forEach(b=>b.onclick=e=>{e.stopPropagation();chooseFoldersForWord(b.dataset.wordFolders)});
   document.querySelectorAll('[data-remove-word]').forEach(b=>b.onclick=e=>{
     e.stopPropagation();
@@ -494,7 +529,9 @@ function renderQFolder(){
   document.getElementById('q-meta').innerHTML=`<span class="badge">Словарь</span><span class="badge">${session.index+1} / ${session.items.length}</span>`;
   document.getElementById('q-bar').style.width=(session.index/session.items.length*100)+'%';
   document.getElementById('q-feedback').innerHTML='';document.getElementById('q-hint').textContent='';
-  document.getElementById('q-word').textContent='';document.getElementById('q-ipa').textContent='';document.getElementById('q-ru').textContent='';document.getElementById('sound-btn').classList.add('hidden');
+  document.getElementById('q-word').textContent='';document.getElementById('q-ipa').textContent='';document.getElementById('q-ru').textContent='';
+  document.getElementById('sound-btn').classList.add('hidden');
+  document.getElementById('finish-folder').classList.remove('hidden');
   if(q.mode==='custom'){
     document.getElementById('q-mode').textContent='Перевод → слово';
     document.getElementById('q-ru').textContent=v.translation;
@@ -505,6 +542,9 @@ function renderQFolder(){
     document.getElementById('q-mode').textContent='Перевод → русский';
     document.getElementById('q-word').textContent=v.inf;document.getElementById('q-ipa').textContent='/'+(v.ipa||'')+'/';
     document.getElementById('q-body').innerHTML=translationEnToRu(v);
+    document.getElementById('sound-btn').classList.remove('hidden');
+    document.getElementById('sound-btn').onclick=()=>speak(v.inf);
+    if(autoSound)setTimeout(()=>speak(v.inf),180);
   }else{
     document.getElementById('q-mode').textContent='Перевод → английский';
     document.getElementById('q-ru').textContent=v.ru;
@@ -512,6 +552,7 @@ function renderQFolder(){
   }
   bindFolderOptions();
 }
+
 function bindFolderOptions(){
   document.querySelectorAll('.option').forEach(btn=>btn.onclick=()=>{
     if(session.answered)return;
@@ -534,18 +575,19 @@ function bindFolderOptions(){
 }
 function renderErrors(){
   const es=verbs.filter(v=>st(v).wrong>0).sort((a,b)=>st(b).wrong-st(a).wrong);
-  document.getElementById('error-list').innerHTML=es.length?es.map(v=>`
-    <div class="word-item">
-      <div><b>${v.inf}</b><div class="ipa">/${v.ipa||''}/</div></div>
-      <div>${v.ru} · ошибок: ${st(v).wrong}</div>
-      <button data-error-train="${v.n}">Тренировать</button>
-    </div>`).join(''):'<div class="section-note">Ошибок пока нет.</div>';
-  document.querySelectorAll('[data-error-train]').forEach(b=>b.onclick=()=>{
-    const v=verbs.find(x=>x.n==b.dataset.errorTrain);
-    session={items:[makeItem(v,'write'),makeItem(v,'letters'),makeItem(v,'cloze')],index:0,score:0,kind:'errors',block:Math.ceil(v.n/BLOCK_SIZE),answered:false};
-    selectedBlock=Math.ceil(v.n/BLOCK_SIZE);save();show('quiz');renderQ();
-  });
+  document.getElementById('error-list').innerHTML=es.length?`
+    <div class="error-summary"><div><b>${es.length}</b> глаголов с ошибками</div><button class="primary" id="train-all-errors">Тренировать все ошибки</button></div>
+    ${es.map(v=>`<div class="word-item"><div><b>${v.inf}</b><div class="ipa">/${v.ipa||''}/</div></div><div>${v.ru}</div><div>ошибок: ${st(v).wrong}</div></div>`).join('')}`:'<div class="section-note">Ошибок пока нет.</div>';
+  const b=document.getElementById('train-all-errors');
+  if(b)b.onclick=()=>{
+    const all=verbs.filter(v=>st(v).wrong>0);
+    if(!all.length)return;
+    const items=chooseErrorItems(all);
+    session={items:shuffle(items),index:0,score:0,kind:'errors',block:selectedBlock,answered:false,folder:false};
+    save();show('quiz');renderQ();
+  };
 }
+
 function resetProgress(){if(confirm('Сбросить весь прогресс?')){state={selectedBlock:1,v:{},customFolders:{},myWords:{}};save();renderHome()}}
 
 /* navigation */
@@ -563,4 +605,5 @@ nav('add-word').onclick=addWord;
 nav('dontknow').onclick=dontKnow;
 nav('hint-btn').onclick=giveHint;
 nav('sound-btn').onclick=()=>{if(session&&session.items[session.index])speak(session.items[session.index].v.inf)};
+nav('finish-folder').onclick=finishFolderTraining;
 renderHome();
