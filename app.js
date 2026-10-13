@@ -46,7 +46,9 @@ function renderBlocks(){
     return `<button class="group-card ${sel?'selected':''}" data-group="${htmlEscape(String(key))}" data-art="${n}"><div class="group-card-top"><div><div class="block-title">${htmlEscape(g.name)}</div><div class="block-meta">${g.short} · ${countLabel(vs.length)}</div></div><span class="badge ${p>=100?'good':''}">${p}%</span></div><div class="group-art art-${n}"><i class="art-rope rope-a"></i><i class="art-rope rope-b"></i><i class="art-dot"></i><span class="art-word art-word-a"><b>${htmlEscape(vs[0]?.inf||'learn')}</b><small>${htmlEscape(vs[0]?.ru||'учить')}</small></span><span class="art-word art-word-b"><b>${htmlEscape(vs[1]?.inf||'remember')}</b><small>${htmlEscape(vs[1]?.ru||'помнить')}</small></span><span class="art-word art-word-c"><b>${htmlEscape(vs[2]?.inf||'repeat')}</b><small>${htmlEscape(vs[2]?.ru||'повторять')}</small></span><i class="art-spark">✦</i><i class="art-star">✦</i></div><div class="progress"><div class="bar ${p>=100?'good':''}" style="width:${p}%"></div></div></button>`;
   }).join('');
   document.querySelectorAll('[data-group]').forEach(card=>card.onclick=()=>{
-    selectedGroup=card.dataset.group;save();renderHome();window.scrollTo({top:0,behavior:'smooth'});
+    selectedGroup=card.dataset.group;save();renderHome();
+    const target=document.querySelector('.home-main');
+    if(target)target.scrollIntoView({behavior:'smooth',block:'start'});
   });
 }
 function renderHome(){
@@ -65,10 +67,18 @@ function renderHome(){
   const masteredCount=verbs.filter(mastered).length;
   const overall=Math.round(verbs.reduce((sum,v)=>sum+Math.min(1,st(v).level/3),0)/verbs.length*100);
   const hp=document.getElementById('home-progress-percent'); if(hp)hp.textContent=overall+'%';
+  const homeRing=document.querySelector('.ring'); if(homeRing)homeRing.style.setProperty('--ring-progress',overall+'%');
   const hm=document.getElementById('home-mastered-count'); if(hm)hm.textContent=masteredCount;
 }
 
-function show(id){['home','learn','quiz','result','dictionary'].forEach(x=>document.getElementById(x).classList.toggle('hidden',x!==id));if(id==='home')renderHome();if(id==='learn')renderLearn();if(id==='dictionary')renderDictionary()}
+function show(id){
+  ['home','learn','quiz','result','dictionary'].forEach(x=>document.getElementById(x).classList.toggle('hidden',x!==id));
+  const body=document.body, header=document.querySelector('header'), actions=document.querySelector('.header-actions'), homeHeading=document.querySelector('.home-heading');
+  body.classList.toggle('home-page',id==='home');
+  if(id==='home'){ if(homeHeading&&actions)homeHeading.appendChild(actions); }
+  else { if(header&&actions)header.appendChild(actions); }
+  if(id==='home')renderHome();if(id==='learn')renderLearn();if(id==='dictionary')renderDictionary();
+}
 function ipaCell(word,ipa){return `<div class="learn-word"><b>${htmlEscape(word)}</b>${ipa?`<span class="learn-ipa">/${htmlEscape(ipa)}/</span>`:''}</div>`}
 function renderLearn(){
   const g=groupMeta(selectedGroup),vs=groupVerbs(selectedGroup);
@@ -181,10 +191,26 @@ function giveHint(){
   document.getElementById('q-hint').textContent='Подсказка: '+text;
 }
 let speechVoice=null;
+let currentAudio=null;
+let currentAudioKey='';
 function pickSpeechVoice(){if(!('speechSynthesis' in window))return null;const voices=window.speechSynthesis.getVoices();speechVoice=voices.find(v=>/^en-US$/i.test(v.lang))||voices.find(v=>/^en/i.test(v.lang))||voices[0]||null;return speechVoice}
 if('speechSynthesis' in window){pickSpeechVoice();window.speechSynthesis.onvoiceschanged=pickSpeechVoice}
-function speak(text,force=false){if(!force&&!soundOn)return;if(!('speechSynthesis' in window)||!text)return;const run=()=>{window.speechSynthesis.cancel();window.speechSynthesis.resume?.();const u=new SpeechSynthesisUtterance(String(text));u.lang='en-US';u.rate=.78;u.pitch=1;u.volume=1;const v=speechVoice||pickSpeechVoice();if(v)u.voice=v;window.speechSynthesis.speak(u)};run();setTimeout(()=>{if(window.speechSynthesis && !window.speechSynthesis.speaking)run()},180)}
-function autoSpeakCurrent(text){if(!soundOn||!text)return;window.setTimeout(()=>speak(text,false),220)}
+function findVerbNumber(text){const t=normalize(text);const v=verbs.find(x=>normalize(x.inf)===t);return v?.n||null}
+function playLocalAudio(n,force=false){
+  if(!n||(!force&&!soundOn))return false;
+  const key=String(n);
+  try{
+    if(currentAudio){currentAudio.pause();currentAudio.currentTime=0;}
+    const audio=new Audio(`./audio/${key}.mp3`);
+    currentAudio=audio; currentAudioKey=key; audio.preload='auto'; audio.volume=1;
+    const p=audio.play();
+    if(p&&typeof p.catch==='function')p.catch(()=>{if(currentAudioKey===key)fallbackSpeak(verbs.find(v=>v.n===n)?.inf||'')});
+    return true;
+  }catch(e){return false}
+}
+function fallbackSpeak(text){if(!text||!('speechSynthesis' in window))return;try{window.speechSynthesis.cancel();window.speechSynthesis.resume?.();const u=new SpeechSynthesisUtterance(String(text));u.lang='en-US';u.rate=.8;u.pitch=1;u.volume=1;const v=speechVoice||pickSpeechVoice();if(v)u.voice=v;window.speechSynthesis.speak(u)}catch(e){}}
+function speak(text,force=false){if(!force&&!soundOn)return;if(!text)return;const n=findVerbNumber(text);if(n&&playLocalAudio(n,force))return;fallbackSpeak(text)}
+function autoSpeakCurrent(text){if(!soundOn||!text)return;window.setTimeout(()=>speak(text,false),120)}
 function autoSpeakForQuestion(q){if(!soundOn||!q)return;const mode=q.mode;const english=q.v?.inf||q.v?.word;if(!english)return;const modes=['write','letters','cloze','enToRu','listen','enToRuWrite','customEnToRu','customEnToRuWrite','customListen'];if(modes.includes(mode))autoSpeakCurrent(english)}
 function playFeedbackSound(ok){
   if(!soundOn)return;
@@ -411,14 +437,14 @@ nav('learn-start').onclick=()=>startMixed('new',selectedGroup);
 nav('learn-finish').onclick=()=>show('home');
 const soundToggle=document.getElementById('sound-toggle');
 const themeToggle=document.getElementById('theme-toggle');
-function renderThemeToggle(){const dark=theme==='dark';document.documentElement.dataset.theme=theme;themeToggle.textContent=dark?'Светлая тема':'Тёмная тема';themeToggle.setAttribute('aria-pressed',String(dark));themeToggle.title=dark?'Переключить на светлую тему':'Переключить на тёмную тему';}
+function renderThemeToggle(){const dark=theme==='dark';document.documentElement.dataset.theme=theme;themeToggle.setAttribute('aria-pressed',String(dark));themeToggle.title=dark?'Переключить на светлую тему':'Переключить на тёмную тему';themeToggle.classList.toggle('is-dark',dark);}
 themeToggle.onclick=()=>{theme=theme==='dark'?'light':'dark';save();renderThemeToggle();};
 renderThemeToggle();
-function renderSoundToggle(){soundToggle.textContent=soundOn?'':'Включить звук';soundToggle.setAttribute('aria-pressed',String(soundOn));soundToggle.title=soundOn?'Выключить звук':'Включить звук';}
+function renderSoundToggle(){soundToggle.setAttribute('aria-pressed',String(soundOn));soundToggle.title=soundOn?'Выключить звук':'Включить звук';soundToggle.classList.toggle('is-on',soundOn);}
 soundToggle.onclick=()=>{soundOn=!soundOn;state.soundOn=soundOn;save();renderSoundToggle()};
 renderSoundToggle();
 nav('modal-cancel').onclick=closeModal;
 nav('modal-ok').onclick=modalConfirm;
 document.getElementById('modal-backdrop').onclick=e=>{if(e.target.id==='modal-backdrop')closeModal()};
-renderHome();
+show('home');
 if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js'))}
