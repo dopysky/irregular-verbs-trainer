@@ -61,7 +61,6 @@ function renderHome(){
   document.getElementById('continue-btn').textContent=p>=100?'Повторить блок':'Начать тренировку';
   renderBlocks();
   document.getElementById('s-mastered').textContent=verbs.filter(mastered).length;
-  document.getElementById('s-errors').textContent=verbs.filter(v=>st(v).wrong>0).length;
   document.getElementById('s-today').textContent=todayCount();
   const masteredCount=verbs.filter(mastered).length;
   const overall=Math.round(verbs.reduce((sum,v)=>sum+Math.min(1,st(v).level/3),0)/verbs.length*100);
@@ -75,7 +74,7 @@ function renderLearn(){
   const g=groupMeta(selectedGroup),vs=groupVerbs(selectedGroup);
   document.getElementById('learn-title').textContent=g.name;
   document.getElementById('learn-note').textContent=`${countLabel(vs.length)} · посмотри формы, послушай произношение и потом проверь себя в тренировке.`;
-  document.getElementById('learn-list').innerHTML=`<div class="learn-table-wrap"><table class="learn-table"><thead><tr><th>V1 · Infinitive</th><th>V2 · Past Simple</th><th>V3 · Past Participle</th><th></th></tr></thead><tbody>${vs.map(v=>`<tr><td>${ipaCell(v.inf,v.ipa)}</td><td>${ipaCell(v.past,v.pastIpa===v.ipa?'':v.pastIpa)}</td><td>${ipaCell(v.part,v.partIpa===v.pastIpa?'':v.partIpa)}</td><td><button class="icon-btn listen-button" title="Прослушать" aria-label="Прослушать" data-speak="${v.n}">🔊</button></td></tr>`).join('')}</tbody></table></div>`;
+  document.getElementById('learn-list').innerHTML=`<div class="learn-table-wrap"><table class="learn-table"><thead><tr><th>V1 · Infinitive</th><th>V2 · Past Simple</th><th>V3 · Past Participle</th><th>Перевод</th><th></th></tr></thead><tbody>${vs.map(v=>`<tr><td>${ipaCell(v.inf,v.ipa)}</td><td>${ipaCell(v.past,v.pastIpa===v.ipa?'':v.pastIpa)}</td><td>${ipaCell(v.part,v.partIpa===v.pastIpa?'':v.partIpa)}</td><td class="learn-translation">${htmlEscape(v.ru)}</td><td><button class="icon-btn listen-button" title="Прослушать" aria-label="Прослушать" data-speak="${v.n}">🔊</button></td></tr>`).join('')}</tbody></table></div>`;
   document.querySelectorAll('[data-speak]').forEach(b=>b.onclick=()=>speak(verbs.find(v=>v.n==b.dataset.speak).inf,true));
 }
 function startStudy(){show('learn')}
@@ -115,7 +114,7 @@ function writeTask(v){return `<div class="input-grid"><label>V2<input id="ans-v2
 function letterTask(v,form){const target=form==='past'?v.past:v.part;const chars=target.split('/')[0].replace(/[^a-z]/gi,'').toLowerCase().split('');const pool=shuffle(chars.map((c,i)=>({c,i})));return `<div class="built" id="built" aria-label="Собранное слово"></div><div class="letters">${pool.map(x=>`<button class="letter" data-char="${x.c}" data-i="${x.i}">${x.c.toUpperCase()}</button>`).join('')}</div><div class="actions" style="justify-content:center"><button id="remove-letter" class="small-action">← Убрать последнюю</button></div><input type="hidden" id="letter-answer">`}
 function clozePattern(word){const w=word.split('/')[0].trim();if(w.length<=3)return w[0]+'_'.repeat(Math.max(0,w.length-1));const hide=Math.max(1,Math.ceil(w.length/3));const idx=shuffle([...Array(w.length).keys()]).slice(0,hide);const set=new Set(idx);return [...w].map((c,i)=>set.has(i)?'_':c).join('')}
 function clozeTask(v,form){const target=form==='past'?v.past:v.part;return `<div class="translation-word cloze-pattern">${clozePattern(target)}</div><div class="single-answer compact-answer"><input id="ans-cloze" autocomplete="off" spellcheck="false" aria-label="Ответ"></div>`}
-function optionSet(correct,others){const seen=new Set();const all=[correct,...others].filter(x=>{const k=normalize(x);if(seen.has(k))return false;seen.add(k);return true});return shuffle(all).map(x=>`<button class="option" data-option="${htmlEscape(x)}">${htmlEscape(x)}</button>`).join('')}
+function optionSet(correct,others){const seen=new Set();const all=[correct,...others].filter(x=>{const k=normalize(x);if(seen.has(k))return false;seen.add(k);return true});const target=normalize(correct);return shuffle(all).map(x=>`<button class="option" data-option="${htmlEscape(x)}" data-correct="${normalize(x)===target?'1':'0'}">${htmlEscape(x)}</button>`).join('')}
 function htmlEscape(s){return String(s).replaceAll('&','&amp;').replaceAll('"','&quot;').replaceAll('<','&lt;').replaceAll('>','&gt;')}
 function translationRuToEn(v){const others=shuffle(verbs.filter(x=>x.n!==v.n)).slice(0,3).map(x=>`${x.inf} — ${x.past} — ${x.part}`);return `<div class="option-list">${optionSet(`${v.inf} — ${v.past} — ${v.part}`,others)}</div>`}
 function translationRuToEnWord(v){const others=shuffle(verbs.filter(x=>x.n!==v.n)).slice(0,3).map(x=>x.inf);return `<div class="option-list">${optionSet(v.inf,others)}</div>`}
@@ -150,24 +149,28 @@ function bindInputs(){
   });
 }
 function markAttempt(v,ok,mode){const x=st(v);x.attempts=(x.attempts||0)+1;x.today=(x.today||0)+1;x.last=Date.now();x.wrongModes=x.wrongModes||{};const intervals=[10*60*1000,24*60*60*1000,3*24*60*60*1000,7*24*60*60*1000];if(ok){x.streak=(x.streak||0)+1;x.level=Math.min(3,x.level+1);x.due=Date.now()+intervals[Math.min(x.level-1,intervals.length-1)]}else{x.streak=0;x.level=0;x.due=Date.now()+10*60*1000;x.wrong=(x.wrong||0)+1;x.wrongModes[mode]=(x.wrongModes[mode]||0)+1;if(mode==='write'){x.wrongV2=(x.wrongV2||0)+1;x.wrongV3=(x.wrongV3||0)+1}if(mode==='letters'){if(session.items[session.index].letterForm==='past')x.wrongV2=(x.wrongV2||0)+1;else x.wrongV3=(x.wrongV3||0)+1}if(mode==='cloze')x.spelling=(x.spelling||0)+1}save()}
-function checkCurrent(force=false){if(session.answered)return;const q=session.items[session.index],v=q.v,a=currentAnswers();let ok=false,detail='';if(force){ok=false;detail='Ответ: '+(q.mode==='write'?v.past+' — '+v.part:q.mode==='letters'?(q.letterForm==='past'?v.past:v.part):q.mode==='cloze'?(q.letterForm==='past'?v.past:v.part):q.mode==='ruToEn'?v.inf+' — '+v.past+' — '+v.part:q.mode==='enToRu'?v.ru:v.inf)}else if(q.mode==='write'){const a2=accepted(a.v2,v.past),a3=accepted(a.v3,v.part);document.getElementById('ans-v2').classList.toggle('correct',a2);document.getElementById('ans-v3').classList.toggle('correct',a3);if(!(a2&&a3))return;ok=true;detail='V2 и V3 правильно'}else if(q.mode==='letters'){ok=accepted(a.letters,q.letterForm==='past'?v.past:v.part);detail=ok?'✓ Правильно':'Правильно: '+(q.letterForm==='past'?v.past:v.part)}else if(q.mode==='cloze'){ok=accepted(a.cloze,q.letterForm==='past'?v.past:v.part);detail=ok?'✓ Правильно':'Правильно: '+(q.letterForm==='past'?v.past:v.part)}else if(q.mode==='ruToEn'){ok=a.option===`${v.inf} — ${v.past} — ${v.part}`;detail=ok?'✓ Правильно':'Правильно: '+v.inf+' — '+v.past+' — '+v.part}else if(q.mode==='enToRu'){ok=normalize(a.option)===normalize(v.ru);detail=ok?'✓ Правильно':'Правильно: '+v.ru}else{ok=normalize(a.option)===normalize(v.inf);detail=ok?'✓ Правильно':'Правильно: '+v.inf}markAttempt(v,ok,q.mode);if(!ok&&!force&&q.mode!=='write'){const pos=Math.min(session.items.length,session.index+3);session.items.splice(pos,0,makeItem(v,q.mode))}session.answered=true;if(ok)session.score++;document.querySelectorAll('.option').forEach(btn=>{const val=btn.dataset.option;if((q.mode==='ruToEn'&&val===`${v.inf} — ${v.past} — ${v.part}`)||(q.mode==='enToRu'&&normalize(val)===normalize(v.ru))||(q.mode==='listen'&&normalize(val)===normalize(v.inf))){btn.classList.add('correct')}else if(btn.classList.contains('selected')&&!ok)btn.classList.add('wrong')});document.getElementById('q-feedback').innerHTML='';playFeedbackSound(ok);if(!ok&&force&&['letters','cloze','write'].includes(q.mode))document.getElementById('sound-btn').classList.remove('hidden');if(ok||force){setTimeout(nextQ,ok?430:1100)}else{setTimeout(nextQ,1400)}renderHome()}
+function checkCurrent(force=false){if(session.answered)return;const q=session.items[session.index],v=q.v,a=currentAnswers();let ok=false,detail='';if(force){ok=false;detail='Ответ: '+(q.mode==='write'?v.past+' — '+v.part:q.mode==='letters'?(q.letterForm==='past'?v.past:v.part):q.mode==='cloze'?(q.letterForm==='past'?v.past:v.part):q.mode==='ruToEn'?v.inf+' — '+v.past+' — '+v.part:q.mode==='enToRu'?v.ru:v.inf)}else if(q.mode==='write'){const a2=accepted(a.v2,v.past),a3=accepted(a.v3,v.part);document.getElementById('ans-v2').classList.toggle('correct',a2);document.getElementById('ans-v3').classList.toggle('correct',a3);if(!(a2&&a3))return;ok=true;detail='V2 и V3 правильно'}else if(q.mode==='letters'){ok=accepted(a.letters,q.letterForm==='past'?v.past:v.part);detail=ok?'✓ Правильно':'Правильно: '+(q.letterForm==='past'?v.past:v.part)}else if(q.mode==='cloze'){ok=accepted(a.cloze,q.letterForm==='past'?v.past:v.part);detail=ok?'✓ Правильно':'Правильно: '+(q.letterForm==='past'?v.past:v.part)}else if(q.mode==='ruToEn'||q.mode==='enToRu'||q.mode==='listen'){const selected=document.querySelector('.option.selected');ok=selected?.dataset.correct==='1';detail=ok?'✓ Правильно':'Правильно: '+(q.mode==='ruToEn'?`${v.inf} — ${v.past} — ${v.part}`:q.mode==='enToRu'?v.ru:v.inf)}markAttempt(v,ok,q.mode);if(!ok&&!force&&q.mode!=='write'){const pos=Math.min(session.items.length,session.index+3);session.items.splice(pos,0,makeItem(v,q.mode))}session.answered=true;if(ok)session.score++;document.querySelectorAll('.option').forEach(btn=>{const val=btn.dataset.option;if((q.mode==='ruToEn'&&val===`${v.inf} — ${v.past} — ${v.part}`)||(q.mode==='enToRu'&&normalize(val)===normalize(v.ru))||(q.mode==='listen'&&normalize(val)===normalize(v.inf))){btn.classList.add('correct')}else if(btn.classList.contains('selected')&&!ok)btn.classList.add('wrong')});document.getElementById('q-feedback').innerHTML='';playFeedbackSound(ok);if(!ok&&force&&['letters','cloze','write'].includes(q.mode))document.getElementById('sound-btn').classList.remove('hidden');if(ok||force){setTimeout(nextQ,ok?430:1100)}else{setTimeout(nextQ,1400)}renderHome()}
 function dontKnow(){if(session.answered)return;if(session.folder){checkFolderCurrent(true);return}checkCurrent(true)}
 function nextQ(){if(!session||!session.answered)return;session.index++;if(session.index>=session.items.length)finishSession();else renderQ()}
 function giveHint(){
-  if(session.folder && session.items[session.index]?.custom){giveFolderHint();return}
+  if(!session||!session.items[session.index])return;
   const q=session.items[session.index],v=q.v;q.hintLevel=(q.hintLevel||0)+1;
-  const partial=(w,n)=>{w=String(w).split('/')[0].trim();return n>=w.length?w:w.slice(0,n)+'_'.repeat(Math.max(0,w.length-n))};
+  const partial=(w,n)=>{w=String(w||'').split('/')[0].trim();return n>=w.length?w:w.slice(0,n)+'_'.repeat(Math.max(0,w.length-n))};
   let text='';
-  if(q.mode==='write')text=`V2: ${partial(v.past,q.hintLevel)} · V3: ${partial(v.part,q.hintLevel)}`;
+  if(q.custom){
+    if(q.mode==='customRuToEn'||q.mode==='customRuToEnWrite')text=partial(v.word,q.hintLevel);
+    else if(q.mode==='customEnToRu'||q.mode==='customEnToRuWrite')text=partial(v.translation,q.hintLevel);
+    else text=v.word;
+  }else if(q.mode==='write')text=`V2: ${partial(v.past,q.hintLevel)} · V3: ${partial(v.part,q.hintLevel)}`;
   else if(q.mode==='letters'||q.mode==='cloze')text=partial(q.letterForm==='past'?v.past:v.part,q.hintLevel);
   else if(q.mode==='ruToEn')text=partial(v.inf,q.hintLevel);
   else if(q.mode==='enToRu')text=partial(v.ru,q.hintLevel);
-  else text='Нажми «Прослушать» ещё раз.';
+  else text=v.inf;
   document.getElementById('q-hint').textContent='Подсказка: '+text;
 }
 function speak(text,force=false){if(!force&&!soundOn)return;if(!('speechSynthesis' in window))return;window.speechSynthesis.cancel();window.speechSynthesis.resume?.();const u=new SpeechSynthesisUtterance(text);u.lang='en-US';u.rate=.82;u.volume=1;window.speechSynthesis.speak(u)}
 function autoSpeakCurrent(text){if(!soundOn||!text)return;window.setTimeout(()=>speak(text,false),140)}
-function autoSpeakForQuestion(q){if(!soundOn||!q)return;const mode=q.mode;const english=q.v?.inf||q.v?.word;if(!english)return;const modes=['write','letters','cloze','ruToEn','enToRu','ruToEnWrite','enToRuWrite','listen','customRuToEn','customEnToRu','customRuToEnWrite','customEnToRuWrite','customListen'];if(modes.includes(mode))autoSpeakCurrent(english)}
+function autoSpeakForQuestion(q){if(!soundOn||!q)return;const mode=q.mode;const english=q.v?.inf||q.v?.word;if(!english)return;const modes=['write','letters','cloze','enToRu','listen','enToRuWrite','customEnToRu','customEnToRuWrite','customListen'];if(modes.includes(mode))autoSpeakCurrent(english)}
 function playFeedbackSound(ok){
   if(!soundOn)return;
   try{
@@ -303,16 +306,11 @@ function checkFolderCurrent(force=false){
   if(session.answered)return;
   const q=session.items[session.index],v=q.v,a=currentAnswers(); let ok=false;
   if(force){ok=false;}
-  else if(q.mode==='customRuToEn')ok=normalize(a.option)===normalize(v.word);
-  else if(q.mode==='customEnToRu')ok=normalize(a.option)===normalize(v.translation);
+  else if(q.mode==='customRuToEn'||q.mode==='customEnToRu'||q.mode==='customListen'||q.mode==='ruToEn'||q.mode==='enToRu'||q.mode==='listen'){const selected=document.querySelector('.option.selected');ok=selected?.dataset.correct==='1';}
   else if(q.mode==='customRuToEnWrite')ok=normalize(a.folder)===normalize(v.word);
   else if(q.mode==='customEnToRuWrite')ok=normalize(a.folder)===normalize(v.translation);
-  else if(q.mode==='customListen')ok=normalize(a.option)===normalize(v.word);
-  else if(q.mode==='ruToEn')ok=normalize(a.option)===normalize(v.inf);
-  else if(q.mode==='enToRu')ok=normalize(a.option)===normalize(v.ru);
   else if(q.mode==='ruToEnWrite')ok=normalize(a.folder)===normalize(v.inf);
   else if(q.mode==='enToRuWrite')ok=normalize(a.folder)===normalize(v.ru);
-  else if(q.mode==='listen')ok=normalize(a.option)===normalize(v.inf);
   session.answered=true;
   if(ok)session.score++;
   if(q.custom){
@@ -379,7 +377,6 @@ function modalConfirm(){
 const nav=id=>document.getElementById(id);
 nav('nav-home').onclick=()=>show('home');
 nav('nav-dictionary').onclick=()=>show('dictionary');
-nav('nav-errors').onclick=()=>show('errors');
 nav('dontknow').onclick=dontKnow;
 nav('hint-btn').onclick=giveHint;
 nav('sound-btn').onclick=()=>speak(session.items[session.index].v.word||session.items[session.index].v.inf,true);

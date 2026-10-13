@@ -714,3 +714,103 @@ html[data-theme="dark"] .art-rope{box-shadow:inset 2px 2px 7px rgba(255,255,255,
   .art-word b{font-size:14px}
   .art-word small{font-size:9px}
 }
+
+/* v28 — cleaner desktop/mobile layout, stronger purple + yellow-orange visual language */
+@import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@400;500;600;700&display=swap');
+:root{
+  --v28-purple:#6f43e8;
+  --v28-purple2:#9b63ff;
+  --v28-yellow:#ffc83d;
+  --v28-orange:#ff8a3d;
+  --v28-ink:#211b2b;
+  --v28-muted:#70657d;
+}
+body{font-family:Arial,Helvetica,sans-serif;background:radial-gradient(circle at 8% 8%,rgba(255,200,61,.18),transparent 24rem),radial-gradient(circle at 92% 10%,rgba(111,67,232,.15),transparent 25rem),linear-gradient(180deg,#fffdf9 0%,#f8f4ff 100%);color:var(--v28-ink)}
+h1,h2,h3,.mode-title,.block-title,.verb,.translation-word,.result-kicker,.learn-table th,.home-main h2{font-family:'Unbounded',Arial,Helvetica,sans-serif}
+h1{font-weight:700;letter-spacing:-.05em}
+h1:before{background:linear-gradient(135deg,var(--v28-purple),var(--v28-orange));box-shadow:0 9px 22px rgba(111,67,232,.22)}
+.sub{font-family:Arial,Helvetica,sans-serif}
+/* Top navigation — no side rail and no mobile bottom rail. */
+.main-nav{position:static!important;width:auto!important;height:auto!important;display:flex!important;flex-direction:row!important;align-items:center!important;margin:0 0 20px!important;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important;gap:8px!important}
+.main-nav .nav-logo,.main-nav .nav-spacer,.main-nav .nav-soft{display:none!important}
+.main-nav button{font-family:Arial,Helvetica,sans-serif!important;border:1px solid #e3dbea!important;background:rgba(255,255,255,.86)!important;color:#4e465a!important;border-radius:14px!important;padding:10px 16px!important;box-shadow:0 4px 13px rgba(55,39,76,.05)!important}
+.main-nav button.nav-active{background:linear-gradient(135deg,var(--v28-purple),#8655f2)!important;border-color:var(--v28-purple)!important;color:#fff!important}
+/* Stronger, less washed-out palette */
+.home-heading{background:linear-gradient(125deg,#f0e8ff 0%,#fff0cf 54%,#ffe0ca 100%)!important;border-color:#dfd0f7!important}
+.home-main{background:linear-gradient(120deg,#eee5ff 0%,#f5ebff 45%,#fff0c9 100%)!important;border-color:#ded0f2!important}
+.hero-mascot{display:none!important}
+.home-heading{min-height:190px!important}
+.home-heading:after{content:'✦';position:absolute;right:8%;bottom:18px;font-family:Arial,sans-serif;font-size:46px;color:var(--v28-orange);transform:rotate(12deg);opacity:.9}
+.bar{background:linear-gradient(90deg,var(--v28-purple) 0%,#b75ce5 50%,var(--v28-orange) 100%)!important}
+.hero-actions button.primary{background:linear-gradient(135deg,var(--v28-purple),#8a51ef)!important;border-color:var(--v28-purple)!important}
+.selected-progress-ring{background:conic-gradient(var(--v28-purple) 0 var(--ring-progress,0%),var(--v28-yellow) var(--ring-progress,0%) 100%)!important}
+.group-card{background:#fff!important;border-color:#e2d9ec!important}
+.group-card.selected{outline:3px solid rgba(111,67,232,.2)!important;border-color:#a27af1!important}
+.group-card .badge{background:#eee7ff!important;color:#6339d4!important}
+.group-card:nth-child(3n) .group-art,.group-card:nth-child(3n+2) .group-art,.group-card .group-art{background:linear-gradient(135deg,#f4edff 0%,#fff1cf 100%)!important}
+.group-art{height:96px!important}
+.art-rope{border-width:16px!important;box-shadow:inset 2px 2px 8px rgba(255,255,255,.7),0 8px 18px rgba(76,47,120,.12)!important}
+.rope-a{border-color:#8b5cf0!important}
+.rope-b{border-color:#ff9b43!important}
+.art-dot{background:linear-gradient(135deg,#ffc83d,#ff8a3d)!important}
+.art-word b{font-family:'Unbounded',Arial,sans-serif!important;color:#271d36!important}
+.art-word small{font-family:Arial,Helvetica,sans-serif!important;color:#695d75!important}
+.group-card:nth-child(2n) .rope-a{border-color:#ff8a3d!important}.group-card:nth-child(2n) .rope-b{border-color:#7650ea!important}
+.group-card:nth-child(3n) .rope-a{border-color:#ffb52e!important}.group-card:nth-child(3n) .rope-b{border-color:#7045e7!important}
+.art-spark,.art-star{color:#7045e7!important}
+/* No mascot / error-progress card. Keep motivation text as a clean card. */
+.side-tip{display:none!important}
+.stat-purple{display:none!important}
+.stats-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+/* Learning list contains the translation explicitly. */
+.learn-translation{font-weight:600;color:#655a70;min-width:140px}
+.learn-table th,.learn-table td{font-family:Arial,Helvetica,sans-serif}
+.learn-table th{font-family:'Unbounded',Arial,sans-serif;font-size:11px}
+/* Learn page: exactly two actions, Start + Back. */
+#learn .actions{justify-content:flex-start}
+#learn-finish{order:2}
+/* Translation-to-English must never auto-play the hidden English answer. */
+.translation-word{font-family:'Unbounded',Arial,sans-serif}
+/* Hints are actual word hints, not audio instructions. */
+.hint{font-family:Arial,Helvetica,sans-serif}
+/* Dark theme: saturated purple/orange and strong text contrast. */
+html[data-theme="dark"] body{background:radial-gradient(circle at 8% 5%,rgba(111,67,232,.28),transparent 24rem),radial-gradient(circle at 90% 8%,rgba(255,138,61,.18),transparent 23rem),linear-gradient(180deg,#17121f 0%,#1d1728 58%,#21180f 100%)!important;color:#faf6ff!important}
+html[data-theme="dark"] .main-nav button{background:#292132!important;border-color:#443653!important;color:#e8e0ee!important}
+html[data-theme="dark"] .main-nav button.nav-active{background:linear-gradient(135deg,#7a4bf0,#9a61ff)!important;color:#fff!important}
+html[data-theme="dark"] .home-heading,html[data-theme="dark"] .home-main{background:linear-gradient(125deg,#2a2140 0%,#342548 52%,#44301d 100%)!important;border-color:#58456c!important}
+html[data-theme="dark"] .group-card{background:#251e2d!important;border-color:#44374e!important;color:#faf6ff!important}
+html[data-theme="dark"] .group-card .block-title,html[data-theme="dark"] .group-card .block-meta{color:#faf6ff!important}
+html[data-theme="dark"] .group-art,html[data-theme="dark"] .group-card:nth-child(2n) .group-art,html[data-theme="dark"] .group-card:nth-child(3n) .group-art{background:linear-gradient(135deg,#302342 0%,#4a3020 100%)!important}
+html[data-theme="dark"] .art-word b{color:#fff!important}.art-word small{font-weight:600}
+html[data-theme="dark"] .learn-translation{color:#f2eaf7!important}
+html[data-theme="dark"] .learn-table td{color:#f4edf8!important;border-color:#413747!important}
+html[data-theme="dark"] .learn-table th{background:#30253b!important;color:#f3e9fb!important}
+html[data-theme="dark"] .option{background:#2b2335!important;color:#fff!important;border-color:#51425c!important}
+html[data-theme="dark"] .option.correct{background:#173d31!important;color:#effff8!important;border-color:#4dcc91!important}
+html[data-theme="dark"] .option.wrong{background:#4b2632!important;color:#fff!important;border-color:#ed739f!important}
+html[data-theme="dark"] .translation-word,html[data-theme="dark"] .verb{color:#fff!important}
+html[data-theme="dark"] .ru{color:#eadfed!important}
+html[data-theme="dark"] .hint{color:#eadfed!important}
+/* Mobile: everything remains top-to-bottom; no side or bottom menu. */
+@media(max-width:980px){
+  .wrap{padding:14px 12px 34px!important}
+  .main-nav{position:static!important;left:auto!important;right:auto!important;bottom:auto!important;top:auto!important;width:100%!important;height:auto!important;display:flex!important;overflow-x:auto!important;flex-wrap:nowrap!important;padding:0 0 4px!important;margin-bottom:14px!important}
+  .main-nav button{flex:0 0 auto!important;white-space:nowrap!important;height:auto!important;padding:9px 13px!important}
+  .main-nav button span{display:inline!important}
+  .home-content-grid{grid-template-columns:1fr!important}
+  .home-right{display:grid;grid-template-columns:1fr!important}
+}
+@media(max-width:700px){
+  header{display:flex;flex-direction:column;align-items:flex-start!important;gap:8px}
+  .header-actions{display:flex!important;width:100%;justify-content:flex-start!important}
+  .home-heading{min-height:165px!important;padding:21px 18px!important}
+  .home-heading h2{font-size:28px!important}
+  .home-heading:after{font-size:34px;right:7%;bottom:10px}
+  .home-main{padding:20px!important}
+  .stats-grid{grid-template-columns:1fr 1fr!important}
+  .stats-grid .stat:last-child{grid-column:1/-1}
+  .block-grid{grid-template-columns:1fr!important}
+  .learn-table{min-width:760px}
+  #learn .actions{flex-direction:column;align-items:stretch}
+  #learn .actions button{width:100%}
+}
