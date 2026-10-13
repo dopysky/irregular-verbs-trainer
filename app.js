@@ -201,7 +201,7 @@ function playLocalAudio(n,force=false){
   const key=String(n);
   try{
     if(currentAudio){currentAudio.pause();currentAudio.currentTime=0;}
-    const audio=new Audio(`./audio/${key}.mp3`);
+    const src=AUDIO_DATA[key]; if(!src)return false; const audio=new Audio(src);
     currentAudio=audio; currentAudioKey=key; audio.preload='auto'; audio.volume=1;
     const p=audio.play();
     if(p&&typeof p.catch==='function')p.catch(()=>{if(currentAudioKey===key)fallbackSpeak(verbs.find(v=>v.n===n)?.inf||'')});
