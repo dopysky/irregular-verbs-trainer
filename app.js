@@ -10,6 +10,13 @@ const LEARNING_GROUPS=[
 {id:'g8',name:'Группа 8 · похожее звучание',short:'Похожие по звучанию формы',nums:[36,54,59,60,70,72,75,77,84,92,94,102,107,109,111,117,123,124,127,128,132,133,138,141,142,150,49,51,113,146]},
 {id:'mixed',name:'Все вперемешку',short:'Все 151 слово без группировки',nums:verbs.map(v=>v.n),mixed:true}
 ]
+const KEY='irregular_trainer_v15';
+let state=JSON.parse(localStorage.getItem(KEY)||'{}');
+if(!state.v) state.v={};
+if(!state.customFolders) state.customFolders={};
+if(!state.customStats) state.customStats={};
+if(!state.myWordsFolder) state.myWordsFolder='my';
+
 let selectedGroup=state.selectedGroup||state.selectedBlock||1, selectedFolder=state.selectedFolder||'irregular';
 if(!LEARNING_GROUPS.some(g=>String(g.id)===String(selectedGroup)||LEARNING_GROUPS.indexOf(g)+1===Number(selectedGroup))) selectedGroup=1;
 let session=null, soundOn=false;
