@@ -10,7 +10,7 @@ const LEARNING_GROUPS=[
 {id:'g8',name:'Блок 8',short:'Учебный блок',nums:[36,54,59,60,70,72,75,77,84,92,94,102,107,109,111,117,123,124,127,128,132,133,138,141,142,150,49,51,113,146]},
 {id:'mixed',name:'Все вперемешку',short:'Все 151 слово без группировки',nums:verbs.map(v=>v.n),mixed:true}
 ]
-const KEY='irregular_trainer_v17';
+const KEY='irregular_trainer_v21';
 let state=JSON.parse(localStorage.getItem(KEY)||localStorage.getItem('irregular_trainer_v16')||localStorage.getItem('irregular_trainer_v15')||'{}');
 if(!state.v) state.v={};
 if(!state.customFolders) state.customFolders={};
@@ -19,9 +19,12 @@ if(!state.myWordsFolder) state.myWordsFolder='my';
 if(!state.customFolders[state.myWordsFolder]) state.customFolders[state.myWordsFolder]={name:'Мои слова',words:[]};
 let selectedGroup=state.selectedGroup||state.selectedBlock||1, selectedFolder=state.selectedFolder||'irregular';
 if(!LEARNING_GROUPS.some(g=>String(g.id)===String(selectedGroup)||LEARNING_GROUPS.indexOf(g)+1===Number(selectedGroup))) selectedGroup=1;
-let session=null, soundOn=state.soundOn===true;
+let session=null, soundOn=state.soundOn!==false;
 function save(){state.selectedGroup=selectedGroup;state.selectedFolder=selectedFolder;localStorage.setItem(KEY,JSON.stringify(state));}
 function normalize(x){return String(x||'').trim().toLowerCase().replace(/\s+/g,' ')}
+function pluralizeRu(n,one,two,five){const x=Math.abs(Number(n))%100,y=x%10;if(x>=11&&x<=14)return five;if(y===1)return one;if(y>=2&&y<=4)return two;return five}
+function countLabel(n){return `${n} ${pluralizeRu(n,'слово','слова','слов')}`}
+function verbCountLabel(n){return `${n} ${pluralizeRu(n,'глагол','глагола','глаголов')}`}
 function accepted(user,correct){const u=normalize(user);return String(correct).split('/').some(x=>normalize(x)===u)}
 function shuffle(a){const x=[...a];for(let i=x.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[x[i],x[j]]=[x[j],x[i]]}return x}
 function groupMeta(n=selectedGroup){const idx=typeof n==='number'?n-1:LEARNING_GROUPS.findIndex(g=>String(g.id)===String(n));return LEARNING_GROUPS[idx]||LEARNING_GROUPS[0]}
@@ -39,7 +42,7 @@ function renderBlocks(){
   const selected=groupKey(selectedGroup);
   box.innerHTML=LEARNING_GROUPS.map((g,i)=>{
     const n=i+1, key=g.id, vs=groupVerbs(key), p=groupPercent(key), sel=key===selected;
-    return `<button class="group-card ${sel?'selected':''}" data-group="${htmlEscape(String(key))}"><div class="group-card-top"><div><div class="block-title">${htmlEscape(g.name)}</div><div class="block-meta">${g.short} · ${vs.length} слов</div></div><span class="badge ${p>=100?'good':''}">${p}%</span></div><div class="progress"><div class="bar ${p>=100?'good':''}" style="width:${p}%"></div></div></button>`;
+    return `<button class="group-card ${sel?'selected':''}" data-group="${htmlEscape(String(key))}"><div class="group-card-top"><div><div class="block-title">${htmlEscape(g.name)}</div><div class="block-meta">${g.short} · ${countLabel(vs.length)}</div></div><span class="badge ${p>=100?'good':''}">${p}%</span></div><div class="group-art"><span class="art-word art-word-a">${htmlEscape(vs[0]?.inf||'learn')}</span><span class="art-word art-word-b">${htmlEscape(vs[1]?.inf||'remember')}</span><span class="art-word art-word-c">${htmlEscape(vs[2]?.inf||'repeat')}</span><i class="art-spark">✦</i></div><div class="progress"><div class="bar ${p>=100?'good':''}" style="width:${p}%"></div></div></button>`;
   }).join('');
   document.querySelectorAll('[data-group]').forEach(card=>card.onclick=()=>{
     selectedGroup=card.dataset.group;save();renderHome();window.scrollTo({top:0,behavior:'smooth'});
@@ -48,7 +51,7 @@ function renderBlocks(){
 function renderHome(){
   const g=groupMeta(selectedGroup),vs=groupVerbs(selectedGroup),p=groupPercent(selectedGroup);
   document.getElementById('selected-title').textContent=g.name;
-  document.getElementById('selected-sub').textContent=`${g.short} · ${vs.length} слов · ${p}% выучено`;
+  document.getElementById('selected-sub').textContent=`${g.short} · ${countLabel(vs.length)} · ${p}% выучено`;
   document.getElementById('selected-bar').style.width=p+'%';
   document.getElementById('selected-bar').classList.toggle('good',p>=100);
   document.getElementById('selected-note').textContent=`Закреплено: ${vs.filter(mastered).length} из ${vs.length}`;
@@ -59,12 +62,13 @@ function renderHome(){
   document.getElementById('s-today').textContent=todayCount();
 }
 function show(id){['home','learn','quiz','result','dictionary','errors'].forEach(x=>document.getElementById(x).classList.toggle('hidden',x!==id));if(id==='home')renderHome();if(id==='learn')renderLearn();if(id==='dictionary')renderDictionary();if(id==='errors')renderErrors()}
+function ipaCell(word,ipa){return `<div class="learn-word"><b>${htmlEscape(word)}</b>${ipa?`<span class="learn-ipa">/${htmlEscape(ipa)}/</span>`:''}</div>`}
 function renderLearn(){
   const g=groupMeta(selectedGroup),vs=groupVerbs(selectedGroup);
   document.getElementById('learn-title').textContent=g.name;
-  document.getElementById('learn-note').textContent=`${g.short} · ${vs.length} слов. Три формы показаны в одну строку; английские слова можно прослушать.`;
-  document.getElementById('learn-list').innerHTML=vs.map(v=>`<div class="learn-card"><div class="learn-line"><span class="learn-forms-inline"><b>${v.inf}</b><b>${v.past}</b><b>${v.part}</b></span><span class="learn-ru">${v.ru}</span><button class="listen-button" data-speak="${v.n}">🔊</button></div></div>`).join('');
-  document.querySelectorAll('[data-speak]').forEach(b=>b.onclick=()=>speak(verbs.find(v=>v.n==b.dataset.speak).inf));
+  document.getElementById('learn-note').textContent=`${countLabel(vs.length)} · посмотри формы, послушай произношение и потом проверь себя в тренировке.`;
+  document.getElementById('learn-list').innerHTML=`<div class="learn-table-wrap"><table class="learn-table"><thead><tr><th>V1 · Infinitive</th><th>V2 · Past Simple</th><th>V3 · Past Participle</th><th></th></tr></thead><tbody>${vs.map(v=>`<tr><td>${ipaCell(v.inf,v.ipa)}</td><td>${ipaCell(v.past,v.pastIpa===v.ipa?'':v.pastIpa)}</td><td>${ipaCell(v.part,v.partIpa===v.pastIpa?'':v.partIpa)}</td><td><button class="icon-btn listen-button" title="Прослушать" aria-label="Прослушать" data-speak="${v.n}">🔊</button></td></tr>`).join('')}</tbody></table></div>`;
+  document.querySelectorAll('[data-speak]').forEach(b=>b.onclick=()=>speak(verbs.find(v=>v.n==b.dataset.speak).inf,true));
 }
 function startStudy(){show('learn')}
 function makeItem(v,mode){return {v,mode,letterForm:Math.random()<.5?'past':'part',hintLevel:0}}
@@ -97,7 +101,7 @@ function startMixed(kind='new',groupN=selectedGroup){
   session={items:shuffle(items),index:0,score:0,kind,group:kind==='errors'?null:groupN,answered:false,folder:false,returnTo:'home'};
   save();show('quiz');renderQ();
 }
-function renderQ(){const q=session.items[session.index],v=q.v;session.answered=false;document.getElementById('q-meta').innerHTML=`<div class="training-heading">${session.kind==='errors'?'Ошибки':groupMeta(session.group).name}</div><div class="training-badges"><span class="badge">${session.index+1} / ${session.items.length}</span><span class="badge">${Math.round(st(v).level/3*100)}% у глагола</span></div>`;document.getElementById('q-bar').style.width=(session.index/session.items.length*100)+'%';document.getElementById('q-feedback').innerHTML='';document.getElementById('q-hint').textContent='';document.getElementById('q-word').textContent='';document.getElementById('q-ipa').textContent='';document.getElementById('q-ru').textContent='';document.getElementById('sound-btn').classList.add('hidden');let title='',body='';if(q.mode==='write'){title='Напиши V2 и V3';document.getElementById('q-word').textContent=v.inf;document.getElementById('q-ipa').textContent='';document.getElementById('q-ru').textContent=v.ru;body=writeTask(v)}else if(q.mode==='letters'){title=`Собери ${q.letterForm==='past'?'V2':'V3'} из букв`;document.getElementById('q-word').textContent=v.inf;document.getElementById('q-ru').textContent=v.ru;body=letterTask(v,q.letterForm);document.getElementById('sound-btn').classList.remove('hidden')}else if(q.mode==='cloze'){title=`Заполни пропуски ${q.letterForm==='past'?'V2':'V3'}`;document.getElementById('q-word').textContent=v.inf;document.getElementById('q-ru').textContent=v.ru;body=clozeTask(v,q.letterForm);document.getElementById('sound-btn').classList.remove('hidden')}else if(q.mode==='ruToEn'){title='Перевод → английский';document.getElementById('q-ru').innerHTML=`<div class="translation-word">${v.ru}</div>`;body=translationRuToEn(v)}else if(q.mode==='enToRu'){title='Перевод → русский';document.getElementById('q-word').textContent=v.inf;document.getElementById('q-ipa').textContent='';body=translationEnToRu(v);document.getElementById('sound-btn').classList.remove('hidden')}else{title='Что ты услышала?';body=listenTask(v);document.getElementById('sound-btn').classList.remove('hidden')}document.getElementById('q-mode').textContent=title;document.getElementById('q-body').innerHTML=body;bindLetters();bindOptions();bindInputs();const safeSound=['write','letters','cloze','enToRu'].includes(q.mode);if(safeSound)document.getElementById('sound-btn').classList.remove('hidden');if(safeSound)setTimeout(()=>speak(v.inf),220);if(q.mode==='listen')setTimeout(()=>speak(v.inf),650)}
+function renderQ(){const q=session.items[session.index],v=q.v;session.answered=false;document.getElementById('q-meta').innerHTML=`<div class="training-heading">${session.kind==='errors'?'Ошибки':groupMeta(session.group).name}</div><div class="training-badges"><span class="badge">${session.index+1} / ${session.items.length}</span><span class="badge">${Math.round(st(v).level/3*100)}% у глагола</span></div>`;document.getElementById('q-bar').style.width=(session.index/session.items.length*100)+'%';document.getElementById('q-feedback').innerHTML='';document.getElementById('q-hint').textContent='';document.getElementById('q-word').textContent='';document.getElementById('q-ipa').textContent='';document.getElementById('q-ru').textContent='';document.getElementById('sound-btn').classList.add('hidden');let title='',body='';if(q.mode==='write'){title='Укажи 2-ю и 3-ю форму';document.getElementById('q-word').textContent=v.inf;document.getElementById('q-ipa').textContent='';document.getElementById('q-ru').textContent=v.ru;body=writeTask(v)}else if(q.mode==='letters'){title=`Собери ${q.letterForm==='past'?'2-ю':'3-ю'} форму из букв`;document.getElementById('q-word').textContent=v.inf;document.getElementById('q-ru').textContent=v.ru;body=letterTask(v,q.letterForm);document.getElementById('sound-btn').classList.remove('hidden')}else if(q.mode==='cloze'){title=`Вставь пропущенные буквы`;document.getElementById('q-word').textContent=v.inf;document.getElementById('q-ru').textContent=v.ru;body=clozeTask(v,q.letterForm);document.getElementById('sound-btn').classList.remove('hidden')}else if(q.mode==='ruToEn'){title='Переведи на английский';document.getElementById('q-ru').innerHTML=`<div class="translation-word">${v.ru}</div>`;body=translationRuToEn(v)}else if(q.mode==='enToRu'){title='Переведи на русский';document.getElementById('q-word').textContent=v.inf;document.getElementById('q-ipa').textContent='';body=translationEnToRu(v);document.getElementById('sound-btn').classList.remove('hidden')}else{title='Послушай и выбери слово';body=listenTask(v);document.getElementById('sound-btn').classList.remove('hidden')}document.getElementById('q-mode').textContent=title;document.getElementById('q-body').innerHTML=body;bindLetters();bindOptions();bindInputs();const safeSound=['write','letters','cloze','enToRu'].includes(q.mode);if(safeSound)document.getElementById('sound-btn').classList.remove('hidden');if(soundOn&&safeSound)setTimeout(()=>speak(v.inf),220);if(soundOn&&q.mode==='listen')setTimeout(()=>speak(v.inf),650)}
 function formsHtml(v,target,cloze=false){const arr=[['Infinitive',v.inf],['V2',v.past],['V3',v.part]];return `<div class="forms-row">${arr.map(([lab,val])=>{const isTarget=lab===target;const shown=isTarget?(cloze?clozePattern(val):'_'.repeat(Math.max(4,val.length))):val;const ipa=lab==='Infinitive'&&!isTarget?`<div class="ipa">/${v.ipa||''}/</div>`:'';return `<div class="form-card ${isTarget?'hidden-form':''}"><small>${lab}</small><b>${shown}</b>${ipa}</div>`}).join('')}</div>`}
 function writeTask(v){return `<div class="input-grid"><label>V2<input id="ans-v2" autocomplete="off" spellcheck="false"></label><label>V3<input id="ans-v3" autocomplete="off" spellcheck="false"></label></div>`}
 function letterTask(v,form){const target=form==='past'?v.past:v.part;const chars=target.split('/')[0].replace(/[^a-z]/gi,'').toLowerCase().split('');const pool=shuffle(chars.map((c,i)=>({c,i})));return `<div class="built" id="built" aria-label="Собранное слово"></div><div class="letters">${pool.map(x=>`<button class="letter" data-char="${x.c}" data-i="${x.i}">${x.c.toUpperCase()}</button>`).join('')}</div><div class="actions" style="justify-content:center"><button id="remove-letter" class="small-action">← Убрать последнюю</button></div><input type="hidden" id="letter-answer">`}
@@ -106,15 +110,18 @@ function clozeTask(v,form){const target=form==='past'?v.past:v.part;return `<div
 function optionSet(correct,others){return shuffle([correct,...others]).map((x,i)=>`<button class="option" data-option="${htmlEscape(x)}">${x}</button>`).join('')}
 function htmlEscape(s){return String(s).replaceAll('&','&amp;').replaceAll('"','&quot;').replaceAll('<','&lt;').replaceAll('>','&gt;')}
 function translationRuToEn(v){const others=shuffle(verbs.filter(x=>x.n!==v.n)).slice(0,3).map(x=>`${x.inf} — ${x.past} — ${x.part}`);return `<div class="option-list">${optionSet(`${v.inf} — ${v.past} — ${v.part}`,others)}</div>`}
+function translationRuToEnWord(v){const others=shuffle(verbs.filter(x=>x.n!==v.n)).slice(0,3).map(x=>x.inf);return `<div class="option-list">${optionSet(v.inf,others)}</div>`}
 function translationEnToRu(v){const others=shuffle(verbs.filter(x=>x.n!==v.n)).slice(0,3).map(x=>x.ru);return `<div class="option-list">${optionSet(v.ru,others)}</div>`}
-function listenTask(v){const others=shuffle(verbs.filter(x=>x.n!==v.n)).slice(0,3).map(x=>x.inf);return `<div class="listen-box"><div class="listen-icon">🔊</div><button class="primary" id="listen-play">Прослушать</button><div class="option-list">${optionSet(v.inf,others)}</div></div>`}
-function currentAnswers(){const q=session.items[session.index];if(q.mode==='write')return {v2:document.getElementById('ans-v2').value,v3:document.getElementById('ans-v3').value};if(q.mode==='letters'||q.mode==='customLetters')return {letters:document.getElementById('letter-answer')?.value||''};if(q.mode==='cloze')return {cloze:document.getElementById('ans-cloze')?.value||''};if(q.mode==='customWrite'||q.mode==='customCloze')return {custom:document.getElementById('ans-custom')?.value||'',cloze:document.getElementById('ans-custom')?.value||''};return {option:document.getElementById('selected-option')?.value||''}}
-function bindLetters(){const q=session.items[session.index];document.querySelectorAll('.letter').forEach(btn=>btn.onclick=()=>{if(session.answered||btn.disabled)return;const inp=document.getElementById('letter-answer'),built=document.getElementById('built');inp.value+=btn.dataset.char;btn.disabled=true;const span=document.createElement('button');span.type='button';span.className='built-letter';span.textContent=btn.dataset.char.toUpperCase();span.dataset.i=btn.dataset.i;span.title='Нажми, чтобы убрать эту букву';span.onclick=()=>{if(session.answered)return;const idx=span.dataset.i;const source=document.querySelector(`.letter[data-i=\"${idx}\"]`);if(source)source.disabled=false;const spans=[...built.querySelectorAll('.built-letter')];const pos=spans.indexOf(span);spans.slice(pos).forEach(x=>{const src=document.querySelector(`.letter[data-i=\"${x.dataset.i}\"]`);if(src)src.disabled=false;x.remove()});inp.value=spans.slice(0,pos).map(x=>x.textContent.toLowerCase()).join('')};built.appendChild(span);if(inp.value.length===(q.letterForm==='past'?q.v.past:q.v.part).split('/')[0].replace(/[^a-z]/gi,'').length)checkCurrent()});const remove=document.getElementById('remove-letter');if(remove)remove.onclick=()=>{if(session.answered)return;const inp=document.getElementById('letter-answer'),built=document.getElementById('built'),last=built.lastElementChild;if(!last)return;last.click()};const play=document.getElementById('listen-play');if(play)play.onclick=()=>speak(session.items[session.index].v.inf)}
+function listenTask(v){const others=shuffle(verbs.filter(x=>x.n!==v.n)).slice(0,3).map(x=>x.inf);return `<div class="listen-box"><button class="icon-btn listen-play" id="listen-play" title="Прослушать" aria-label="Прослушать">🔊</button><div class="option-list">${optionSet(v.inf,others)}</div></div>`}
+function currentAnswers(){const q=session.items[session.index];if(q.mode==='write')return {v2:document.getElementById('ans-v2').value,v3:document.getElementById('ans-v3').value};if(q.mode==='letters'||q.mode==='customLetters')return {letters:document.getElementById('letter-answer')?.value||''};if(q.mode==='cloze')return {cloze:document.getElementById('ans-cloze')?.value||''};if(['ruToEnWrite','enToRuWrite','customRuToEnWrite','customEnToRuWrite'].includes(q.mode))return {folder:document.getElementById('ans-folder')?.value||''};
+if(q.mode==='customWrite'||q.mode==='customCloze')return {custom:document.getElementById('ans-custom')?.value||'',cloze:document.getElementById('ans-custom')?.value||''};return {option:document.getElementById('selected-option')?.value||''}}
+function bindLetters(){const q=session.items[session.index];document.querySelectorAll('.letter').forEach(btn=>btn.onclick=()=>{if(session.answered||btn.disabled)return;const inp=document.getElementById('letter-answer'),built=document.getElementById('built');inp.value+=btn.dataset.char;btn.disabled=true;const span=document.createElement('button');span.type='button';span.className='built-letter';span.textContent=btn.dataset.char.toUpperCase();span.dataset.i=btn.dataset.i;span.title='Нажми, чтобы убрать эту букву';span.onclick=()=>{if(session.answered)return;const idx=span.dataset.i;const source=document.querySelector(`.letter[data-i=\"${idx}\"]`);if(source)source.disabled=false;const spans=[...built.querySelectorAll('.built-letter')];const pos=spans.indexOf(span);spans.slice(pos).forEach(x=>{const src=document.querySelector(`.letter[data-i=\"${x.dataset.i}\"]`);if(src)src.disabled=false;x.remove()});inp.value=spans.slice(0,pos).map(x=>x.textContent.toLowerCase()).join('')};built.appendChild(span);if(inp.value.length===(q.letterForm==='past'?q.v.past:q.v.part).split('/')[0].replace(/[^a-z]/gi,'').length)checkCurrent()});const remove=document.getElementById('remove-letter');if(remove)remove.onclick=()=>{if(session.answered)return;const inp=document.getElementById('letter-answer'),built=document.getElementById('built'),last=built.lastElementChild;if(!last)return;last.click()};const play=document.getElementById('listen-play');if(play)play.onclick=()=>speak(session.items[session.index].v.inf,true)}
 function bindCustomLetters(){const q=session.items[session.index];document.querySelectorAll('.letter').forEach(btn=>btn.onclick=()=>{if(session.answered||btn.disabled)return;const inp=document.getElementById('letter-answer'),built=document.getElementById('built');inp.value+=btn.dataset.char;btn.disabled=true;const span=document.createElement('button');span.type='button';span.className='built-letter';span.textContent=btn.dataset.char.toUpperCase();span.dataset.i=btn.dataset.i;span.onclick=()=>{if(session.answered)return;const spans=[...built.querySelectorAll('.built-letter')],pos=spans.indexOf(span);spans.slice(pos).forEach(x=>{const src=document.querySelector(`.letter[data-i=\"${x.dataset.i}\"]`);if(src)src.disabled=false;x.remove()});inp.value=spans.slice(0,pos).map(x=>x.textContent.toLowerCase()).join('')};built.appendChild(span);if(inp.value.length===q.v.word.length)checkFolderCurrent()});const remove=document.getElementById('remove-letter');if(remove)remove.onclick=()=>{const built=document.getElementById('built');if(built?.lastElementChild)built.lastElementChild.click()}}
-function bindOptions(){document.querySelectorAll('.option').forEach(btn=>btn.onclick=()=>{if(session.answered)return;document.querySelectorAll('.option').forEach(x=>x.classList.remove('selected'));btn.classList.add('selected');let hidden=document.getElementById('selected-option');if(!hidden){hidden=document.createElement('input');hidden.type='hidden';hidden.id='selected-option';document.getElementById('q-body').appendChild(hidden)}hidden.value=btn.dataset.option;if(session.folder)checkFolderCurrent();else checkCurrent()})}
+function bindOptions(){document.querySelectorAll('.option').forEach(btn=>btn.onclick=()=>{if(session.answered)return;document.querySelectorAll('.option').forEach(x=>x.classList.remove('selected'));btn.classList.add('selected');let hidden=document.getElementById('selected-option');if(!hidden){hidden=document.createElement('input');hidden.type='hidden';hidden.id='selected-option';document.getElementById('q-body').appendChild(hidden)}hidden.value=btn.dataset.option;if(session.folder && session.items[session.index]?.custom)checkFolderCurrent();else checkCurrent()})}
 function bindInputs(){
   const q=session.items[session.index];
-  if(q.mode!=="write"&&q.mode!=="cloze") return;
+  if(q.mode!=="write"&&q.mode!=="cloze"&&!['ruToEnWrite','enToRuWrite','customRuToEnWrite','customEnToRuWrite'].includes(q.mode)) return;
+  if(['ruToEnWrite','enToRuWrite','customRuToEnWrite','customEnToRuWrite'].includes(q.mode)){const el=document.getElementById('ans-folder');if(el){el.oninput=()=>{const v=q.v;const target=['ruToEnWrite','customRuToEnWrite'].includes(q.mode)?(q.custom?v.word:v.inf):(q.custom?v.translation:v.ru);if(normalize(el.value)===normalize(target))checkFolderCurrent();};el.onkeydown=e=>{if(e.key==='Enter'&&el.value.trim())checkFolderCurrent();}}return;}
   const ids=q.mode==="write"?["ans-v2","ans-v3"]:["ans-cloze"];
   ids.forEach(function(id){
     const el=document.getElementById(id);
@@ -135,7 +142,7 @@ function bindInputs(){
   });
 }
 function markAttempt(v,ok,mode){const x=st(v);x.attempts=(x.attempts||0)+1;x.today=(x.today||0)+1;x.last=Date.now();x.wrongModes=x.wrongModes||{};const intervals=[10*60*1000,24*60*60*1000,3*24*60*60*1000,7*24*60*60*1000];if(ok){x.streak=(x.streak||0)+1;x.level=Math.min(3,x.level+1);x.due=Date.now()+intervals[Math.min(x.level-1,intervals.length-1)]}else{x.streak=0;x.level=0;x.due=Date.now()+10*60*1000;x.wrong=(x.wrong||0)+1;x.wrongModes[mode]=(x.wrongModes[mode]||0)+1;if(mode==='write'){x.wrongV2=(x.wrongV2||0)+1;x.wrongV3=(x.wrongV3||0)+1}if(mode==='letters'){if(session.items[session.index].letterForm==='past')x.wrongV2=(x.wrongV2||0)+1;else x.wrongV3=(x.wrongV3||0)+1}if(mode==='cloze')x.spelling=(x.spelling||0)+1}save()}
-function checkCurrent(force=false){if(session.answered)return;const q=session.items[session.index],v=q.v,a=currentAnswers();let ok=false,detail='';if(force){ok=false;detail='Ответ: '+(q.mode==='write'?v.past+' — '+v.part:q.mode==='letters'?(q.letterForm==='past'?v.past:v.part):q.mode==='cloze'?(q.letterForm==='past'?v.past:v.part):q.mode==='ruToEn'?v.inf+' — '+v.past+' — '+v.part:q.mode==='enToRu'?v.ru:v.inf)}else if(q.mode==='write'){const a2=accepted(a.v2,v.past),a3=accepted(a.v3,v.part);document.getElementById('ans-v2').classList.toggle('correct',a2);document.getElementById('ans-v3').classList.toggle('correct',a3);if(!(a2&&a3))return;ok=true;detail='V2 и V3 правильно'}else if(q.mode==='letters'){ok=accepted(a.letters,q.letterForm==='past'?v.past:v.part);detail=ok?'✓ Правильно':'Правильно: '+(q.letterForm==='past'?v.past:v.part)}else if(q.mode==='cloze'){ok=accepted(a.cloze,q.letterForm==='past'?v.past:v.part);detail=ok?'✓ Правильно':'Правильно: '+(q.letterForm==='past'?v.past:v.part)}else if(q.mode==='ruToEn'){ok=a.option===`${v.inf} — ${v.past} — ${v.part}`;detail=ok?'✓ Правильно':'Правильно: '+v.inf+' — '+v.past+' — '+v.part}else if(q.mode==='enToRu'){ok=normalize(a.option)===normalize(v.ru);detail=ok?'✓ Правильно':'Правильно: '+v.ru}else{ok=normalize(a.option)===normalize(v.inf);detail=ok?'✓ Правильно':'Правильно: '+v.inf}markAttempt(v,ok,q.mode);if(!ok&&!force&&q.mode!=='write'){const pos=Math.min(session.items.length,session.index+3);session.items.splice(pos,0,makeItem(v,q.mode))}session.answered=true;if(ok)session.score++;document.querySelectorAll('.option').forEach(btn=>{const val=btn.dataset.option;if((q.mode==='ruToEn'&&val===`${v.inf} — ${v.past} — ${v.part}`)||(q.mode==='enToRu'&&normalize(val)===normalize(v.ru))||(q.mode==='listen'&&normalize(val)===normalize(v.inf))){btn.classList.add('correct')}else if(btn.classList.contains('selected')&&!ok)btn.classList.add('wrong')});playFeedbackSound(ok);document.getElementById('q-feedback').innerHTML=`<span class="${ok?'good-t':'bad-t'}">${ok?'Правильно':'Нужно повторить'}.</span> ${detail}`;if(!ok&&q.mode==='write'&&!force)document.getElementById('q-feedback').innerHTML+=`<div class="bad-t">Проверь каждую форму отдельно.</div>`;if(!ok&&force&&['letters','cloze','write'].includes(q.mode))document.getElementById('sound-btn').classList.remove('hidden');if(ok||force){setTimeout(nextQ,ok?430:1100)}else{setTimeout(nextQ,1400)}renderHome()}
+function checkCurrent(force=false){if(session.answered)return;const q=session.items[session.index],v=q.v,a=currentAnswers();let ok=false,detail='';if(force){ok=false;detail='Ответ: '+(q.mode==='write'?v.past+' — '+v.part:q.mode==='letters'?(q.letterForm==='past'?v.past:v.part):q.mode==='cloze'?(q.letterForm==='past'?v.past:v.part):q.mode==='ruToEn'?v.inf+' — '+v.past+' — '+v.part:q.mode==='enToRu'?v.ru:v.inf)}else if(q.mode==='write'){const a2=accepted(a.v2,v.past),a3=accepted(a.v3,v.part);document.getElementById('ans-v2').classList.toggle('correct',a2);document.getElementById('ans-v3').classList.toggle('correct',a3);if(!(a2&&a3))return;ok=true;detail='V2 и V3 правильно'}else if(q.mode==='letters'){ok=accepted(a.letters,q.letterForm==='past'?v.past:v.part);detail=ok?'✓ Правильно':'Правильно: '+(q.letterForm==='past'?v.past:v.part)}else if(q.mode==='cloze'){ok=accepted(a.cloze,q.letterForm==='past'?v.past:v.part);detail=ok?'✓ Правильно':'Правильно: '+(q.letterForm==='past'?v.past:v.part)}else if(q.mode==='ruToEn'){ok=a.option===`${v.inf} — ${v.past} — ${v.part}`;detail=ok?'✓ Правильно':'Правильно: '+v.inf+' — '+v.past+' — '+v.part}else if(q.mode==='enToRu'){ok=normalize(a.option)===normalize(v.ru);detail=ok?'✓ Правильно':'Правильно: '+v.ru}else{ok=normalize(a.option)===normalize(v.inf);detail=ok?'✓ Правильно':'Правильно: '+v.inf}markAttempt(v,ok,q.mode);if(!ok&&!force&&q.mode!=='write'){const pos=Math.min(session.items.length,session.index+3);session.items.splice(pos,0,makeItem(v,q.mode))}session.answered=true;if(ok)session.score++;document.querySelectorAll('.option').forEach(btn=>{const val=btn.dataset.option;if((q.mode==='ruToEn'&&val===`${v.inf} — ${v.past} — ${v.part}`)||(q.mode==='enToRu'&&normalize(val)===normalize(v.ru))||(q.mode==='listen'&&normalize(val)===normalize(v.inf))){btn.classList.add('correct')}else if(btn.classList.contains('selected')&&!ok)btn.classList.add('wrong')});document.getElementById('q-feedback').innerHTML='';playFeedbackSound(ok);if(!ok&&force&&['letters','cloze','write'].includes(q.mode))document.getElementById('sound-btn').classList.remove('hidden');if(ok||force){setTimeout(nextQ,ok?430:1100)}else{setTimeout(nextQ,1400)}renderHome()}
 function dontKnow(){if(session.answered)return;if(session.folder){checkFolderCurrent(true);return}checkCurrent(true)}
 function nextQ(){if(!session||!session.answered)return;session.index++;if(session.index>=session.items.length)finishSession();else renderQ()}
 function giveHint(){
@@ -156,41 +163,51 @@ function playFeedbackSound(ok){
   try{
     const C=window.AudioContext||window.webkitAudioContext;if(!C)return;
     const c=new C(),now=c.currentTime;
-    const master=c.createGain();master.gain.setValueAtTime(.0001,now);master.gain.exponentialRampToValueAtTime(.22,now+.012);master.gain.exponentialRampToValueAtTime(.0001,now+(ok?.5:.28));master.connect(c.destination);
-    const tones=ok?[{f:784,t:0,d:.2},{f:1046.5,t:.07,d:.27},{f:1318.5,t:.14,d:.3}]:[{f:220,t:0,d:.12},{f:165,t:.08,d:.2}];
-    tones.forEach(({f,t,d})=>{const o=c.createOscillator(),g=c.createGain();o.type=ok?'sine':'triangle';o.frequency.setValueAtTime(f,now+t);g.gain.setValueAtTime(.0001,now+t);g.gain.exponentialRampToValueAtTime(ok?.8:.55,now+t+.012);g.gain.exponentialRampToValueAtTime(.0001,now+t+d);o.connect(g);g.connect(master);o.start(now+t);o.stop(now+t+d+.02)});
+    const master=c.createGain();master.gain.setValueAtTime(.0001,now);master.gain.exponentialRampToValueAtTime(.18,now+.012);master.gain.exponentialRampToValueAtTime(.0001,now+(ok?.52:.3));master.connect(c.destination);
+    const tones=ok?[{f:784,t:0,d:.22},{f:1046.5,t:.07,d:.30},{f:1318.5,t:.14,d:.32}]:[{f:220,t:0,d:.13},{f:165,t:.08,d:.21}];
+    tones.forEach(({f,t,d})=>{const o=c.createOscillator(),g=c.createGain();o.type=ok?'sine':'triangle';o.frequency.setValueAtTime(f,now+t);g.gain.setValueAtTime(.0001,now+t);g.gain.exponentialRampToValueAtTime(ok?.72:.5,now+t+.012);g.gain.exponentialRampToValueAtTime(.0001,now+t+d);o.connect(g);g.connect(master);o.start(now+t);o.stop(now+t+d+.02)});
     setTimeout(()=>c.close(),700);
   }catch(e){}
 }
 function finishSession(){
-  const total=session.items.length,score=session.score;
-  document.getElementById('result-title').textContent=session.folder?'Тренировка словаря закончена':(session.kind==='errors'?'Ошибки отработаны':'Тренировка закончена');
-  document.getElementById('result-text').textContent=`Правильных ответов: ${score} из ${total}.`;
-  document.getElementById('result-grid').innerHTML=`<div class="result-box">Заданий<b>${total}</b></div><div class="result-box">Правильно<b>${score}</b></div><div class="result-box">Ошибок<b>${total-score}</b></div>${!session.folder&&session.group?`<div class="result-box">Блок<b>${groupPercent(session.group)}%</b></div>`:''}`;
-  document.getElementById('result-again').textContent='Повторить тренировку';
-  document.getElementById('result-home').textContent=session.folder?'В словарь':'На главную';
+  const total=session.items.length,score=session.score,folderId=session.folderId;
+  const current=folderId?folderPercent(folderId):(session.group?groupPercent(session.group):0), before=session.startedPercent||0;
+  const diff=current-before;
+  const uniqueDone=session.folder?(session.completedIds?.size||0):score;
+  const initial=session.folder?(session.initialCount||total):total;
+  const retryCount=session.folder?Math.max(0,initial-uniqueDone):Math.max(0,total-score);
+  const complete=uniqueDone>=initial;
+  document.getElementById('result-title').textContent=complete?'Супер!':'Так держать!';
+  document.getElementById('result-text').innerHTML=session.folder?`<strong>${uniqueDone} из ${initial}</strong> слов закреплено`:`<strong>${score} из ${total}</strong> правильных ответов`;
+  document.getElementById('result-grid').innerHTML=`<div class="result-box result-main"><span>${session.folder?'Закреплено':'Правильно'}</span><b>${session.folder?uniqueDone:score}</b></div><div class="result-box"><span>Осталось</span><b>${retryCount}</b></div><div class="result-box"><span>Прогресс</span><b>${current}%</b></div><div class="result-box"><span>Изменение</span><b class="${diff>0?'result-up':''}">${diff>0?'+'+diff+'%':diff===0?'—':'0%'}</b></div>`;
+  document.getElementById('result-again').textContent=retryCount?'Повторить сложные слова':'Продолжить';
+  document.getElementById('result-home').textContent=session.folder?'В словарь':'К блокам';
+  playFeedbackSound(complete);
   show('result');
 }
 function renderDictionary(){
   const custom=state.customFolders||{}; const myId=state.myWordsFolder;
   const folders=[{id:'irregular',name:'Неправильные глаголы',count:verbs.length,built:true},{id:myId,name:'Мои слова',count:(custom[myId]?.words||[]).length,built:false,system:true},...Object.entries(custom).filter(([id,f])=>id!==myId&&normalize(f.name)!=='мои слова').map(([id,f])=>({id,name:f.name,count:(f.words||[]).length,built:false}))];
   if(!folders.some(f=>f.id===selectedFolder))selectedFolder='irregular';
-  document.getElementById('folders').innerHTML=folders.map(f=>`<div class="folder-card ${selectedFolder===f.id?'selected':''}" data-folder-card="${f.id}"><h3>📁 ${htmlEscape(f.name)}</h3><div class="muted">${f.count} слов</div>${!f.built&&!f.system?'<button class="danger icon-btn small-action" data-delete-folder="'+f.id+'" title="Удалить папку" aria-label="Удалить папку">🗑</button>':''}</div>`).join('');
+  document.getElementById('folders').innerHTML=folders.map(f=>{const fp=folderPercent(f.id);return `<div class="folder-card ${selectedFolder===f.id?'selected':''}" data-folder-card="${f.id}"><div class="folder-card-head"><h3>📁 ${htmlEscape(f.name)}</h3><span class="badge ${fp>=100?'good':''}">${fp}%</span></div><div class="muted">${countLabel(f.count)}</div><div class="progress"><div class="bar ${fp>=100?'good':''}" style="width:${fp}%"></div></div>${!f.built&&!f.system?'<button class="icon-btn danger small-action folder-delete" data-delete-folder="'+f.id+'" title="Удалить папку" aria-label="Удалить папку">🗑</button>':''}</div>`}).join('');
   document.querySelectorAll('[data-folder-card]').forEach(card=>card.onclick=()=>{selectedFolder=card.dataset.folderCard;save();renderDictionary()});
   document.querySelectorAll('[data-delete-folder]').forEach(b=>b.onclick=e=>{e.stopPropagation();openModal('confirm','Удалить папку?','Папка будет удалена.','deleteFolder',b.dataset.deleteFolder)});
   const title=folders.find(f=>f.id===selectedFolder)||folders[0];
+  const selectedProgress=folderPercent(title.id);
+  const selectedWords=title.built?verbs:(custom[title.id]?.words||[]);
+  const selectedMastered=selectedWords.filter(v=>title.built?mastered(v):customStat(v.id).level>=3).length;
   document.getElementById('dict-title').textContent=title.name;
-  document.getElementById('dict-tools').innerHTML=`<button class="primary" id="train-folder">Тренировать папку</button><button id="mix-folder">+ Подмешать случайные</button>${title.built||title.system?'':'<button id="add-to-current">+ Добавить слово</button>'}`;
+  document.getElementById('dict-progress').innerHTML=`<div class="dict-progress-line"><span>Прогресс</span><b>${selectedProgress}%</b></div><div class="progress"><div class="bar ${selectedProgress>=100?'good':''}" style="width:${selectedProgress}%"></div></div><div class="muted">Закреплено: ${selectedMastered} из ${selectedWords.length}</div>`;
+  document.getElementById('dict-tools').innerHTML=`<button class="primary" id="train-folder">Тренировать папку</button>${title.built||title.system?'':'<button id="add-to-current">+ Добавить слово</button>'}`;
   document.getElementById('train-folder').onclick=()=>startFolderTraining(false,title.id);
-  document.getElementById('mix-folder').onclick=()=>startFolderTraining(true,title.id);
   if(!title.built&&!title.system)document.getElementById('add-to-current').onclick=()=>openModal('word');
   const words=title.built?verbs:(custom[title.id]?.words||[]);
   if(title.built){
-    document.getElementById('dict-list').innerHTML=words.map(v=>`<div class="word-item irregular-line"><span class="forms-inline"><b>${v.inf}</b><b>${v.past}</b><b>${v.part}</b></span><span>${v.ru}</span><button class="listen-button" data-dict-speak="${v.inf}">🔊</button></div>`).join('');
+    document.getElementById('dict-list').innerHTML=`<div class="learn-table-wrap"><table class="learn-table"><thead><tr><th>V1 · Infinitive</th><th>V2 · Past Simple</th><th>V3 · Past Participle</th><th>Перевод</th><th></th></tr></thead><tbody>${words.map(v=>`<tr><td>${ipaCell(v.inf,v.ipa)}</td><td>${ipaCell(v.past,v.pastIpa===v.ipa?'':v.pastIpa)}</td><td>${ipaCell(v.part,v.partIpa===v.pastIpa?'':v.partIpa)}</td><td class="learn-translation">${htmlEscape(v.ru)}</td><td><button class="icon-btn listen-button" title="Прослушать" aria-label="Прослушать" data-dict-speak="${htmlEscape(v.inf)}">🔊</button></td></tr>`).join('')}</tbody></table></div>`;
   }else{
-    document.getElementById('dict-list').innerHTML=words.map(v=>`<div class="word-item custom-word-line"><span><b>${htmlEscape(v.word)}</b></span><span>${htmlEscape(v.translation)}</span><div class="word-actions"><button class="small-action" data-manage-word="${v.id}">Перенести</button><button class="danger icon-btn small-action" data-delete-word="${v.id}" title="Удалить слово" aria-label="Удалить слово">🗑</button></div></div>`).join('');
+    document.getElementById('dict-list').innerHTML=words.map(v=>`<div class="word-item custom-word-line"><span><b>${htmlEscape(v.word)}</b></span><span>${htmlEscape(v.translation)}</span><div class="word-actions"><button class="icon-btn small-action" data-manage-word="${v.id}" title="Переместить" aria-label="Переместить">↔</button><button class="icon-btn danger small-action" data-delete-word="${v.id}" title="Удалить" aria-label="Удалить">🗑</button></div></div>`).join('');
   }
-  document.querySelectorAll('[data-dict-speak]').forEach(b=>b.onclick=()=>speak(b.dataset.dictSpeak));
+  document.querySelectorAll('[data-dict-speak]').forEach(b=>b.onclick=()=>speak(b.dataset.dictSpeak,true));
   document.querySelectorAll('[data-delete-word]').forEach(b=>b.onclick=()=>openModal('confirm','Удалить слово?','Слово будет удалено из этой папки.','deleteWord',b.dataset.deleteWord,title.id));
   document.querySelectorAll('[data-manage-word]').forEach(b=>b.onclick=()=>openModal('move','Перенести слово',null,'manageWord',b.dataset.manageWord,title.id));
 }
@@ -199,36 +216,124 @@ function renderErrors(){
   const es=verbs.filter(v=>st(v).wrong>0).sort((a,b)=>st(b).wrong-st(a).wrong);
   const box=document.getElementById('error-list');
   if(!es.length){box.innerHTML='<div class="section-note">Ошибок пока нет.</div>';return;}
-  box.innerHTML=`<div class="errors-summary"><div><b>${es.length}</b> слов с ошибками</div><button class="primary" id="train-all-errors">Тренировать все ошибки</button></div>`+es.map(v=>`<div class="word-item error-line"><span class="forms-inline"><b>${v.inf}</b><b>${v.past}</b><b>${v.part}</b></span><span>${v.ru}</span><span>ошибок: ${st(v).wrong}</span></div>`).join('');
+  box.innerHTML=`<div class="errors-summary"><div><b>${es.length}</b> ${pluralizeRu(es.length,'слово с ошибкой','слова с ошибками','слов с ошибками')}</div><button class="primary" id="train-all-errors">Тренировать все ошибки</button></div><div class="learn-table-wrap"><table class="learn-table"><thead><tr><th>V1 · Infinitive</th><th>V2 · Past Simple</th><th>V3 · Past Participle</th><th>Перевод</th><th>Ошибок</th></tr></thead><tbody>${es.map(v=>`<tr><td>${ipaCell(v.inf,v.ipa)}</td><td>${ipaCell(v.past,v.pastIpa===v.ipa?'':v.pastIpa)}</td><td>${ipaCell(v.part,v.partIpa===v.pastIpa?'':v.partIpa)}</td><td class="learn-translation">${htmlEscape(v.ru)}</td><td><span class="badge bad">${st(v).wrong}</span></td></tr>`).join('')}</tbody></table></div>`;
   document.getElementById('train-all-errors').onclick=()=>startMixed('errors',selectedGroup);
 }
 function customStat(id){state.customStats=state.customStats||{};return state.customStats[id]||(state.customStats[id]={level:0,wrong:0})}
 function makeCustomItem(v,mode){return {v,mode,custom:true,hintLevel:0,letterForm:Math.random()<.5?'word':'cloze'}}
 function customOptions(v,kind){const custom=state.customFolders||{};const folderWords=(custom[selectedFolder]?.words||[]).filter(x=>x.id!==v.id);const source=kind==='word'?v.word:v.translation;const same=folderWords.map(x=>kind==='word'?x.word:x.translation);const irregular=shuffle(verbs).map(x=>kind==='word'?x.inf:x.ru);const pool=[];for(const x of shuffle(same.concat(irregular))){if(normalize(x)!==normalize(source)&&!pool.some(y=>normalize(y)===normalize(x)))pool.push(x);if(pool.length>=3)break}return [source,...pool]}
 function folderAchievementTarget(count){if(count<=5)return 4;if(count<=10)return 3;return 2}
-function startFolderTraining(mix, folderId=selectedFolder){
-  const custom=state.customFolders||{};
-  selectedFolder=folderId||selectedFolder||'irregular';
-  let base=selectedFolder==='irregular'?shuffle(verbs).slice(0,15):(custom[selectedFolder]?.words||[]);
-  if(!base.length){document.getElementById('dict-list').innerHTML='<div class="section-note">В этой папке пока нет слов для тренировки.</div>';return;}
-  let items=[];
-  if(selectedFolder==='irregular'){
-    // Dictionary goal: learn translations, not irregular forms.
-    items=shuffle(base.map(v=>makeItem(v,Math.random()<.5?'ruToEn':'enToRu')));
-    if(mix)items=items.concat(shuffle(verbs.filter(v=>!base.some(x=>x.n===v.n))).slice(0,5).map(v=>makeItem(v,Math.random()<.5?'ruToEn':'enToRu')));
-  }else{
-    const target=folderAchievementTarget(base.length);
-    for(const w of shuffle(base))items.push({v:w,mode:shuffle(['customWrite','customLetters','customCloze','customRuToEn','customEnToRu'])[0],custom:true,hintLevel:0,letterForm:'word',achieved:0,required:target,seenModes:[]});
-    if(mix)items=items.concat(shuffle(verbs).slice(0,Math.min(5,verbs.length)).map(v=>makeItem(v,['write','letters','cloze','ruToEn','enToRu'][Math.floor(Math.random()*5)])));
-  }
-  session={items:shuffle(items),index:0,score:0,kind:'folder',group:selectedGroup,answered:false,folder:true,achieved:{},required:folderAchievementTarget(base.length),mix,returnTo:'dictionary'};
-  show('quiz');renderQFolder();
+function folderPercent(folderId){
+  if(folderId==='irregular')return percentFor(verbs);
+  const words=(state.customFolders?.[folderId]?.words||[]);
+  if(!words.length)return 0;
+  return Math.round(words.reduce((sum,w)=>sum+Math.min(1,(customStat(w.id).level||0)/3),0)/words.length*100);
 }
-function renderQFolder(){const q=session.items[session.index],v=q.v;session.answered=false;document.getElementById('q-meta').innerHTML=`<div class="training-heading">Словарь · ${htmlEscape(state.customFolders?.[selectedFolder]?.name||'Мои слова')}</div><div class="training-badges"><span class="badge">${session.index+1} / ${session.items.length}</span>${q.custom?`<span class="badge">Освоено: ${(session.achieved[v.id]||0)} / ${session.required}</span>`:''}</div>`;document.getElementById('q-bar').style.width=(session.index/session.items.length*100)+'%';document.getElementById('q-feedback').innerHTML='';document.getElementById('q-hint').textContent='';document.getElementById('q-word').textContent='';document.getElementById('q-ipa').textContent='';document.getElementById('q-ru').textContent='';document.getElementById('sound-btn').classList.add('hidden');let title='',body='';if(!q.custom){renderQ();return}if(q.mode==='customWrite'){title='Напиши слово';document.getElementById('q-ru').textContent=v.translation;body=`<div class="single-answer compact-answer"><input id="ans-custom" autocomplete="off" spellcheck="false" aria-label="Слово"></div>`}else if(q.mode==='customLetters'){title='Собери слово из букв';document.getElementById('q-ru').textContent=v.translation;const chars=v.word.toLowerCase().split('');const pool=shuffle(chars.map((c,i)=>({c,i})));body=`<div class="built" id="built"></div><div class="letters">${pool.map(x=>`<button class="letter" data-char="${htmlEscape(x.c)}" data-i="${x.i}">${htmlEscape(x.c.toUpperCase())}</button>`).join('')}</div><div class="actions" style="justify-content:center"><button id="remove-letter" class="small-action">← Убрать последнюю</button></div><input type="hidden" id="letter-answer">`;document.getElementById('sound-btn').classList.remove('hidden')}else if(q.mode==='customCloze'){title='Заполни пропуски';document.getElementById('q-ru').textContent=v.translation;body=`<div class="translation-word">${clozePattern(v.word)}</div><div class="single-answer compact-answer"><input id="ans-custom" autocomplete="off" spellcheck="false" aria-label="Слово"></div>`}else if(q.mode==='customRuToEn'){title='Перевод → английский';document.getElementById('q-ru').innerHTML=`<div class="translation-word">${htmlEscape(v.translation)}</div>`;body=`<div class="option-list">${optionSet(v.word,customOptions(v,'word').slice(1))}</div>`}else{title='Перевод → русский';document.getElementById('q-word').textContent=v.word;body=`<div class="option-list">${optionSet(v.translation,customOptions(v,'translation').slice(1))}</div>`}document.getElementById('q-mode').textContent=title;document.getElementById('q-body').innerHTML=body;if(q.mode==='customLetters')bindCustomLetters();if(q.mode==='customWrite'||q.mode==='customCloze'){const el=document.getElementById('ans-custom');el.oninput=()=>{if(accepted(el.value,v.word)){el.classList.add('correct');checkFolderCurrent()}}}bindOptions();if(q.mode==='customEnToRu')document.getElementById('sound-btn').classList.remove('hidden');if(q.mode==='customEnToRu')setTimeout(()=>speak(v.word),220)}
-function giveFolderHint(){const q=session.items[session.index],v=q.v;q.hintLevel=(q.hintLevel||0)+1;const w=String(v.word||'');const n=Math.min(q.hintLevel,w.length);document.getElementById('q-hint').textContent=`Подсказка: ${w.slice(0,n)}${'_'.repeat(Math.max(0,w.length-n))}`;}
-function checkFolderCurrent(force=false){if(session.answered)return;const q=session.items[session.index],v=q.v,a=currentAnswers();let ok=false;let detail='';if(force){ok=false;detail='Ответ: '+v.word}else if(q.mode==='customWrite'){ok=accepted(a.custom,v.word);detail=ok?'✓ Правильно':'Правильно: '+v.word}else if(q.mode==='customLetters'){ok=accepted(a.letters,v.word);detail=ok?'✓ Правильно':'Правильно: '+v.word}else if(q.mode==='customCloze'){ok=accepted(a.cloze,v.word);detail=ok?'✓ Правильно':'Правильно: '+v.word}else if(q.mode==='customRuToEn'){ok=normalize(a.option)===normalize(v.word);detail=ok?'✓ Правильно':'Правильно: '+v.word}else if(q.mode==='customEnToRu'){ok=normalize(a.option)===normalize(v.translation);detail=ok?'✓ Правильно':'Правильно: '+v.translation}session.answered=true;if(ok)session.score++;if(q.custom){state.customStats=state.customStats||{};const cs=customStat(v.id);cs.attempts=(cs.attempts||0)+1;if(ok){const seen=q.seenModes||[];if(!seen.includes(q.mode)){seen.push(q.mode);q.seenModes=seen;session.achieved[v.id]=(session.achieved[v.id]||0)+1;cs.level=Math.min(session.required,session.achieved[v.id]);}}else{cs.wrong=(cs.wrong||0)+1;}save()}playFeedbackSound(ok);document.getElementById('q-feedback').innerHTML=`<span class="${ok?'good-t':'bad-t'}">${ok?'Правильно':'Нужно повторить'}.</span> ${detail}`;if(!ok&&force)document.getElementById('sound-btn').classList.remove('hidden');setTimeout(nextFolderQ,ok?430:1100)}
-function nextFolderQ(){if(!session||!session.answered)return;const q=session.items[session.index],v=q.v;if(q.custom&&(session.achieved[v.id]||0)<session.required){const modes=['customWrite','customLetters','customCloze','customRuToEn','customEnToRu'].filter(m=>!(q.seenModes||[]).includes(m));const nextMode=modes[Math.floor(Math.random()*modes.length)]||'customWrite';session.items.splice(session.index+1,0,{v,mode:nextMode,custom:true,hintLevel:0,seenModes:[...(q.seenModes||[])]})}session.index++;while(session.index<session.items.length){const n=session.items[session.index];if(n.custom&&(session.achieved[n.v.id]||0)>=session.required){session.index++;continue}break}if(session.index>=session.items.length)finishSession();else renderQFolder()}
-
+function folderModes(folderId){
+  return folderId==='irregular'
+    ? ['ruToEn','enToRu','ruToEnWrite','enToRuWrite','listen']
+    : ['customRuToEn','customEnToRu','customRuToEnWrite','customEnToRuWrite','customListen'];
+}
+function makeFolderItem(v,folderId,mode){
+  const modes=folderModes(folderId);
+  return {v,mode:mode||modes[Math.floor(Math.random()*modes.length)],custom:folderId!=='irregular',retries:0};
+}
+function buildFolderItems(base,folderId){
+  const modes=folderModes(folderId), rounds=[];
+  for(let round=0;round<3;round++){
+    rounds.push(shuffle(base).map((v,i)=>makeFolderItem(v,folderId,modes[(i+round)%modes.length])));
+  }
+  return rounds.flat();
+}
+function startFolderTraining(mix=false, folderId=selectedFolder, reviewWeak=false){
+  selectedFolder=folderId||selectedFolder||'irregular';
+  const custom=state.customFolders||{};
+  let base=selectedFolder==='irregular'?shuffle(verbs).slice(0,15):shuffle(custom[selectedFolder]?.words||[]);
+  if(reviewWeak){base=selectedFolder==='irregular'?shuffle(verbs.filter(v=>st(v).level<3)).slice(0,15):shuffle((custom[selectedFolder]?.words||[]).filter(w=>customStat(w.id).level<3));}
+  if(!base.length){renderDictionary();return;}
+  const items=buildFolderItems(base,selectedFolder);
+  session={items,index:0,score:0,kind:'folder',group:selectedGroup,answered:false,folder:true,mix:false,returnTo:'dictionary',folderId:selectedFolder,startedPercent:folderPercent(selectedFolder),initialCount:base.length,initialIds:base.map(v=>v.id||v.n),completedIds:new Set(),pending:base.length,completed:0,reviewed:0};
+  save();show('quiz');renderQFolder();
+}
+function renderQFolder(){
+  const q=session.items[session.index],v=q.v;
+  session.answered=false;
+  const folderName=state.customFolders?.[selectedFolder]?.name||(selectedFolder==='irregular'?'Неправильные глаголы':'Мои слова');
+  document.getElementById('q-meta').innerHTML=`<div class="training-heading">${htmlEscape(folderName)}</div><div class="training-badges"><span class="badge">${session.index+1} / ${session.items.length}</span><span class="badge">${folderPercent(session.folderId)}% прогресс</span></div>`;
+  document.getElementById('q-bar').style.width=(session.index/session.items.length*100)+'%';
+  document.getElementById('q-feedback').innerHTML=''; document.getElementById('q-hint').textContent='';
+  document.getElementById('q-word').textContent=''; document.getElementById('q-ipa').textContent=''; document.getElementById('q-ru').textContent='';
+  document.getElementById('sound-btn').classList.add('hidden');
+  let title='',body='';
+  if(q.mode==='ruToEn'){
+    title='Переведи на английский'; document.getElementById('q-ru').innerHTML=`<div class="translation-word">${htmlEscape(v.ru)}</div>`; body=translationRuToEnWord(v);
+  }else if(q.mode==='enToRu'){
+    title='Переведи на русский'; document.getElementById('q-word').textContent=v.inf; body=translationEnToRu(v); document.getElementById('sound-btn').classList.remove('hidden');
+  }else if(q.mode==='ruToEnWrite'){
+    title='Напиши по-английски'; document.getElementById('q-ru').innerHTML=`<div class="translation-word">${htmlEscape(v.ru)}</div>`; body=`<div class="single-answer compact-answer"><input id="ans-folder" autocomplete="off" spellcheck="false" aria-label="Ответ"></div>`;
+  }else if(q.mode==='enToRuWrite'){
+    title='Напиши перевод'; document.getElementById('q-word').textContent=v.inf; body=`<div class="single-answer compact-answer"><input id="ans-folder" autocomplete="off" spellcheck="false" aria-label="Ответ"></div>`; document.getElementById('sound-btn').classList.remove('hidden');
+  }else if(q.mode==='listen'){
+    title='Какое слово ты услышала?'; body=`<div class="listen-box"><div class="listen-icon">🔊</div><div class="option-list">${optionSet(v.inf,shuffle(verbs.filter(x=>x.n!==v.n)).slice(0,3).map(x=>x.inf))}</div></div>`; document.getElementById('sound-btn').classList.remove('hidden');
+  }else if(q.mode==='customRuToEn'){
+    title='Переведи на английский'; document.getElementById('q-ru').innerHTML=`<div class="translation-word">${htmlEscape(v.translation)}</div>`; body=`<div class="option-list">${optionSet(v.word,customOptions(v,'word').slice(1))}</div>`;
+  }else if(q.mode==='customEnToRu'){
+    title='Переведи на русский'; document.getElementById('q-word').textContent=v.word; body=`<div class="option-list">${optionSet(v.translation,customOptions(v,'translation').slice(1))}</div>`; document.getElementById('sound-btn').classList.remove('hidden');
+  }else if(q.mode==='customRuToEnWrite'){
+    title='Напиши по-английски'; document.getElementById('q-ru').innerHTML=`<div class="translation-word">${htmlEscape(v.translation)}</div>`; body=`<div class="single-answer compact-answer"><input id="ans-folder" autocomplete="off" spellcheck="false" aria-label="Ответ"></div>`;
+  }else if(q.mode==='customEnToRuWrite'){
+    title='Напиши перевод'; document.getElementById('q-word').textContent=v.word; body=`<div class="single-answer compact-answer"><input id="ans-folder" autocomplete="off" spellcheck="false" aria-label="Ответ"></div>`; document.getElementById('sound-btn').classList.remove('hidden');
+  }else{
+    title='Какое слово ты услышала?'; body=`<div class="listen-box"><div class="listen-icon">🔊</div><div class="option-list">${optionSet(v.word,customOptions(v,'word').slice(1))}</div></div>`; document.getElementById('sound-btn').classList.remove('hidden');
+  }
+  document.getElementById('q-mode').textContent=title; document.getElementById('q-body').innerHTML=body; bindOptions(); bindInputs();
+  const autoModes=['enToRu','enToRuWrite','listen','customEnToRu','customEnToRuWrite','customListen'];
+  if(soundOn && autoModes.includes(q.mode))setTimeout(()=>speak(v.word||v.inf),220);
+}
+function checkFolderCurrent(force=false){
+  if(session.answered)return;
+  const q=session.items[session.index],v=q.v,a=currentAnswers(); let ok=false;
+  if(force){ok=false;}
+  else if(q.mode==='customRuToEn')ok=normalize(a.option)===normalize(v.word);
+  else if(q.mode==='customEnToRu')ok=normalize(a.option)===normalize(v.translation);
+  else if(q.mode==='customRuToEnWrite')ok=normalize(a.folder)===normalize(v.word);
+  else if(q.mode==='customEnToRuWrite')ok=normalize(a.folder)===normalize(v.translation);
+  else if(q.mode==='customListen')ok=normalize(a.option)===normalize(v.word);
+  else if(q.mode==='ruToEn')ok=normalize(a.option)===normalize(v.inf);
+  else if(q.mode==='enToRu')ok=normalize(a.option)===normalize(v.ru);
+  else if(q.mode==='ruToEnWrite')ok=normalize(a.folder)===normalize(v.inf);
+  else if(q.mode==='enToRuWrite')ok=normalize(a.folder)===normalize(v.ru);
+  else if(q.mode==='listen')ok=normalize(a.option)===normalize(v.inf);
+  session.answered=true;
+  if(ok)session.score++;
+  if(q.custom){
+    const cs=customStat(v.id);cs.attempts=(cs.attempts||0)+1;
+    if(ok){cs.level=Math.min(3,(cs.level||0)+1);cs.streak=(cs.streak||0)+1}else{cs.wrong=(cs.wrong||0)+1;cs.level=0;cs.streak=0}
+    if(cs.level>=3)session.completedIds?.add(v.id);
+  }else{
+    markAttempt(v,ok,q.mode);
+    if(mastered(v))session.completedIds?.add(v.n);
+  }
+  save();
+  document.querySelectorAll('.option').forEach(btn=>{
+    const val=normalize(btn.dataset.option); let correct='';
+    if(q.mode==='customRuToEn'||q.mode==='customListen')correct=normalize(v.word);
+    else if(q.mode==='customEnToRu')correct=normalize(v.translation);
+    else if(q.mode==='ruToEn'||q.mode==='listen')correct=normalize(v.inf);
+    else if(q.mode==='enToRu')correct=normalize(v.ru);
+    if(val===correct)btn.classList.add('correct'); else if(btn.classList.contains('selected')&&!ok)btn.classList.add('wrong');
+  });
+  document.getElementById('q-feedback').innerHTML='';
+  playFeedbackSound(ok);
+  if(!ok){
+    q.retries=(q.retries||0)+1;
+    q.mode=makeFolderItem(v,session.folderId).mode;
+    const insertAt=Math.min(session.items.length,session.index+4+Math.floor(Math.random()*3));
+    session.items.splice(insertAt,0,q);
+  }
+  setTimeout(nextFolderQ,ok?430:850);
+}
+function nextFolderQ(){if(!session||!session.answered)return;session.index++;if(session.index>=session.items.length)finishSession();else renderQFolder()}
 
 function openModal(type,title,message,action,arg1,arg2){
   const back=document.getElementById('modal-backdrop'),content=document.getElementById('modal-content');
@@ -266,15 +371,12 @@ const nav=id=>document.getElementById(id);
 nav('nav-home').onclick=()=>show('home');
 nav('nav-dictionary').onclick=()=>show('dictionary');
 nav('nav-errors').onclick=()=>show('errors');
-const autoSound=document.getElementById('auto-sound');
-if(autoSound){autoSound.checked=soundOn;autoSound.onchange=()=>{soundOn=autoSound.checked;state.soundOn=soundOn;save();};}
-
 nav('dontknow').onclick=dontKnow;
 nav('hint-btn').onclick=giveHint;
 nav('sound-btn').onclick=()=>speak(session.items[session.index].v.word||session.items[session.index].v.inf,true);
 nav('add-folder').onclick=addFolder;
 nav('add-word').onclick=addWord;
-nav('result-again').onclick=()=>{if(session&&session.folder)startFolderTraining(!!session.mix);else startMixed('new')};
+nav('result-again').onclick=()=>{if(session&&session.folder)startFolderTraining(false,session.folderId,true);else startMixed('new')};
 nav('result-home').onclick=()=>show(session&&session.folder?'dictionary':'home');
 nav('finish-training').onclick=()=>{if(session){session.answered=true;show(session.folder?'dictionary':'home')}};
 nav('study-btn').onclick=startStudy;
@@ -282,6 +384,10 @@ nav('continue-btn').onclick=()=>startMixed(groupPercent(selectedGroup)>=100?'gro
 nav('learn-start').onclick=()=>startMixed('new',selectedGroup);
 nav('learn-home').onclick=()=>show('home');
 nav('learn-finish').onclick=()=>show('home');
+const soundToggle=document.getElementById('sound-toggle');
+function renderSoundToggle(){soundToggle.textContent=soundOn?'🔊 Выключить звук':'🔇 Включить звук';soundToggle.setAttribute('aria-pressed',String(soundOn));soundToggle.title=soundOn?'Выключить звук':'Включить звук';}
+soundToggle.onclick=()=>{soundOn=!soundOn;state.soundOn=soundOn;save();renderSoundToggle()};
+renderSoundToggle();
 nav('modal-cancel').onclick=closeModal;
 nav('modal-ok').onclick=modalConfirm;
 document.getElementById('modal-backdrop').onclick=e=>{if(e.target.id==='modal-backdrop')closeModal()};
