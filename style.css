@@ -1026,3 +1026,19 @@ html[data-theme="dark"] .badge.good,html[data-theme="dark"] .folder-card .badge.
 html[data-theme="dark"] .folder-delete{background:rgba(167,124,255,.14)!important;color:#d0b6ff!important}
 html[data-theme="dark"] .folder-delete:hover{background:rgba(243,92,168,.16)!important;color:#ff8fc4!important}
 .dictionary-intro span{display:inline-block;margin-top:4px}
+
+
+/* v32 — header/hero copy cleanup */
+.personal-caption{
+  margin-top:18px;
+  font-family:'Unbounded','DM Sans',Arial,sans-serif;
+  font-size:clamp(24px,3vw,42px);
+  line-height:1.18;
+  font-weight:500;
+  letter-spacing:-.035em;
+  color:#7b5bbf;
+}
+html[data-theme="dark"] .personal-caption{color:#d7baff}
+@media(max-width:700px){
+  .personal-caption{font-size:25px;margin-top:14px;max-width:90%}
+}
