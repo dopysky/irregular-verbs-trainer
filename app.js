@@ -68,7 +68,7 @@ function renderHome(){
   const hm=document.getElementById('home-mastered-count'); if(hm)hm.textContent=masteredCount;
 }
 
-function show(id){['home','learn','quiz','result','dictionary','errors'].forEach(x=>document.getElementById(x).classList.toggle('hidden',x!==id));if(id==='home')renderHome();if(id==='learn')renderLearn();if(id==='dictionary')renderDictionary();if(id==='errors')renderErrors()}
+function show(id){['home','learn','quiz','result','dictionary'].forEach(x=>document.getElementById(x).classList.toggle('hidden',x!==id));if(id==='home')renderHome();if(id==='learn')renderLearn();if(id==='dictionary')renderDictionary()}
 function ipaCell(word,ipa){return `<div class="learn-word"><b>${htmlEscape(word)}</b>${ipa?`<span class="learn-ipa">/${htmlEscape(ipa)}/</span>`:''}</div>`}
 function renderLearn(){
   const g=groupMeta(selectedGroup),vs=groupVerbs(selectedGroup);
@@ -108,7 +108,7 @@ function startMixed(kind='new',groupN=selectedGroup){
   session={items:shuffle(items),index:0,score:0,kind,group:kind==='errors'?null:groupN,answered:false,folder:false,returnTo:'home'};
   save();show('quiz');renderQ();
 }
-function renderQ(){const q=session.items[session.index],v=q.v;session.answered=false;document.getElementById('q-meta').innerHTML=`<div class="training-heading">${session.kind==='errors'?'Ошибки':groupMeta(session.group).name}</div><div class="training-badges"><span class="badge">${session.index+1} / ${session.items.length}</span><span class="badge">${Math.round(st(v).level/3*100)}% у глагола</span></div>`;document.getElementById('q-bar').style.width=(session.index/session.items.length*100)+'%';document.getElementById('q-feedback').innerHTML='';document.getElementById('q-hint').textContent='';document.getElementById('q-word').textContent='';document.getElementById('q-ipa').textContent='';document.getElementById('q-ru').textContent='';document.getElementById('sound-btn').classList.add('hidden');let title='',body='';if(q.mode==='write'){title='Укажи 2-ю и 3-ю форму';document.getElementById('q-word').textContent=v.inf;document.getElementById('q-ipa').textContent='';document.getElementById('q-ru').textContent=v.ru;body=writeTask(v)}else if(q.mode==='letters'){title=`Собери ${q.letterForm==='past'?'2-ю':'3-ю'} форму из букв`;document.getElementById('q-word').textContent=v.inf;document.getElementById('q-ru').textContent=v.ru;body=letterTask(v,q.letterForm);document.getElementById('sound-btn').classList.remove('hidden')}else if(q.mode==='cloze'){title=`Вставь пропущенные буквы`;document.getElementById('q-word').textContent=v.inf;document.getElementById('q-ru').textContent=v.ru;body=clozeTask(v,q.letterForm);document.getElementById('sound-btn').classList.remove('hidden')}else if(q.mode==='ruToEn'){title='Переведи на английский';document.getElementById('q-ru').innerHTML=`<div class="translation-word">${v.ru}</div>`;body=translationRuToEn(v)}else if(q.mode==='enToRu'){title='Переведи на русский';document.getElementById('q-word').textContent=v.inf;document.getElementById('q-ipa').textContent='';body=translationEnToRu(v);document.getElementById('sound-btn').classList.remove('hidden')}else{title='Послушай и выбери слово';body=listenTask(v);document.getElementById('sound-btn').classList.remove('hidden')}document.getElementById('q-mode').textContent=title;document.getElementById('q-body').innerHTML=body;bindLetters();bindOptions();bindInputs();const safeSound=['write','letters','cloze','enToRu','listen'].includes(q.mode);if(safeSound)document.getElementById('sound-btn').classList.remove('hidden');autoSpeakForQuestion(q)}
+function renderQ(){const q=session.items[session.index],v=q.v;session.answered=false;document.getElementById('q-meta').innerHTML=`<div class="training-heading">${session.kind==='errors'?'Ошибки':groupMeta(session.group).name}</div><div class="training-badges"><span class="badge">${session.index+1} / ${session.items.length}</span><span class="badge">${Math.round(st(v).level/3*100)}% у глагола</span></div>`;document.getElementById('q-bar').style.width=(session.index/session.items.length*100)+'%';document.getElementById('q-feedback').innerHTML='';document.getElementById('q-hint').textContent='';document.getElementById('q-word').textContent='';document.getElementById('q-ipa').textContent='';document.getElementById('q-ru').textContent='';document.getElementById('sound-btn').classList.add('hidden');let title='',body='';if(q.mode==='write'){title='Укажи 2-ю и 3-ю форму';document.getElementById('q-word').textContent=v.inf;document.getElementById('q-ipa').textContent='';document.getElementById('q-ru').textContent=v.ru;body=writeTask(v)}else if(q.mode==='letters'){title=`Собери ${q.letterForm==='past'?'2-ю':'3-ю'} форму из букв`;document.getElementById('q-word').textContent=v.inf;document.getElementById('q-ru').textContent=v.ru;body=letterTask(v,q.letterForm);document.getElementById('sound-btn').classList.remove('hidden')}else if(q.mode==='cloze'){title=`Вставь пропущенные буквы в ${q.letterForm==='past'?'2-ю':'3-ю'} форму`;document.getElementById('q-word').textContent=v.inf;document.getElementById('q-ru').textContent=v.ru;body=clozeTask(v,q.letterForm);document.getElementById('sound-btn').classList.remove('hidden')}else if(q.mode==='ruToEn'){title='Переведи на английский';document.getElementById('q-ru').innerHTML=`<div class="translation-word">${v.ru}</div>`;body=translationRuToEn(v)}else if(q.mode==='enToRu'){title='Переведи на русский';document.getElementById('q-word').textContent=v.inf;document.getElementById('q-ipa').textContent='';body=translationEnToRu(v);document.getElementById('sound-btn').classList.remove('hidden')}else{title='Послушай и выбери слово';body=listenTask(v);document.getElementById('sound-btn').classList.remove('hidden')}document.getElementById('q-mode').textContent=title;document.getElementById('q-body').innerHTML=body;bindLetters();bindOptions();bindInputs();const safeSound=['write','letters','cloze','enToRu','listen'].includes(q.mode);if(safeSound)document.getElementById('sound-btn').classList.remove('hidden');autoSpeakForQuestion(q)}
 function formsHtml(v,target,cloze=false){const arr=[['Infinitive',v.inf],['V2',v.past],['V3',v.part]];return `<div class="forms-row">${arr.map(([lab,val])=>{const isTarget=lab===target;const shown=isTarget?(cloze?clozePattern(val):'_'.repeat(Math.max(4,val.length))):val;const ipa=lab==='Infinitive'&&!isTarget?`<div class="ipa">/${v.ipa||''}/</div>`:'';return `<div class="form-card ${isTarget?'hidden-form':''}"><small>${lab}</small><b>${shown}</b>${ipa}</div>`}).join('')}</div>`}
 function writeTask(v){return `<div class="input-grid"><label>V2<input id="ans-v2" autocomplete="off" spellcheck="false"></label><label>V3<input id="ans-v3" autocomplete="off" spellcheck="false"></label></div>`}
 function letterTask(v,form){const target=form==='past'?v.past:v.part;const chars=target.split('/')[0].replace(/[^a-z]/gi,'').toLowerCase().split('');const pool=shuffle(chars.map((c,i)=>({c,i})));return `<div class="built" id="built" aria-label="Собранное слово"></div><div class="letters">${pool.map(x=>`<button class="letter" data-char="${x.c}" data-i="${x.i}">${x.c.toUpperCase()}</button>`).join('')}</div><div class="actions" style="justify-content:center"><button id="remove-letter" class="small-action">← Убрать последнюю</button></div><input type="hidden" id="letter-answer">`}
@@ -129,25 +129,37 @@ function bindInputs(){
   const q=session.items[session.index];
   if(q.mode!=="write"&&q.mode!=="cloze"&&!['ruToEnWrite','enToRuWrite','customRuToEnWrite','customEnToRuWrite'].includes(q.mode)) return;
   if(['ruToEnWrite','enToRuWrite','customRuToEnWrite','customEnToRuWrite'].includes(q.mode)){const el=document.getElementById('ans-folder');if(el){el.oninput=()=>{const v=q.v;const target=['ruToEnWrite','customRuToEnWrite'].includes(q.mode)?(q.custom?v.word:v.inf):(q.custom?v.translation:v.ru);if(normalize(el.value)===normalize(target))checkFolderCurrent();};el.onkeydown=e=>{if(e.key==='Enter'&&el.value.trim())checkFolderCurrent();}}return;}
-  const ids=q.mode==="write"?["ans-v2","ans-v3"]:["ans-cloze"];
-  ids.forEach(function(id){
-    const el=document.getElementById(id);
-    if(!el)return;
-    el.oninput=function(){
-      const v=q.v;
-      if(q.mode==="write"){
-        const a2=accepted(document.getElementById("ans-v2").value,v.past);
-        const a3=accepted(document.getElementById("ans-v3").value,v.part);
-        document.getElementById("ans-v2").classList.toggle("correct",a2);
-        document.getElementById("ans-v3").classList.toggle("correct",a3);
-        if(a2&&a3)checkCurrent();
-      }else if(accepted(el.value,q.letterForm==="past"?v.past:v.part)){
-        el.classList.add("correct");
-        checkCurrent();
+  if(q.mode==='write'){
+    const v=q.v, v2=document.getElementById('ans-v2'), v3=document.getElementById('ans-v3');
+    if(!v2||!v3)return;
+    v2.oninput=function(){
+      const ok2=accepted(v2.value,v.past);
+      v2.classList.toggle('correct',ok2);
+      if(ok2&&!accepted(v3.value,v.part)){
+        v3.focus();
+        v3.select?.();
       }
+      if(ok2&&accepted(v3.value,v.part))checkCurrent();
     };
-  });
+    v3.oninput=function(){
+      const ok2=accepted(v2.value,v.past), ok3=accepted(v3.value,v.part);
+      v2.classList.toggle('correct',ok2);
+      v3.classList.toggle('correct',ok3);
+      if(ok2&&ok3)checkCurrent();
+    };
+    return;
+  }
+  const el=document.getElementById('ans-cloze');
+  if(!el)return;
+  el.oninput=function(){
+    const v=q.v;
+    if(accepted(el.value,q.letterForm==='past'?v.past:v.part)){
+      el.classList.add('correct');
+      checkCurrent();
+    }
+  };
 }
+
 function markAttempt(v,ok,mode){const x=st(v);x.attempts=(x.attempts||0)+1;x.today=(x.today||0)+1;x.last=Date.now();x.wrongModes=x.wrongModes||{};const intervals=[10*60*1000,24*60*60*1000,3*24*60*60*1000,7*24*60*60*1000];if(ok){x.streak=(x.streak||0)+1;x.level=Math.min(3,x.level+1);x.due=Date.now()+intervals[Math.min(x.level-1,intervals.length-1)]}else{x.streak=0;x.level=0;x.due=Date.now()+10*60*1000;x.wrong=(x.wrong||0)+1;x.wrongModes[mode]=(x.wrongModes[mode]||0)+1;if(mode==='write'){x.wrongV2=(x.wrongV2||0)+1;x.wrongV3=(x.wrongV3||0)+1}if(mode==='letters'){if(session.items[session.index].letterForm==='past')x.wrongV2=(x.wrongV2||0)+1;else x.wrongV3=(x.wrongV3||0)+1}if(mode==='cloze')x.spelling=(x.spelling||0)+1}save()}
 function checkCurrent(force=false){if(session.answered)return;const q=session.items[session.index],v=q.v,a=currentAnswers();let ok=false,detail='';if(force){ok=false;detail='Ответ: '+(q.mode==='write'?v.past+' — '+v.part:q.mode==='letters'?(q.letterForm==='past'?v.past:v.part):q.mode==='cloze'?(q.letterForm==='past'?v.past:v.part):q.mode==='ruToEn'?v.inf+' — '+v.past+' — '+v.part:q.mode==='enToRu'?v.ru:v.inf)}else if(q.mode==='write'){const a2=accepted(a.v2,v.past),a3=accepted(a.v3,v.part);document.getElementById('ans-v2').classList.toggle('correct',a2);document.getElementById('ans-v3').classList.toggle('correct',a3);if(!(a2&&a3))return;ok=true;detail='V2 и V3 правильно'}else if(q.mode==='letters'){ok=accepted(a.letters,q.letterForm==='past'?v.past:v.part);detail=ok?'✓ Правильно':'Правильно: '+(q.letterForm==='past'?v.past:v.part)}else if(q.mode==='cloze'){ok=accepted(a.cloze,q.letterForm==='past'?v.past:v.part);detail=ok?'✓ Правильно':'Правильно: '+(q.letterForm==='past'?v.past:v.part)}else if(q.mode==='ruToEn'||q.mode==='enToRu'||q.mode==='listen'){const selected=document.querySelector('.option.selected');ok=selected?.dataset.correct==='1';detail=ok?'✓ Правильно':'Правильно: '+(q.mode==='ruToEn'?`${v.inf} — ${v.past} — ${v.part}`:q.mode==='enToRu'?v.ru:v.inf)}markAttempt(v,ok,q.mode);if(!ok&&!force&&q.mode!=='write'){const pos=Math.min(session.items.length,session.index+3);session.items.splice(pos,0,makeItem(v,q.mode))}session.answered=true;if(ok)session.score++;document.querySelectorAll('.option').forEach(btn=>{const val=btn.dataset.option;if((q.mode==='ruToEn'&&val===`${v.inf} — ${v.past} — ${v.part}`)||(q.mode==='enToRu'&&normalize(val)===normalize(v.ru))||(q.mode==='listen'&&normalize(val)===normalize(v.inf))){btn.classList.add('correct')}else if(btn.classList.contains('selected')&&!ok)btn.classList.add('wrong')});document.getElementById('q-feedback').innerHTML='';playFeedbackSound(ok);if(!ok&&force&&['letters','cloze','write'].includes(q.mode))document.getElementById('sound-btn').classList.remove('hidden');if(ok||force){setTimeout(nextQ,ok?430:1100)}else{setTimeout(nextQ,1400)}renderHome()}
 function dontKnow(){if(session.answered)return;if(session.folder){checkFolderCurrent(true);return}checkCurrent(true)}
@@ -165,18 +177,21 @@ function giveHint(){
   else if(q.mode==='letters'||q.mode==='cloze')text=partial(q.letterForm==='past'?v.past:v.part,q.hintLevel);
   else if(q.mode==='ruToEn')text=partial(v.inf,q.hintLevel);
   else if(q.mode==='enToRu')text=partial(v.ru,q.hintLevel);
-  else text=v.inf;
+  else text=partial(v.inf||v.word,q.hintLevel);
   document.getElementById('q-hint').textContent='Подсказка: '+text;
 }
-function speak(text,force=false){if(!force&&!soundOn)return;if(!('speechSynthesis' in window))return;window.speechSynthesis.cancel();window.speechSynthesis.resume?.();const u=new SpeechSynthesisUtterance(text);u.lang='en-US';u.rate=.82;u.volume=1;window.speechSynthesis.speak(u)}
-function autoSpeakCurrent(text){if(!soundOn||!text)return;window.setTimeout(()=>speak(text,false),140)}
+let speechVoice=null;
+function pickSpeechVoice(){if(!('speechSynthesis' in window))return null;const voices=window.speechSynthesis.getVoices();speechVoice=voices.find(v=>/^en-US$/i.test(v.lang))||voices.find(v=>/^en/i.test(v.lang))||voices[0]||null;return speechVoice}
+if('speechSynthesis' in window){pickSpeechVoice();window.speechSynthesis.onvoiceschanged=pickSpeechVoice}
+function speak(text,force=false){if(!force&&!soundOn)return;if(!('speechSynthesis' in window)||!text)return;const run=()=>{window.speechSynthesis.cancel();window.speechSynthesis.resume?.();const u=new SpeechSynthesisUtterance(String(text));u.lang='en-US';u.rate=.78;u.pitch=1;u.volume=1;const v=speechVoice||pickSpeechVoice();if(v)u.voice=v;window.speechSynthesis.speak(u)};run();setTimeout(()=>{if(window.speechSynthesis && !window.speechSynthesis.speaking)run()},180)}
+function autoSpeakCurrent(text){if(!soundOn||!text)return;window.setTimeout(()=>speak(text,false),220)}
 function autoSpeakForQuestion(q){if(!soundOn||!q)return;const mode=q.mode;const english=q.v?.inf||q.v?.word;if(!english)return;const modes=['write','letters','cloze','enToRu','listen','enToRuWrite','customEnToRu','customEnToRuWrite','customListen'];if(modes.includes(mode))autoSpeakCurrent(english)}
 function playFeedbackSound(ok){
   if(!soundOn)return;
   try{
     const C=window.AudioContext||window.webkitAudioContext;if(!C)return;
     const c=new C(),now=c.currentTime;
-    const master=c.createGain();master.gain.setValueAtTime(.0001,now);master.gain.exponentialRampToValueAtTime(.18,now+.012);master.gain.exponentialRampToValueAtTime(.0001,now+(ok?.52:.3));master.connect(c.destination);
+    const master=c.createGain();master.gain.setValueAtTime(.0001,now);master.gain.exponentialRampToValueAtTime(.32,now+.012);master.gain.exponentialRampToValueAtTime(.0001,now+(ok?.52:.3));master.connect(c.destination);
     const tones=ok?[{f:784,t:0,d:.22},{f:1046.5,t:.07,d:.30},{f:1318.5,t:.14,d:.32}]:[{f:220,t:0,d:.13},{f:165,t:.08,d:.21}];
     tones.forEach(({f,t,d})=>{const o=c.createOscillator(),g=c.createGain();o.type=ok?'sine':'triangle';o.frequency.setValueAtTime(f,now+t);g.gain.setValueAtTime(.0001,now+t);g.gain.exponentialRampToValueAtTime(ok?.72:.5,now+t+.012);g.gain.exponentialRampToValueAtTime(.0001,now+t+d);o.connect(g);g.connect(master);o.start(now+t);o.stop(now+t+d+.02)});
     setTimeout(()=>c.close(),700);
@@ -202,7 +217,7 @@ function renderDictionary(){
   const custom=state.customFolders||{}; const myId=state.myWordsFolder;
   const folders=[{id:'irregular',name:'Неправильные глаголы',count:verbs.length,built:true},{id:myId,name:'Мои слова',count:(custom[myId]?.words||[]).length,built:false,system:true},...Object.entries(custom).filter(([id,f])=>id!==myId&&normalize(f.name)!=='мои слова').map(([id,f])=>({id,name:f.name,count:(f.words||[]).length,built:false}))];
   if(!folders.some(f=>f.id===selectedFolder))selectedFolder='irregular';
-  document.getElementById('folders').innerHTML=folders.map(f=>{const fp=folderPercent(f.id);return `<div class="folder-card ${selectedFolder===f.id?'selected':''}" data-folder-card="${f.id}"><div class="folder-card-head"><h3>📁 ${htmlEscape(f.name)}</h3><span class="badge ${fp>=100?'good':''}">${fp}%</span></div><div class="muted">${countLabel(f.count)}</div><div class="progress"><div class="bar ${fp>=100?'good':''}" style="width:${fp}%"></div></div>${!f.built&&!f.system?'<button class="icon-btn danger small-action folder-delete" data-delete-folder="'+f.id+'" title="Удалить папку" aria-label="Удалить папку">🗑</button>':''}</div>`}).join('');
+  document.getElementById('folders').innerHTML=folders.map(f=>{const fp=folderPercent(f.id);return `<div class="folder-card ${selectedFolder===f.id?'selected':''}" data-folder-card="${f.id}"><div class="folder-card-head"><h3>📁 ${htmlEscape(f.name)}</h3><span class="badge ${fp>=100?'good':''}">${fp}%</span></div><div class="muted">${countLabel(f.count)}</div><div class="progress"><div class="bar ${fp>=100?'good':''}" style="width:${fp}%"></div></div>${!f.built&&!f.system?'<button class="folder-delete" data-delete-folder="'+f.id+'" title="Удалить папку" aria-label="Удалить папку">×</button>':''}</div>`}).join('');
   document.querySelectorAll('[data-folder-card]').forEach(card=>card.onclick=()=>{selectedFolder=card.dataset.folderCard;save();renderDictionary()});
   document.querySelectorAll('[data-delete-folder]').forEach(b=>b.onclick=e=>{e.stopPropagation();openModal('confirm','Удалить папку?','Папка будет удалена.','deleteFolder',b.dataset.deleteFolder)});
   const title=folders.find(f=>f.id===selectedFolder)||folders[0];
@@ -218,10 +233,11 @@ function renderDictionary(){
   if(title.built){
     document.getElementById('dict-list').innerHTML=`<div class="learn-table-wrap"><table class="learn-table"><thead><tr><th>V1 · Infinitive</th><th>V2 · Past Simple</th><th>V3 · Past Participle</th><th>Перевод</th><th></th></tr></thead><tbody>${words.map(v=>`<tr><td>${ipaCell(v.inf,v.ipa)}</td><td>${ipaCell(v.past,v.pastIpa===v.ipa?'':v.pastIpa)}</td><td>${ipaCell(v.part,v.partIpa===v.pastIpa?'':v.partIpa)}</td><td class="learn-translation">${htmlEscape(v.ru)}</td><td><button class="icon-btn listen-button" title="Прослушать" aria-label="Прослушать" data-dict-speak="${htmlEscape(v.inf)}">🔊</button></td></tr>`).join('')}</tbody></table></div>`;
   }else{
-    document.getElementById('dict-list').innerHTML=words.map(v=>`<div class="word-item custom-word-line"><span><b>${htmlEscape(v.word)}</b></span><span>${htmlEscape(v.translation)}</span><div class="word-actions"><button class="icon-btn small-action" data-manage-word="${v.id}" title="Переместить" aria-label="Переместить">↔</button><button class="icon-btn danger small-action" data-delete-word="${v.id}" title="Удалить" aria-label="Удалить">🗑</button></div></div>`).join('');
+    document.getElementById('dict-list').innerHTML=words.map(v=>`<div class="word-item custom-word-line"><span><b>${htmlEscape(v.word)}</b></span><span>${htmlEscape(v.translation)}</span><div class="word-actions"><button class="icon-btn small-action" data-edit-word="${v.id}" title="Редактировать" aria-label="Редактировать">✎</button><button class="icon-btn small-action" data-manage-word="${v.id}" title="Переместить" aria-label="Переместить">↔</button><button class="icon-btn danger small-action" data-delete-word="${v.id}" title="Удалить" aria-label="Удалить">🗑</button></div></div>`).join('');
   }
   document.querySelectorAll('[data-dict-speak]').forEach(b=>b.onclick=()=>speak(b.dataset.dictSpeak,true));
   document.querySelectorAll('[data-delete-word]').forEach(b=>b.onclick=()=>openModal('confirm','Удалить слово?','Слово будет удалено из этой папки.','deleteWord',b.dataset.deleteWord,title.id));
+  document.querySelectorAll('[data-edit-word]').forEach(b=>b.onclick=()=>openModal('editWord','Редактировать слово',null,'editWord',b.dataset.editWord));
   document.querySelectorAll('[data-manage-word]').forEach(b=>b.onclick=()=>openModal('move','Перенести слово',null,'manageWord',b.dataset.manageWord,title.id));
 }
 
@@ -348,6 +364,7 @@ function openModal(type,title,message,action,arg1,arg2){
   back.dataset.type=type;back.dataset.action=action||'';back.dataset.arg1=arg1||'';back.dataset.arg2=arg2||'';
   if(type==='folder'){content.innerHTML='<label>Название папки<input id="modal-folder-name" autocomplete="off"></label>';document.getElementById('modal-ok').textContent='Создать';}
   else if(type==='word'){content.innerHTML='<label>Слово<input id="modal-word" autocomplete="off"></label><label style="margin-top:12px">Перевод<input id="modal-translation" autocomplete="off"></label>';document.getElementById('modal-ok').textContent='Добавить';}
+  else if(type==='editWord'){const wordId=arg1,custom=state.customFolders||{};let word=null;for(const f of Object.values(custom)){const w=(f.words||[]).find(x=>x.id===wordId);if(w){word=w;break}}content.innerHTML=`<label>Слово<input id="modal-word" autocomplete="off" value="${htmlEscape(word?.word||'')}"></label><label style="margin-top:12px">Перевод<input id="modal-translation" autocomplete="off" value="${htmlEscape(word?.translation||'')}"></label>`;document.getElementById('modal-ok').textContent='Сохранить';back.dataset.wordId=wordId;}
   else if(type==='move'){
     const wordId=arg1,currentFolder=arg2,custom=state.customFolders||{};
     const word=(custom[currentFolder]?.words||[]).find(w=>w.id===wordId);
@@ -366,6 +383,7 @@ function modalConfirm(){
   const back=document.getElementById('modal-backdrop'),type=back.dataset.type,action=back.dataset.action;
   if(type==='folder'){const name=normalize(document.getElementById('modal-folder-name')?.value);if(!name)return;state.customFolders=state.customFolders||{};const id='f_'+Date.now();state.customFolders[id]={name,words:[]};selectedFolder=id;save();closeModal();renderDictionary();return}
   if(type==='word'){const word=document.getElementById('modal-word')?.value.trim(),translation=document.getElementById('modal-translation')?.value.trim();if(!word||!translation)return;state.customFolders=state.customFolders||{};const target=selectedFolder==='irregular'?state.myWordsFolder:selectedFolder;state.customFolders[target]=state.customFolders[target]||{name:'Мои слова',words:[]};state.customFolders[target].words.push({id:'w_'+Date.now(),word,translation});save();closeModal();renderDictionary();return}
+  if(type==='editWord'){const wordId=back.dataset.wordId,word=document.getElementById('modal-word')?.value.trim(),translation=document.getElementById('modal-translation')?.value.trim();if(!word||!translation)return;const custom=state.customFolders||{};for(const f of Object.values(custom)){for(const w of (f.words||[])){if(w.id===wordId){w.word=word;w.translation=translation}}}state.customFolders=custom;save();closeModal();renderDictionary();return}
   if(type==='move'){const wordId=back.dataset.wordId,currentFolder=back.dataset.currentFolder,custom=state.customFolders||{};const selected=[...back.querySelectorAll('[data-move-folder]:checked')].map(x=>x.dataset.moveFolder);
     // remove the word from every folder, then add the same record to all selected folders
     let word=null;for(const f of Object.values(custom)){const w=(f.words||[]).find(x=>x.id===wordId);if(w){word=w;break}}
@@ -375,8 +393,7 @@ function modalConfirm(){
 }
 
 const nav=id=>document.getElementById(id);
-nav('nav-home').onclick=()=>show('home');
-nav('nav-dictionary').onclick=()=>show('dictionary');
+nav('nav-home').onclick=()=>{show('home');window.scrollTo({top:0,behavior:'smooth'})};
 nav('dontknow').onclick=dontKnow;
 nav('hint-btn').onclick=giveHint;
 nav('sound-btn').onclick=()=>speak(session.items[session.index].v.word||session.items[session.index].v.inf,true);
@@ -386,17 +403,19 @@ nav('result-again').onclick=()=>{if(session&&session.folder)startFolderTraining(
 nav('result-home').onclick=()=>show(session&&session.folder?'dictionary':'home');
 nav('finish-training').onclick=()=>{if(session){session.answered=true;show(session.folder?'dictionary':'home')}};
 nav('study-btn').onclick=startStudy;
-nav('home-open-dict').onclick=()=>show('dictionary');
+nav('home-open-dict').onclick=()=>{show('dictionary');window.scrollTo({top:0,behavior:'smooth'})};
+nav('personal-dict').onclick=()=>{selectedFolder=state.myWordsFolder||'my';save();show('dictionary');window.scrollTo({top:0,behavior:'smooth'})};
+nav('scroll-top').onclick=()=>window.scrollTo({top:0,behavior:'smooth'});
+window.addEventListener('scroll',()=>document.getElementById('scroll-top').classList.toggle('show',window.scrollY>650),{passive:true});
 nav('continue-btn').onclick=()=>startMixed(groupPercent(selectedGroup)>=100?'groupRepeat':'new',selectedGroup);
 nav('learn-start').onclick=()=>startMixed('new',selectedGroup);
-nav('learn-home').onclick=()=>show('home');
 nav('learn-finish').onclick=()=>show('home');
 const soundToggle=document.getElementById('sound-toggle');
 const themeToggle=document.getElementById('theme-toggle');
-function renderThemeToggle(){const dark=theme==='dark';document.documentElement.dataset.theme=theme;themeToggle.textContent=dark?'☀️ Светлая тема':'🌙 Тёмная тема';themeToggle.setAttribute('aria-pressed',String(dark));themeToggle.title=dark?'Переключить на светлую тему':'Переключить на тёмную тему';}
+function renderThemeToggle(){const dark=theme==='dark';document.documentElement.dataset.theme=theme;themeToggle.textContent=dark?'Светлая тема':'Тёмная тема';themeToggle.setAttribute('aria-pressed',String(dark));themeToggle.title=dark?'Переключить на светлую тему':'Переключить на тёмную тему';}
 themeToggle.onclick=()=>{theme=theme==='dark'?'light':'dark';save();renderThemeToggle();};
 renderThemeToggle();
-function renderSoundToggle(){soundToggle.textContent=soundOn?'🔊 Выключить звук':'🔇 Включить звук';soundToggle.setAttribute('aria-pressed',String(soundOn));soundToggle.title=soundOn?'Выключить звук':'Включить звук';}
+function renderSoundToggle(){soundToggle.textContent=soundOn?'':'Включить звук';soundToggle.setAttribute('aria-pressed',String(soundOn));soundToggle.title=soundOn?'Выключить звук':'Включить звук';}
 soundToggle.onclick=()=>{soundOn=!soundOn;state.soundOn=soundOn;save();renderSoundToggle()};
 renderSoundToggle();
 nav('modal-cancel').onclick=closeModal;
