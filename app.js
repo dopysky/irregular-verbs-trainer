@@ -43,7 +43,7 @@ function renderBlocks(){
   const selected=groupKey(selectedGroup);
   box.innerHTML=LEARNING_GROUPS.map((g,i)=>{
     const n=i+1, key=g.id, vs=groupVerbs(key), p=groupPercent(key), sel=key===selected;
-    return `<button class="group-card ${sel?'selected':''}" data-group="${htmlEscape(String(key))}" data-art="${n}"><div class="group-card-top"><div><div class="block-title">${htmlEscape(g.name)}</div><div class="block-meta">${g.short} · ${countLabel(vs.length)}</div></div><span class="badge ${p>=100?'good':''}">${p}%</span></div><div class="group-art art-${n}"><i class="art-rope rope-a"></i><i class="art-rope rope-b"></i><i class="art-dot"></i><span class="art-word art-word-a"><b>${htmlEscape(vs[0]?.inf||'learn')}</b><small>${htmlEscape(vs[0]?.ru||'учить')}</small></span><span class="art-word art-word-b"><b>${htmlEscape(vs[1]?.inf||'remember')}</b><small>${htmlEscape(vs[1]?.ru||'помнить')}</small></span><span class="art-word art-word-c"><b>${htmlEscape(vs[2]?.inf||'repeat')}</b><small>${htmlEscape(vs[2]?.ru||'повторять')}</small></span><i class="art-spark">✦</i><i class="art-star">✦</i></div><div class="progress"><div class="bar ${p>=100?'good':''}" style="width:${p}%"></div></div></button>`;
+    return `<button class="group-card ${sel?'selected ':''}block-tone-${n%2?'odd':'even'}" data-group="${htmlEscape(String(key))}" data-art="${n}"><div class="group-card-top"><div><div class="block-title">${htmlEscape(g.name)}</div><div class="block-meta">${g.short} · ${countLabel(vs.length)}</div></div><span class="badge ${p>=100?'good':''}">${p}%</span></div><div class="group-art art-${n}"><i class="art-rope rope-a"></i><i class="art-rope rope-b"></i><i class="art-dot"></i><span class="art-word art-word-a"><b>${htmlEscape(vs[0]?.inf||'learn')}</b><small>${htmlEscape(vs[0]?.ru||'учить')}</small></span><span class="art-word art-word-b"><b>${htmlEscape(vs[1]?.inf||'remember')}</b><small>${htmlEscape(vs[1]?.ru||'помнить')}</small></span><span class="art-word art-word-c"><b>${htmlEscape(vs[2]?.inf||'repeat')}</b><small>${htmlEscape(vs[2]?.ru||'повторять')}</small></span><i class="art-spark">✦</i><i class="art-star">✦</i></div><div class="progress"><div class="bar ${p>=100?'good':''}" style="width:${p}%"></div></div></button>`;
   }).join('');
   document.querySelectorAll('[data-group]').forEach(card=>card.onclick=()=>{
     selectedGroup=card.dataset.group;save();renderHome();
@@ -58,7 +58,7 @@ function renderHome(){
   document.getElementById('selected-bar').style.width=p+'%';
   document.getElementById('selected-bar').classList.toggle('good',p>=100);
   const sp=document.getElementById('selected-progress-percent'); if(sp)sp.textContent=p+'%';
-  const sr=document.querySelector('.selected-progress-ring'); if(sr)sr.style.setProperty('--ring-progress',p+'%');
+  const sr=document.querySelector('.selected-progress-ring'); if(sr){sr.style.setProperty('--ring-progress',p+'%');sr.style.setProperty('--ring-mid',(p*0.45)+'%');sr.style.setProperty('--ring-end',(p*0.80)+'%');}
   document.getElementById('selected-note').textContent=`Закреплено: ${vs.filter(mastered).length} из ${vs.length}`;
   document.getElementById('continue-btn').textContent=p>=100?'Повторить блок':'Начать тренировку';
   renderBlocks();
@@ -244,7 +244,7 @@ function renderDictionary(){
   const folders=[{id:'irregular',name:'Неправильные глаголы',count:verbs.length,built:true},{id:myId,name:'Мои слова',count:(custom[myId]?.words||[]).length,built:false,system:true},...Object.entries(custom).filter(([id,f])=>id!==myId&&normalize(f.name)!=='мои слова').map(([id,f])=>({id,name:f.name,count:(f.words||[]).length,built:false}))];
   if(!folders.some(f=>f.id===selectedFolder))selectedFolder='irregular';
   document.getElementById('folders').innerHTML=folders.map(f=>{const fp=folderPercent(f.id);return `<div class="folder-card ${selectedFolder===f.id?'selected':''}" data-folder-card="${f.id}"><div class="folder-card-head"><h3>📁 ${htmlEscape(f.name)}</h3><span class="badge ${fp>=100?'good':''}">${fp}%</span></div><div class="muted">${countLabel(f.count)}</div><div class="progress"><div class="bar ${fp>=100?'good':''}" style="width:${fp}%"></div></div>${!f.built&&!f.system?'<button class="folder-delete" data-delete-folder="'+f.id+'" title="Удалить папку" aria-label="Удалить папку">×</button>':''}</div>`}).join('');
-  document.querySelectorAll('[data-folder-card]').forEach(card=>card.onclick=()=>{selectedFolder=card.dataset.folderCard;save();renderDictionary()});
+  document.querySelectorAll('[data-folder-card]').forEach(card=>card.onclick=()=>{selectedFolder=card.dataset.folderCard;save();renderDictionary();if(window.innerWidth<=700){requestAnimationFrame(()=>{const list=document.getElementById('dict-list');if(list)list.scrollIntoView({behavior:'smooth',block:'start'});});}});
   document.querySelectorAll('[data-delete-folder]').forEach(b=>b.onclick=e=>{e.stopPropagation();openModal('confirm','Удалить папку?','Папка будет удалена.','deleteFolder',b.dataset.deleteFolder)});
   const title=folders.find(f=>f.id===selectedFolder)||folders[0];
   const selectedProgress=folderPercent(title.id);

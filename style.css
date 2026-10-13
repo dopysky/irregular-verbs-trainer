@@ -1254,3 +1254,183 @@ html[data-theme="dark"] .group-card:nth-child(even) .badge{background:#eee7ff!im
 html[data-theme="dark"] .group-card:nth-child(even) .group-art{background:linear-gradient(135deg,#302342 0%,#4a3020 100%)!important}
 html[data-theme="dark"] .group-card:nth-child(even) .art-word b{color:#fff!important;text-shadow:0 2px 8px rgba(0,0,0,.35)!important}
 html[data-theme="dark"] .group-card:nth-child(even) .art-word small{color:#e1d6e7!important}
+
+/* v36 — final fixes from phone/desktop review */
+
+/* Block tone is assigned by JS, not nth-child, so the alternation is stable. */
+.group-card.block-tone-odd{
+  background:linear-gradient(135deg,#251e2d 0%,#342238 55%,#3d291e 100%)!important;
+  border-color:#493b54!important;
+  color:#f8f3fb!important;
+}
+.group-card.block-tone-odd .block-title,
+.group-card.block-tone-odd .block-meta{color:#f8f3fb!important}
+.group-card.block-tone-odd .badge{background:#eee7ff!important;color:#6339d4!important}
+.group-card.block-tone-odd .group-art{background:linear-gradient(135deg,#302342 0%,#4a3020 100%)!important;border-color:#57455f!important}
+.group-card.block-tone-odd .art-word{
+  background:rgba(37,29,45,.94)!important;
+  border:1px solid rgba(255,255,255,.08)!important;
+  box-shadow:0 5px 12px rgba(20,12,28,.18)!important;
+  color:#fff!important;
+  text-shadow:none!important;
+}
+.group-card.block-tone-odd .art-word b{color:#fff!important;text-shadow:none!important}
+.group-card.block-tone-odd .art-word small{color:#e1d6e7!important}
+
+.group-card.block-tone-even{
+  background:linear-gradient(135deg,#fff9ec 0%,#f5edff 100%)!important;
+  border-color:#eadcf0!important;
+  color:#261d30!important;
+}
+.group-card.block-tone-even .block-title,
+.group-card.block-tone-even .block-meta{color:#261d30!important}
+.group-card.block-tone-even .badge{background:#eee4ff!important;color:#6138c7!important}
+.group-card.block-tone-even .group-art{background:linear-gradient(135deg,#fff1d1 0%,#f0e6ff 100%)!important;border-color:#e2d5e8!important}
+.group-card.block-tone-even .art-word{
+  background:rgba(255,255,255,.94)!important;
+  border:1px solid rgba(70,50,85,.08)!important;
+  box-shadow:0 5px 12px rgba(70,50,85,.10)!important;
+  color:#261d30!important;
+  text-shadow:none!important;
+}
+.group-card.block-tone-even .art-word b{color:#261d30!important;text-shadow:none!important}
+.group-card.block-tone-even .art-word small{color:#695b76!important}
+
+/* Dark theme reverses the same stable odd/even pattern. */
+html[data-theme="dark"] .group-card.block-tone-odd{
+  background:linear-gradient(135deg,#fff9ec 0%,#f5edff 100%)!important;
+  border-color:#eadcf0!important;
+  color:#261d30!important;
+}
+html[data-theme="dark"] .group-card.block-tone-odd .block-title,
+html[data-theme="dark"] .group-card.block-tone-odd .block-meta{color:#261d30!important}
+html[data-theme="dark"] .group-card.block-tone-odd .badge{background:#eee4ff!important;color:#6138c7!important}
+html[data-theme="dark"] .group-card.block-tone-odd .group-art{background:linear-gradient(135deg,#fff1d1 0%,#f0e6ff 100%)!important;border-color:#e2d5e8!important}
+html[data-theme="dark"] .group-card.block-tone-odd .art-word{
+  background:rgba(255,255,255,.94)!important;
+  border-color:rgba(70,50,85,.08)!important;
+  box-shadow:0 5px 12px rgba(70,50,85,.10)!important;
+  color:#261d30!important;
+  text-shadow:none!important;
+}
+html[data-theme="dark"] .group-card.block-tone-odd .art-word b{color:#261d30!important;text-shadow:none!important}
+html[data-theme="dark"] .group-card.block-tone-odd .art-word small{color:#695b76!important}
+
+html[data-theme="dark"] .group-card.block-tone-even{
+  background:linear-gradient(135deg,#251e2d 0%,#342238 55%,#3d291e 100%)!important;
+  border-color:#493b54!important;
+  color:#f8f3fb!important;
+}
+html[data-theme="dark"] .group-card.block-tone-even .block-title,
+html[data-theme="dark"] .group-card.block-tone-even .block-meta{color:#f8f3fb!important}
+html[data-theme="dark"] .group-card.block-tone-even .badge{background:#eee7ff!important;color:#6339d4!important}
+html[data-theme="dark"] .group-card.block-tone-even .group-art{background:linear-gradient(135deg,#302342 0%,#4a3020 100%)!important;border-color:#57455f!important}
+html[data-theme="dark"] .group-card.block-tone-even .art-word{
+  background:rgba(37,29,45,.94)!important;
+  border-color:rgba(255,255,255,.08)!important;
+  box-shadow:0 5px 12px rgba(20,12,28,.18)!important;
+  color:#fff!important;
+  text-shadow:none!important;
+}
+html[data-theme="dark"] .group-card.block-tone-even .art-word b{color:#fff!important;text-shadow:none!important}
+html[data-theme="dark"] .group-card.block-tone-even .art-word small{color:#e1d6e7!important}
+
+/* The little word labels no longer ghost/double through text-shadow. */
+.art-word,.art-word b,.art-word small{ text-shadow:none!important; }
+
+/* Switches: the knob moves, the whole control stays still on hover. */
+.header-actions .sound-toggle:hover,
+.header-actions .theme-toggle:hover,
+.header-actions .header-home:hover{
+  transform:none!important;
+}
+.sound-toggle,.theme-toggle,.header-home{transition:background-color .18s ease,border-color .18s ease,box-shadow .18s ease!important}
+.sound-switch>span,.theme-switch>span{transition:transform .18s ease!important}
+
+/* Center the hero copy vertically inside the header plaque. */
+.home-heading>div:first-child{
+  align-self:stretch!important;
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:center!important;
+}
+body.home-page .home-heading{padding-bottom:20px!important}
+
+/* Progress rings: the yellow→lilac→pink gradient is compressed into the filled arc. */
+.ring,.selected-progress-ring{
+  --ring-progress:0%;
+  --ring-mid:0%;
+  --ring-end:0%;
+  background:conic-gradient(
+    from -90deg,
+    #ffd34d 0 var(--ring-mid),
+    #a777ff var(--ring-mid) var(--ring-end),
+    #f35ca8 var(--ring-end) var(--ring-progress),
+    #e9e5ee var(--ring-progress) 100%
+  )!important;
+}
+.ring:before,.selected-progress-ring:before{display:none!important}
+.ring:after{background:#fff!important}
+html[data-theme="dark"] .ring:after{background:#211d28!important}
+.selected-progress-ring:after{background:rgba(255,250,253,.96)!important}
+html[data-theme="dark"] .selected-progress-ring:after{background:#241f2b!important}
+
+/* Move-word modal: folder names and checkboxes must remain readable and aligned on both themes. */
+.folder-checks{display:grid!important;gap:10px!important;margin-top:14px!important}
+.folder-checks label{
+  display:grid!important;
+  grid-template-columns:24px minmax(0,1fr)!important;
+  align-items:center!important;
+  gap:10px!important;
+  min-height:54px!important;
+  padding:11px 14px!important;
+  border:1px solid #ded4e6!important;
+  border-radius:14px!important;
+  background:#f8f5fb!important;
+  color:#2a2232!important;
+  font-size:17px!important;
+  line-height:1.2!important;
+  cursor:pointer!important;
+}
+.folder-checks label:hover{background:#f1ebf8!important;transform:none!important}
+.folder-checks input[type="checkbox"]{
+  appearance:none!important;
+  -webkit-appearance:none!important;
+  width:21px!important;
+  height:21px!important;
+  margin:0!important;
+  border:2px solid #a98cc8!important;
+  border-radius:6px!important;
+  background:#fff!important;
+  display:grid!important;
+  place-content:center!important;
+  flex:none!important;
+}
+.folder-checks input[type="checkbox"]:checked{
+  background:#7b4ded!important;
+  border-color:#7b4ded!important;
+}
+.folder-checks input[type="checkbox"]:checked::after{
+  content:"✓";
+  color:#fff!important;
+  font-size:15px!important;
+  font-weight:800!important;
+  line-height:1!important;
+}
+html[data-theme="dark"] .folder-checks label{
+  background:#2b2634!important;
+  border-color:#51435c!important;
+  color:#f5eff8!important;
+}
+html[data-theme="dark"] .folder-checks label:hover{background:#342d40!important}
+html[data-theme="dark"] .folder-checks input[type="checkbox"]{background:#201c27!important;border-color:#8d76aa!important}
+html[data-theme="dark"] .folder-checks input[type="checkbox"]:checked{background:#8051ef!important;border-color:#8051ef!important}
+
+/* On a phone, choosing a dictionary folder takes the user directly to its words. */
+#dict-list{scroll-margin-top:14px!important}
+
+@media(max-width:700px){
+  .home-heading{min-height:185px!important;padding-top:58px!important;padding-bottom:22px!important}
+  .home-heading>div:first-child{justify-content:center!important}
+  .folder-checks label{font-size:16px!important;min-height:52px!important}
+}
