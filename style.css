@@ -7,3 +7,85 @@
 }
 
 .cloze-pattern{font-size:32px;letter-spacing:.08em;margin:20px auto 8px;text-align:center}.compact-answer{max-width:460px;margin:10px auto}.compact-answer input{max-width:420px;margin:0 auto;text-align:center}
+
+/* v19 redesign */
+:root{--accent:#3560f5;--accent2:#6b7cff;--ink:#20242b;--muted:#657892;--line:#e1e6ef;--soft:#f4f7ff;--success:#22a06b;--danger:#d94a4a}
+body{background:linear-gradient(180deg,#f7f9fc 0,#f3f5f8 100%);color:var(--ink);font-size:16px}
+.wrap{max-width:1500px;padding:20px 34px 48px}
+header{align-items:center;margin-bottom:14px}
+h1{font-size:29px;letter-spacing:-.02em}
+.sub{font-size:17px}
+nav{gap:8px;margin-bottom:16px}
+nav button{font-size:16px;padding:10px 16px;border-radius:13px}
+.sound-toggle{font-size:15px;padding:9px 13px;border-radius:12px;background:#fff;border-color:#dce2eb;box-shadow:0 2px 8px rgba(25,45,80,.04)}
+.sound-toggle:hover{background:#f7f9ff}
+.panel{border-radius:22px;border-color:#e1e6ef;box-shadow:0 10px 32px rgba(31,53,91,.055)}
+.home-main{padding:26px 30px;background:linear-gradient(135deg,#fff 0%,#f8faff 100%)}
+.home-main h2{font-size:28px}
+.section-note{font-size:15px;line-height:1.45}
+.group-card{border-radius:18px;padding:17px 18px;transition:transform .15s,box-shadow .15s,border-color .15s}
+.group-card:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(44,67,105,.07);border-color:#cdd7ee}
+.block-title{font-size:18px}
+.badge{font-size:14px;padding:6px 11px}
+.progress{height:10px;background:#e9edf4}
+.bar{background:linear-gradient(90deg,#3560f5,#6f7fff)}
+.stat{border-radius:17px;padding:15px 17px;background:rgba(255,255,255,.86)}
+.stat b{font-size:23px}
+.quiz-panel{padding:30px 28px 26px;min-height:580px}
+.training-heading{font-size:18px;font-weight:700}
+.mode-title{font-size:22px;margin:20px 0 8px;color:#657892;font-weight:600}
+.verb{font-size:46px;letter-spacing:-.025em}
+.ru{font-size:21px}
+.option-list{gap:9px;max-width:850px;margin:18px auto}
+.option{font-size:16px;padding:14px 17px;border-radius:14px;transition:background .15s,border-color .15s,transform .1s}
+.option:hover{transform:translateY(-1px)}
+.quiz-actions button{font-size:15px;padding:10px 14px}
+.icon-btn{width:46px;height:44px;padding:0!important;display:inline-flex;align-items:center;justify-content:center;font-size:20px!important;border-radius:12px!important}
+.icon-btn.small-action{width:36px;height:34px;font-size:16px!important;padding:0!important}
+.feedback{display:none}
+.hint{font-size:14px}
+.dictionary-intro{font-size:16px;padding:15px 17px;background:linear-gradient(135deg,#f7f9ff,#f3f7ff);border-color:#dce5fa}
+.dictionary-tools{margin:12px 0 14px}
+.dictionary-tools button{font-size:15px;padding:10px 14px}
+.folder-card{border-radius:18px;padding:19px;transition:transform .15s,box-shadow .15s}
+.folder-card:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(44,67,105,.06)}
+.folder-card h3{font-size:20px}
+.word-item{border-radius:14px;padding:12px 15px}
+.custom-word-line{grid-template-columns:minmax(160px,1fr) minmax(160px,1fr) auto}
+.word-actions{gap:6px}
+.learn-head{margin-bottom:16px}
+.learn-head h2{font-size:27px}
+.learn-head .section-note{background:transparent;border:0;padding:0;margin-top:4px}
+.learn-table-wrap{overflow:auto;border:1px solid var(--line);border-radius:17px;background:#fff}
+.learn-table{width:100%;border-collapse:separate;border-spacing:0;min-width:720px}
+.learn-table th{font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:#72839a;text-align:left;background:#f6f8fb;padding:13px 16px;border-bottom:1px solid var(--line)}
+.learn-table td{padding:13px 16px;border-bottom:1px solid #edf0f4;vertical-align:middle}
+.learn-table tr:last-child td{border-bottom:0}
+.learn-table tr:hover td{background:#fbfcff}
+.learn-word b{font-size:18px;font-weight:700}
+.learn-ipa{display:block;color:#8a97a9;font-size:12px;margin-top:3px;line-height:1.2;font-weight:400}
+.learn-table .icon-btn{width:38px;height:36px;font-size:16px!important}
+.result-panel{padding:34px 30px 30px;overflow:hidden;position:relative;background:radial-gradient(circle at 50% -15%,#eef3ff 0,#fff 40%)}
+.result-panel:before{content:"";position:absolute;left:8%;right:8%;top:0;height:4px;border-radius:0 0 10px 10px;background:linear-gradient(90deg,#3560f5,#8b75ff,#39b98a)}
+.result-mark{width:64px;height:64px;border-radius:20px;margin:4px auto 10px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#e7f8ef,#d9f4e8);color:#16844f;font-size:31px;font-weight:800;box-shadow:0 8px 22px rgba(34,160,107,.12)}
+.result-kicker{font-size:12px;font-weight:800;letter-spacing:.14em;color:#71839a}
+#result-title{font-size:31px;margin:7px 0 8px}
+#result-text{font-size:17px;line-height:1.55}
+.result-message{display:inline-block;margin-top:5px;color:#657892}
+.result-grid{max-width:1050px;margin:24px auto 20px;grid-template-columns:repeat(4,1fr)}
+.result-box{padding:18px;border-radius:17px;background:#fbfcff;border-color:#e2e7ef}
+.result-box span{font-size:13px;color:#73839a}
+.result-box b{font-size:27px;margin-top:7px}
+.result-box.result-main{background:#f0f4ff;border-color:#d7e0ff}
+.result-up{color:#16844f!important}
+.result-actions{margin-top:6px}
+.result-actions button{font-size:15px;padding:11px 17px}
+.footer-note{font-size:14px}
+@media(max-width:900px){
+ .wrap{padding:14px 10px 36px}.result-grid{grid-template-columns:repeat(2,1fr)}
+ header{align-items:flex-start}.sound-toggle{font-size:14px}
+ .quiz-panel{padding:24px 16px}.verb{font-size:40px}.mode-title{font-size:20px}
+ .option{font-size:15px;padding:13px 14px}
+ .learn-table th,.learn-table td{padding:11px 12px}
+}
+.folder-card-head{display:flex;justify-content:space-between;align-items:center;gap:12px}.folder-card-head h3{margin:0}.folder-card .progress{margin:11px 0 8px;height:7px}.folder-delete{margin-top:4px}.dict-progress-line{display:flex;justify-content:space-between;align-items:center;color:#657892;font-size:14px;margin:0 0 5px}.dict-progress-line b{color:#20242b}.dict-progress-line+.progress{margin:0 0 7px;height:8px}.dict-progress-line~.muted{font-size:13px}
