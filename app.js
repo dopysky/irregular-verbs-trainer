@@ -426,15 +426,15 @@ nav('sound-btn').onclick=()=>speak(session.items[session.index].v.word||session.
 nav('add-folder').onclick=addFolder;
 nav('add-word').onclick=addWord;
 nav('result-again').onclick=()=>{if(session&&session.folder)startFolderTraining(false,session.folderId,true);else startMixed('new')};
-nav('result-home').onclick=()=>show(session&&session.folder?'dictionary':'home');
-nav('finish-training').onclick=()=>{if(session){session.answered=true;show(session.folder?'dictionary':'home')}};
+nav('result-home').onclick=()=>{if(session&&session.folder){show('dictionary');window.scrollTo({top:0,behavior:'smooth'});}else{show('home');window.scrollTo({top:0,behavior:'smooth'});}};
+nav('finish-training').onclick=()=>{if(session){session.answered=true;const target=session.folder?'dictionary':'home';show(target);window.scrollTo({top:0,behavior:'smooth'});}};
 nav('scroll-top').onclick=()=>window.scrollTo({top:0,behavior:'smooth'});
 window.addEventListener('scroll',()=>{const b=document.getElementById('scroll-top');if(b)b.classList.toggle('show',window.scrollY>650)},{passive:true});
 nav('study-btn').onclick=startStudy;
 nav('home-open-dict').onclick=()=>{show('dictionary');window.scrollTo({top:0,behavior:'smooth'})};
 nav('continue-btn').onclick=()=>startMixed(groupPercent(selectedGroup)>=100?'groupRepeat':'new',selectedGroup);
 nav('learn-start').onclick=()=>startMixed('new',selectedGroup);
-nav('learn-finish').onclick=()=>show('home');
+nav('learn-finish').onclick=()=>{show('home');window.scrollTo({top:0,behavior:'smooth'});};
 const soundToggle=document.getElementById('sound-toggle');
 const themeToggle=document.getElementById('theme-toggle');
 function renderThemeToggle(){const dark=theme==='dark';document.documentElement.dataset.theme=theme;themeToggle.setAttribute('aria-pressed',String(dark));themeToggle.title=dark?'Переключить на светлую тему':'Переключить на тёмную тему';themeToggle.classList.toggle('is-dark',dark);}

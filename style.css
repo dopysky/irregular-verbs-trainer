@@ -1112,3 +1112,145 @@ html[data-theme="dark"] .input-grid input.correct,html[data-theme="dark"] .singl
   .theme-switch{width:27px!important;height:17px!important}.theme-switch>span{width:13px!important;height:13px!important;transform:translateX(10px)}
   .theme-toggle.is-dark .theme-switch>span{transform:translateX(0)}
 }
+
+
+/* v34 — final mobile/header and visual cleanup */
+.personal-caption{
+  font-family:'Unbounded',Arial,Helvetica,sans-serif!important;
+  font-weight:500!important;
+  letter-spacing:-.035em!important;
+}
+/* Only the center card is intentionally different; the other cards stay visually consistent. */
+.group-card:nth-child(2){
+  background:rgba(255,255,255,.96)!important;
+  border-color:#e0d6ea!important;
+  color:var(--v29-ink)!important;
+}
+.group-card:nth-child(2) .block-title,.group-card:nth-child(2) .block-meta{color:var(--v29-ink)!important}
+.group-card:nth-child(2) .group-art{background:linear-gradient(135deg,#f1e8ff 0%,#fff0d1 100%)!important}
+.group-card:nth-child(5){
+  background:linear-gradient(135deg,#fff9ec 0%,#f5edff 100%)!important;
+  border-color:#eadcf0!important;
+}
+/* Softer but clearly red wrong-answer state. */
+.option.wrong{background:#ffe5eb!important;border-color:#ee7b99!important;color:#9d3153!important}
+.input-grid input.wrong,.single-answer input.wrong{background:#ffe5eb!important;border-color:#ee7b99!important;color:#9d3153!important}
+html[data-theme="dark"] .option.wrong{background:#482631!important;border-color:#e87494!important;color:#ffdce6!important}
+html[data-theme="dark"] .input-grid input.wrong,html[data-theme="dark"] .single-answer input.wrong{background:#482631!important;border-color:#e87494!important;color:#ffdce6!important}
+/* Speaker control uses the same compact switch language as the theme control. */
+.sound-toggle:after{content:none!important}
+.sound-toggle{width:82px!important;padding:7px 8px!important}
+.sound-symbol{font-size:15px!important;letter-spacing:0!important}
+/* Non-home pages: title gets the full width and controls no longer collide with it. */
+@media(max-width:700px){
+  body:not(.home-page) header{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    gap:8px!important;
+    align-items:start!important;
+    width:100%!important;
+  }
+  body:not(.home-page) header>div:first-child{
+    display:block!important;
+    width:100%!important;
+    min-width:0!important;
+  }
+  body:not(.home-page) header h1{
+    max-width:none!important;
+    width:100%!important;
+    font-size:25px!important;
+    line-height:1.05!important;
+    overflow-wrap:anywhere!important;
+    margin:0!important;
+  }
+  body:not(.home-page) header .sub{
+    display:block!important;
+    margin-top:5px!important;
+    font-size:14px!important;
+    line-height:1.2!important;
+  }
+  body:not(.home-page) .header-actions{
+    display:flex!important;
+    width:auto!important;
+    justify-self:end!important;
+    align-items:center!important;
+    gap:7px!important;
+    flex-wrap:nowrap!important;
+  }
+  body:not(.home-page) .header-home{display:grid!important}
+  body:not(.home-page) .sound-toggle{width:76px!important}
+  body:not(.home-page) .theme-toggle{width:78px!important}
+  body:not(.home-page) .header-actions button{flex:0 0 auto!important}
+  /* Keep the hero title clear of the controls on Home. */
+  body.home-page .home-heading{padding-top:64px!important}
+  body.home-page .home-heading>div{max-width:100%!important}
+  body.home-page .home-heading h2{max-width:100%!important;overflow-wrap:normal!important}
+}
+@media(max-width:430px){
+  body:not(.home-page) header h1{font-size:23px!important}
+  body:not(.home-page) header .sub{font-size:13px!important}
+  body:not(.home-page) .header-actions{justify-self:end!important}
+  body:not(.home-page) .header-home{width:40px!important}
+  body:not(.home-page) .sound-toggle{width:70px!important}
+  body:not(.home-page) .theme-toggle{width:72px!important}
+  body.home-page .home-heading{padding-top:64px!important}
+  body.home-page .home-heading h2{font-size:30px!important;line-height:1.02!important}
+  body.home-page .personal-caption{font-size:18px!important}
+}
+/* The home button remains available on phone; it is hidden only while already on Home. */
+@media(max-width:700px){
+  body:not(.home-page) .header-actions .header-home{display:grid!important}
+}
+
+/* v35 — alternating block cards by theme.
+   Light theme: odd blocks dark, even blocks light.
+   Dark theme: odd blocks light, even blocks dark.
+   The mixed block (9th card) follows the odd-card treatment. */
+.group-card:nth-child(odd){
+  background:linear-gradient(135deg,#251e2d 0%,#342238 55%,#3d291e 100%)!important;
+  border-color:#493b54!important;
+  color:#f8f3fb!important;
+}
+.group-card:nth-child(odd) .block-title,
+.group-card:nth-child(odd) .block-meta{color:#f8f3fb!important}
+.group-card:nth-child(odd) .badge{background:#eee7ff!important;color:#6339d4!important}
+.group-card:nth-child(odd) .group-art{background:linear-gradient(135deg,#302342 0%,#4a3020 100%)!important}
+.group-card:nth-child(odd) .art-word b{color:#fff!important;text-shadow:0 2px 8px rgba(0,0,0,.35)!important}
+.group-card:nth-child(odd) .art-word small{color:#e1d6e7!important}
+
+.group-card:nth-child(even){
+  background:linear-gradient(135deg,#fff9ec 0%,#f5edff 100%)!important;
+  border-color:#eadcf0!important;
+  color:#261d30!important;
+}
+.group-card:nth-child(even) .block-title,
+.group-card:nth-child(even) .block-meta{color:#261d30!important}
+.group-card:nth-child(even) .badge{background:#eee4ff!important;color:#6138c7!important}
+.group-card:nth-child(even) .group-art{background:linear-gradient(135deg,#fff1d1 0%,#f0e6ff 100%)!important}
+.group-card:nth-child(even) .art-word b{color:#261d30!important}
+.group-card:nth-child(even) .art-word small{color:#695b76!important}
+
+/* In dark theme the contrast pattern is inverted. */
+html[data-theme="dark"] .group-card:nth-child(odd){
+  background:linear-gradient(135deg,#fff9ec 0%,#f5edff 100%)!important;
+  border-color:#eadcf0!important;
+  color:#261d30!important;
+}
+html[data-theme="dark"] .group-card:nth-child(odd) .block-title,
+html[data-theme="dark"] .group-card:nth-child(odd) .block-meta{color:#261d30!important}
+html[data-theme="dark"] .group-card:nth-child(odd) .badge{background:#eee4ff!important;color:#6138c7!important}
+html[data-theme="dark"] .group-card:nth-child(odd) .group-art{background:linear-gradient(135deg,#fff1d1 0%,#f0e6ff 100%)!important}
+html[data-theme="dark"] .group-card:nth-child(odd) .art-word b{color:#261d30!important;text-shadow:none!important}
+html[data-theme="dark"] .group-card:nth-child(odd) .art-word small{color:#695b76!important}
+
+html[data-theme="dark"] .group-card:nth-child(even){
+  background:linear-gradient(135deg,#251e2d 0%,#342238 55%,#3d291e 100%)!important;
+  border-color:#493b54!important;
+  color:#f8f3fb!important;
+}
+html[data-theme="dark"] .group-card:nth-child(even) .block-title,
+html[data-theme="dark"] .group-card:nth-child(even) .block-meta{color:#f8f3fb!important}
+html[data-theme="dark"] .group-card:nth-child(even) .badge{background:#eee7ff!important;color:#6339d4!important}
+html[data-theme="dark"] .group-card:nth-child(even) .group-art{background:linear-gradient(135deg,#302342 0%,#4a3020 100%)!important}
+html[data-theme="dark"] .group-card:nth-child(even) .art-word b{color:#fff!important;text-shadow:0 2px 8px rgba(0,0,0,.35)!important}
+html[data-theme="dark"] .group-card:nth-child(even) .art-word small{color:#e1d6e7!important}
