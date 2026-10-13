@@ -10,7 +10,7 @@ const LEARNING_GROUPS=[
 {id:'g8',name:'Блок 8',short:'Учебный блок',nums:[36,54,59,60,70,72,75,77,84,92,94,102,107,109,111,117,123,124,127,128,132,133,138,141,142,150,49,51,113,146]},
 {id:'mixed',name:'Все вперемешку',short:'Все 151 слово без группировки',nums:verbs.map(v=>v.n),mixed:true}
 ]
-const KEY='irregular_trainer_v17';
+const KEY='irregular_trainer_v21';
 let state=JSON.parse(localStorage.getItem(KEY)||localStorage.getItem('irregular_trainer_v16')||localStorage.getItem('irregular_trainer_v15')||'{}');
 if(!state.v) state.v={};
 if(!state.customFolders) state.customFolders={};
@@ -66,7 +66,7 @@ function ipaCell(word,ipa){return `<div class="learn-word"><b>${htmlEscape(word)
 function renderLearn(){
   const g=groupMeta(selectedGroup),vs=groupVerbs(selectedGroup);
   document.getElementById('learn-title').textContent=g.name;
-  document.getElementById('learn-note').textContent=`${countLabel(vs.length)} · повтори формы, а затем проверь себя в тренировке.`;
+  document.getElementById('learn-note').textContent=`${countLabel(vs.length)} · посмотри формы, послушай произношение и потом проверь себя в тренировке.`;
   document.getElementById('learn-list').innerHTML=`<div class="learn-table-wrap"><table class="learn-table"><thead><tr><th>V1 · Infinitive</th><th>V2 · Past Simple</th><th>V3 · Past Participle</th><th></th></tr></thead><tbody>${vs.map(v=>`<tr><td>${ipaCell(v.inf,v.ipa)}</td><td>${ipaCell(v.past,v.pastIpa===v.ipa?'':v.pastIpa)}</td><td>${ipaCell(v.part,v.partIpa===v.pastIpa?'':v.partIpa)}</td><td><button class="icon-btn listen-button" title="Прослушать" aria-label="Прослушать" data-speak="${v.n}">🔊</button></td></tr>`).join('')}</tbody></table></div>`;
   document.querySelectorAll('[data-speak]').forEach(b=>b.onclick=()=>speak(verbs.find(v=>v.n==b.dataset.speak).inf,true));
 }
@@ -158,35 +158,44 @@ function giveHint(){
   document.getElementById('q-hint').textContent='Подсказка: '+text;
 }
 function speak(text,force=false){if(!force&&!soundOn)return;if(!('speechSynthesis' in window))return;window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='en-US';u.rate=.82;window.speechSynthesis.speak(u)}
-function playFeedbackSound(ok){if(!soundOn)return;try{const C=window.AudioContext||window.webkitAudioContext;if(!C)return;const c=new C(),o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.setValueAtTime(ok?880:180,c.currentTime);o.frequency.exponentialRampToValueAtTime(ok?1320:120,c.currentTime+(ok?.12:.14));g.gain.setValueAtTime(.0001,c.currentTime);g.gain.exponentialRampToValueAtTime(.07,c.currentTime+.01);g.gain.exponentialRampToValueAtTime(.0001,c.currentTime+(ok?.18:.16));o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+(ok?.2:.18));setTimeout(()=>c.close(),300)}catch(e){}}
+function playFeedbackSound(ok){
+  if(!soundOn)return;
+  try{
+    const C=window.AudioContext||window.webkitAudioContext;if(!C)return;
+    const c=new C(),now=c.currentTime;
+    const master=c.createGain();master.gain.setValueAtTime(.0001,now);master.gain.exponentialRampToValueAtTime(.18,now+.012);master.gain.exponentialRampToValueAtTime(.0001,now+(ok?.52:.3));master.connect(c.destination);
+    const tones=ok?[{f:784,t:0,d:.22},{f:1046.5,t:.07,d:.30},{f:1318.5,t:.14,d:.32}]:[{f:220,t:0,d:.13},{f:165,t:.08,d:.21}];
+    tones.forEach(({f,t,d})=>{const o=c.createOscillator(),g=c.createGain();o.type=ok?'sine':'triangle';o.frequency.setValueAtTime(f,now+t);g.gain.setValueAtTime(.0001,now+t);g.gain.exponentialRampToValueAtTime(ok?.72:.5,now+t+.012);g.gain.exponentialRampToValueAtTime(.0001,now+t+d);o.connect(g);g.connect(master);o.start(now+t);o.stop(now+t+d+.02)});
+    setTimeout(()=>c.close(),700);
+  }catch(e){}
+}
 function finishSession(){
-  const total=session.items.length,score=session.score, folderId=session.folderId;
+  const total=session.items.length,score=session.score,folderId=session.folderId;
   const current=folderId?folderPercent(folderId):(session.group?groupPercent(session.group):0), before=session.startedPercent||0;
   const diff=current-before;
   const uniqueDone=session.folder?(session.completedIds?.size||0):score;
   const initial=session.folder?(session.initialCount||total):total;
   const retryCount=session.folder?Math.max(0,initial-uniqueDone):Math.max(0,total-score);
-  const baseScore=session.folder?uniqueDone:score, baseTotal=session.folder?initial:total;
-  const message=baseScore===baseTotal?'Отлично! Всё закреплено 🎉':baseScore>=Math.ceil(baseTotal*.75)?'Очень неплохо! Ещё немного практики — и слова будут вспоминаться сами.':'Хорошее начало. Сложные слова уже видно — разберём их следующими.';
-  document.getElementById('result-title').textContent=baseScore===baseTotal?'Готово! Отличная работа':'Тренировка завершена';
-  document.getElementById('result-text').innerHTML=session.folder?`<strong>${uniqueDone} из ${initial}</strong> слов закреплено<br><span class="result-message">${message}</span>`:`<strong>${score} из ${total}</strong> правильных ответов<br><span class="result-message">${message}</span>`;
+  const complete=uniqueDone>=initial;
+  document.getElementById('result-title').textContent=complete?'Супер!':'Так держать!';
+  document.getElementById('result-text').innerHTML=session.folder?`<strong>${uniqueDone} из ${initial}</strong> слов закреплено`:`<strong>${score} из ${total}</strong> правильных ответов`;
   document.getElementById('result-grid').innerHTML=`<div class="result-box result-main"><span>${session.folder?'Закреплено':'Правильно'}</span><b>${session.folder?uniqueDone:score}</b></div><div class="result-box"><span>Осталось</span><b>${retryCount}</b></div><div class="result-box"><span>Прогресс</span><b>${current}%</b></div><div class="result-box"><span>Изменение</span><b class="${diff>0?'result-up':''}">${diff>0?'+'+diff+'%':diff===0?'—':'0%'}</b></div>`;
-  document.getElementById('result-again').textContent=retryCount?'Повторить сложные слова':'Продолжить обучение';
+  document.getElementById('result-again').textContent=retryCount?'Повторить сложные слова':'Продолжить';
   document.getElementById('result-home').textContent=session.folder?'В словарь':'К блокам';
-  playFeedbackSound(score===total);
+  playFeedbackSound(complete);
   show('result');
 }
 function renderDictionary(){
   const custom=state.customFolders||{}; const myId=state.myWordsFolder;
   const folders=[{id:'irregular',name:'Неправильные глаголы',count:verbs.length,built:true},{id:myId,name:'Мои слова',count:(custom[myId]?.words||[]).length,built:false,system:true},...Object.entries(custom).filter(([id,f])=>id!==myId&&normalize(f.name)!=='мои слова').map(([id,f])=>({id,name:f.name,count:(f.words||[]).length,built:false}))];
   if(!folders.some(f=>f.id===selectedFolder))selectedFolder='irregular';
-  document.getElementById('folders').innerHTML=folders.map(f=>{const fp=folderPercent(f.id);return `<div class="folder-card ${selectedFolder===f.id?'selected':''}" data-folder-card="${f.id}"><div class="folder-card-head"><h3>📁 ${htmlEscape(f.name)}</h3><span class="badge ${fp>=100?'good':''}">${fp}%</span></div><div class="muted">${countLabel(f.count)}</div><div class="progress"><div class="bar ${fp>=100?'good':''}" style="width:${fp}%"></div></div>${!f.built&&!f.system?'<button class="danger small-action folder-delete" data-delete-folder="'+f.id+'">Удалить</button>':''}</div>`}).join('');
+  document.getElementById('folders').innerHTML=folders.map(f=>{const fp=folderPercent(f.id);return `<div class="folder-card ${selectedFolder===f.id?'selected':''}" data-folder-card="${f.id}"><div class="folder-card-head"><h3>📁 ${htmlEscape(f.name)}</h3><span class="badge ${fp>=100?'good':''}">${fp}%</span></div><div class="muted">${countLabel(f.count)}</div><div class="progress"><div class="bar ${fp>=100?'good':''}" style="width:${fp}%"></div></div>${!f.built&&!f.system?'<button class="icon-btn danger small-action folder-delete" data-delete-folder="'+f.id+'" title="Удалить папку" aria-label="Удалить папку">🗑</button>':''}</div>`}).join('');
   document.querySelectorAll('[data-folder-card]').forEach(card=>card.onclick=()=>{selectedFolder=card.dataset.folderCard;save();renderDictionary()});
   document.querySelectorAll('[data-delete-folder]').forEach(b=>b.onclick=e=>{e.stopPropagation();openModal('confirm','Удалить папку?','Папка будет удалена.','deleteFolder',b.dataset.deleteFolder)});
   const title=folders.find(f=>f.id===selectedFolder)||folders[0];
   const selectedProgress=folderPercent(title.id);
   const selectedWords=title.built?verbs:(custom[title.id]?.words||[]);
-  const selectedMastered=selectedWords.filter(v=>title.built?st(v).level>0:customStat(v.id).level>0).length;
+  const selectedMastered=selectedWords.filter(v=>title.built?mastered(v):customStat(v.id).level>=3).length;
   document.getElementById('dict-title').textContent=title.name;
   document.getElementById('dict-progress').innerHTML=`<div class="dict-progress-line"><span>Прогресс</span><b>${selectedProgress}%</b></div><div class="progress"><div class="bar ${selectedProgress>=100?'good':''}" style="width:${selectedProgress}%"></div></div><div class="muted">Закреплено: ${selectedMastered} из ${selectedWords.length}</div>`;
   document.getElementById('dict-tools').innerHTML=`<button class="primary" id="train-folder">Тренировать папку</button>${title.built||title.system?'':'<button id="add-to-current">+ Добавить слово</button>'}`;
@@ -194,7 +203,7 @@ function renderDictionary(){
   if(!title.built&&!title.system)document.getElementById('add-to-current').onclick=()=>openModal('word');
   const words=title.built?verbs:(custom[title.id]?.words||[]);
   if(title.built){
-    document.getElementById('dict-list').innerHTML=words.map(v=>`<div class="word-item irregular-line"><span class="forms-inline"><b>${v.inf}</b><b>${v.past}</b><b>${v.part}</b></span><span>${v.ru}</span><button class="listen-button" data-dict-speak="${v.inf}">🔊</button></div>`).join('');
+    document.getElementById('dict-list').innerHTML=`<div class="learn-table-wrap"><table class="learn-table"><thead><tr><th>V1 · Infinitive</th><th>V2 · Past Simple</th><th>V3 · Past Participle</th><th>Перевод</th><th></th></tr></thead><tbody>${words.map(v=>`<tr><td>${ipaCell(v.inf,v.ipa)}</td><td>${ipaCell(v.past,v.pastIpa===v.ipa?'':v.pastIpa)}</td><td>${ipaCell(v.part,v.partIpa===v.pastIpa?'':v.partIpa)}</td><td class="learn-translation">${htmlEscape(v.ru)}</td><td><button class="icon-btn listen-button" title="Прослушать" aria-label="Прослушать" data-dict-speak="${htmlEscape(v.inf)}">🔊</button></td></tr>`).join('')}</tbody></table></div>`;
   }else{
     document.getElementById('dict-list').innerHTML=words.map(v=>`<div class="word-item custom-word-line"><span><b>${htmlEscape(v.word)}</b></span><span>${htmlEscape(v.translation)}</span><div class="word-actions"><button class="icon-btn small-action" data-manage-word="${v.id}" title="Переместить" aria-label="Переместить">↔</button><button class="icon-btn danger small-action" data-delete-word="${v.id}" title="Удалить" aria-label="Удалить">🗑</button></div></div>`).join('');
   }
@@ -207,7 +216,7 @@ function renderErrors(){
   const es=verbs.filter(v=>st(v).wrong>0).sort((a,b)=>st(b).wrong-st(a).wrong);
   const box=document.getElementById('error-list');
   if(!es.length){box.innerHTML='<div class="section-note">Ошибок пока нет.</div>';return;}
-  box.innerHTML=`<div class="errors-summary"><div><b>${es.length}</b> ${pluralizeRu(es.length,'слово с ошибкой','слова с ошибками','слов с ошибками')}</div><button class="primary" id="train-all-errors">Тренировать все ошибки</button></div>`+es.map(v=>`<div class="word-item error-line"><span class="forms-inline"><b>${v.inf}</b><b>${v.past}</b><b>${v.part}</b></span><span>${v.ru}</span><span>ошибок: ${st(v).wrong}</span></div>`).join('');
+  box.innerHTML=`<div class="errors-summary"><div><b>${es.length}</b> ${pluralizeRu(es.length,'слово с ошибкой','слова с ошибками','слов с ошибками')}</div><button class="primary" id="train-all-errors">Тренировать все ошибки</button></div><div class="learn-table-wrap"><table class="learn-table"><thead><tr><th>V1 · Infinitive</th><th>V2 · Past Simple</th><th>V3 · Past Participle</th><th>Перевод</th><th>Ошибок</th></tr></thead><tbody>${es.map(v=>`<tr><td>${ipaCell(v.inf,v.ipa)}</td><td>${ipaCell(v.past,v.pastIpa===v.ipa?'':v.pastIpa)}</td><td>${ipaCell(v.part,v.partIpa===v.pastIpa?'':v.partIpa)}</td><td class="learn-translation">${htmlEscape(v.ru)}</td><td><span class="badge bad">${st(v).wrong}</span></td></tr>`).join('')}</tbody></table></div>`;
   document.getElementById('train-all-errors').onclick=()=>startMixed('errors',selectedGroup);
 }
 function customStat(id){state.customStats=state.customStats||{};return state.customStats[id]||(state.customStats[id]={level:0,wrong:0})}
@@ -220,13 +229,21 @@ function folderPercent(folderId){
   if(!words.length)return 0;
   return Math.round(words.reduce((sum,w)=>sum+Math.min(1,(customStat(w.id).level||0)/3),0)/words.length*100);
 }
-function makeFolderItem(v,folderId){
-  if(folderId==='irregular'){
-    const modes=['ruToEn','enToRu','ruToEnWrite','enToRuWrite','listen'];
-    return {v,mode:modes[Math.floor(Math.random()*modes.length)],custom:false,retries:0};
+function folderModes(folderId){
+  return folderId==='irregular'
+    ? ['ruToEn','enToRu','ruToEnWrite','enToRuWrite','listen']
+    : ['customRuToEn','customEnToRu','customRuToEnWrite','customEnToRuWrite','customListen'];
+}
+function makeFolderItem(v,folderId,mode){
+  const modes=folderModes(folderId);
+  return {v,mode:mode||modes[Math.floor(Math.random()*modes.length)],custom:folderId!=='irregular',retries:0};
+}
+function buildFolderItems(base,folderId){
+  const modes=folderModes(folderId), rounds=[];
+  for(let round=0;round<3;round++){
+    rounds.push(shuffle(base).map((v,i)=>makeFolderItem(v,folderId,modes[(i+round)%modes.length])));
   }
-  const modes=['customRuToEn','customEnToRu','customRuToEnWrite','customEnToRuWrite','customListen'];
-  return {v,mode:modes[Math.floor(Math.random()*modes.length)],custom:true,retries:0};
+  return rounds.flat();
 }
 function startFolderTraining(mix=false, folderId=selectedFolder, reviewWeak=false){
   selectedFolder=folderId||selectedFolder||'irregular';
@@ -234,12 +251,7 @@ function startFolderTraining(mix=false, folderId=selectedFolder, reviewWeak=fals
   let base=selectedFolder==='irregular'?shuffle(verbs).slice(0,15):shuffle(custom[selectedFolder]?.words||[]);
   if(reviewWeak){base=selectedFolder==='irregular'?shuffle(verbs.filter(v=>st(v).level<3)).slice(0,15):shuffle((custom[selectedFolder]?.words||[]).filter(w=>customStat(w.id).level<3));}
   if(!base.length){renderDictionary();return;}
-  let items=base.map((v,i)=>{ const item=makeFolderItem(v,selectedFolder); return item; });
-  if(items.length>1){
-    const modes=selectedFolder==='irregular'?['ruToEn','enToRu','ruToEnWrite','enToRuWrite','listen']:['customRuToEn','customEnToRu','customRuToEnWrite','customEnToRuWrite','customListen'];
-    items=items.map((item,i)=>({...item,mode:modes[i%modes.length]}));
-    items=shuffle(items);
-  }
+  const items=buildFolderItems(base,selectedFolder);
   session={items,index:0,score:0,kind:'folder',group:selectedGroup,answered:false,folder:true,mix:false,returnTo:'dictionary',folderId:selectedFolder,startedPercent:folderPercent(selectedFolder),initialCount:base.length,initialIds:base.map(v=>v.id||v.n),completedIds:new Set(),pending:base.length,completed:0,reviewed:0};
   save();show('quiz');renderQFolder();
 }
@@ -293,9 +305,15 @@ function checkFolderCurrent(force=false){
   else if(q.mode==='enToRuWrite')ok=normalize(a.folder)===normalize(v.ru);
   else if(q.mode==='listen')ok=normalize(a.option)===normalize(v.inf);
   session.answered=true;
-  if(ok){session.score++;session.completedIds?.add(q.custom?v.id:v.n);}
-  if(q.custom){const cs=customStat(v.id);cs.attempts=(cs.attempts||0)+1;if(ok){cs.level=Math.min(3,(cs.level||0)+1);cs.streak=(cs.streak||0)+1}else{cs.wrong=(cs.wrong||0)+1;cs.level=0;cs.streak=0}}
-  else markAttempt(v,ok,q.mode);
+  if(ok)session.score++;
+  if(q.custom){
+    const cs=customStat(v.id);cs.attempts=(cs.attempts||0)+1;
+    if(ok){cs.level=Math.min(3,(cs.level||0)+1);cs.streak=(cs.streak||0)+1}else{cs.wrong=(cs.wrong||0)+1;cs.level=0;cs.streak=0}
+    if(cs.level>=3)session.completedIds?.add(v.id);
+  }else{
+    markAttempt(v,ok,q.mode);
+    if(mastered(v))session.completedIds?.add(v.n);
+  }
   save();
   document.querySelectorAll('.option').forEach(btn=>{
     const val=normalize(btn.dataset.option); let correct='';
@@ -309,9 +327,11 @@ function checkFolderCurrent(force=false){
   playFeedbackSound(ok);
   if(!ok){
     q.retries=(q.retries||0)+1;
-    if(q.retries<=2){ q.mode=makeFolderItem(v,session.folderId).mode; session.items.push(q); }
+    q.mode=makeFolderItem(v,session.folderId).mode;
+    const insertAt=Math.min(session.items.length,session.index+4+Math.floor(Math.random()*3));
+    session.items.splice(insertAt,0,q);
   }
-  setTimeout(nextFolderQ,ok?430:700);
+  setTimeout(nextFolderQ,ok?430:850);
 }
 function nextFolderQ(){if(!session||!session.answered)return;session.index++;if(session.index>=session.items.length)finishSession();else renderQFolder()}
 
@@ -365,7 +385,7 @@ nav('learn-start').onclick=()=>startMixed('new',selectedGroup);
 nav('learn-home').onclick=()=>show('home');
 nav('learn-finish').onclick=()=>show('home');
 const soundToggle=document.getElementById('sound-toggle');
-function renderSoundToggle(){soundToggle.textContent=soundOn?'🔊 Выключить звук':'🔇 Включить звук';soundToggle.setAttribute('aria-pressed',String(soundOn));soundToggle.title=soundOn?'Выключить автоматические и звуки ответов':'Включить автоматические и звуки ответов';}
+function renderSoundToggle(){soundToggle.textContent=soundOn?'🔊 Выключить звук':'🔇 Включить звук';soundToggle.setAttribute('aria-pressed',String(soundOn));soundToggle.title=soundOn?'Выключить звук':'Включить звук';}
 soundToggle.onclick=()=>{soundOn=!soundOn;state.soundOn=soundOn;save();renderSoundToggle()};
 renderSoundToggle();
 nav('modal-cancel').onclick=closeModal;

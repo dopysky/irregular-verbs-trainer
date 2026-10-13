@@ -108,3 +108,15 @@ header{padding-bottom:10px}header h1{font-size:30px;letter-spacing:-.02em}.sub{f
 .result-mark{background:linear-gradient(135deg,#e8f8ef,#e1efff);color:#3560f5}.result-kicker{color:#6d7f97}.result-box{background:#fbfcff}
 .result-message{font-size:15px}
 @media(max-width:700px){header h1{font-size:25px}.sound-toggle{font-size:12px;padding:8px 10px}.verb{font-size:36px}.mode-title{font-size:18px}}
+
+
+/* v21 requested refinements */
+.sound-toggle{font-weight:400!important;color:#66717f!important;background:#fff!important;border-color:#d9e0e8!important;box-shadow:none!important}
+.sound-toggle:hover{color:#4f5c6b!important;background:#f7f9fb!important}
+.folder-delete{width:38px!important;height:36px!important;padding:0!important;display:inline-flex;align-items:center;justify-content:center;margin-top:5px;font-size:16px!important}
+.learn-translation{color:#52677f;font-size:14px;white-space:normal}
+.learn-table td:last-child{white-space:nowrap}
+.badge.bad{background:#fff0f0;color:#c44a4a}
+.result-panel #result-text{margin-top:2px}
+.result-message{display:none!important}
+@media(max-width:900px){.learn-table{min-width:860px}.learn-translation{font-size:13px}}
