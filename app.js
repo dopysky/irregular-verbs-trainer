@@ -61,7 +61,12 @@ function renderHome(){
   document.getElementById('s-mastered').textContent=verbs.filter(mastered).length;
   document.getElementById('s-errors').textContent=verbs.filter(v=>st(v).wrong>0).length;
   document.getElementById('s-today').textContent=todayCount();
+  const masteredCount=verbs.filter(mastered).length;
+  const overall=Math.round(verbs.reduce((sum,v)=>sum+Math.min(1,st(v).level/3),0)/verbs.length*100);
+  const hp=document.getElementById('home-progress-percent'); if(hp)hp.textContent=overall+'%';
+  const hm=document.getElementById('home-mastered-count'); if(hm)hm.textContent=masteredCount;
 }
+
 function show(id){['home','learn','quiz','result','dictionary','errors'].forEach(x=>document.getElementById(x).classList.toggle('hidden',x!==id));if(id==='home')renderHome();if(id==='learn')renderLearn();if(id==='dictionary')renderDictionary();if(id==='errors')renderErrors()}
 function ipaCell(word,ipa){return `<div class="learn-word"><b>${htmlEscape(word)}</b>${ipa?`<span class="learn-ipa">/${htmlEscape(ipa)}/</span>`:''}</div>`}
 function renderLearn(){
@@ -379,6 +384,7 @@ nav('result-again').onclick=()=>{if(session&&session.folder)startFolderTraining(
 nav('result-home').onclick=()=>show(session&&session.folder?'dictionary':'home');
 nav('finish-training').onclick=()=>{if(session){session.answered=true;show(session.folder?'dictionary':'home')}};
 nav('study-btn').onclick=startStudy;
+nav('home-open-dict').onclick=()=>show('dictionary');
 nav('continue-btn').onclick=()=>startMixed(groupPercent(selectedGroup)>=100?'groupRepeat':'new',selectedGroup);
 nav('learn-start').onclick=()=>startMixed('new',selectedGroup);
 nav('learn-home').onclick=()=>show('home');
