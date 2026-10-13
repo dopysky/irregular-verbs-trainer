@@ -89,3 +89,22 @@ nav button{font-size:16px;padding:10px 16px;border-radius:13px}
  .learn-table th,.learn-table td{padding:11px 12px}
 }
 .folder-card-head{display:flex;justify-content:space-between;align-items:center;gap:12px}.folder-card-head h3{margin:0}.folder-card .progress{margin:11px 0 8px;height:7px}.folder-delete{margin-top:4px}.dict-progress-line{display:flex;justify-content:space-between;align-items:center;color:#657892;font-size:14px;margin:0 0 5px}.dict-progress-line b{color:#20242b}.dict-progress-line+.progress{margin:0 0 7px;height:8px}.dict-progress-line~.muted{font-size:13px}
+
+/* v20 visual polish */
+:root{--ink:#202633;--muted:#687a92;--line:#e2e7ef;--accent:#3560f5;--accent2:#7b67ee}
+body{background:linear-gradient(180deg,#f5f7fb 0%,#eef2f7 100%);color:var(--ink)}
+header{padding-bottom:10px}header h1{font-size:30px;letter-spacing:-.02em}.sub{font-size:15px}
+.sound-toggle{font-size:14px;font-weight:600;border:1px solid #dbe2ee;background:#fff;padding:9px 13px;border-radius:12px;box-shadow:0 3px 10px rgba(30,50,90,.04)}
+.sound-toggle:hover{border-color:#bfcbe0;background:#f8faff}
+.panel{border-radius:24px;box-shadow:0 12px 34px rgba(31,53,91,.06)}
+.section-note{font-size:14px;color:#667991}
+.home-groups-head .section-note{max-width:780px}
+.mode-title{font-size:19px;font-weight:650;color:#667a95;margin:17px 0 8px}.verb{font-size:42px}.ru{font-size:18px}.ipa{font-size:12px;color:#8c98a8}
+.option{font-size:15px;padding:12px 15px}.quiz-actions button{font-size:14px}.hint{font-size:13px;color:#667991}
+.learn-head .section-note{font-size:14px}.learn-table th{font-size:12px}.learn-table td{padding:12px 15px}.learn-word b{font-size:17px}.learn-ipa{font-size:11px;color:#8f9aaa}
+.dictionary-intro{font-size:15px}.dictionary-tools button{font-size:14px}
+.folder-card h3{font-size:18px}.word-item{font-size:14px}
+.result-panel{background:radial-gradient(circle at 50% -10%,#edf3ff 0,#fff 46%)}
+.result-mark{background:linear-gradient(135deg,#e8f8ef,#e1efff);color:#3560f5}.result-kicker{color:#6d7f97}.result-box{background:#fbfcff}
+.result-message{font-size:15px}
+@media(max-width:700px){header h1{font-size:25px}.sound-toggle{font-size:12px;padding:8px 10px}.verb{font-size:36px}.mode-title{font-size:18px}}
