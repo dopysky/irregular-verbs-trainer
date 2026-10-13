@@ -5,3 +5,5 @@
 @media(max-width:900px){
   .wrap{padding:14px 10px 36px}.home-main{padding:22px 18px}.home-main h2{font-size:25px}.group-card{padding:14px}.group-card-top{align-items:flex-start}.group-card .block-meta{line-height:1.25}.learn-head{flex-direction:column}.learn-line{gap:12px}.learn-forms-inline{gap:12px;font-size:18px}.learn-ru{margin-left:0}.irregular-line{grid-template-columns:minmax(300px,1fr) auto;gap:10px;overflow:hidden}.irregular-line>span:nth-child(2){grid-column:1}.custom-word-line{grid-template-columns:1fr auto}.custom-word-line>span:nth-child(2){grid-column:1}.word-actions{grid-column:2;grid-row:1 / span 2;flex-direction:column}.forms-inline{font-size:18px;gap:12px}.errors-summary{align-items:flex-start;flex-direction:column}.single-answer input{width:min(460px,100%)}.quiz-actions button{padding:10px 13px}
 }
+
+.cloze-pattern{font-size:32px;letter-spacing:.08em;margin:20px auto 8px;text-align:center}.compact-answer{max-width:460px;margin:10px auto}.compact-answer input{max-width:420px;margin:0 auto;text-align:center}
