@@ -10,8 +10,11 @@ const LEARNING_GROUPS=[
 {id:'g8',name:'Блок 8',short:'Учебный блок',nums:[36,54,59,60,70,72,75,77,84,92,94,102,107,109,111,117,123,124,127,128,132,133,138,141,142,150,49,51,113,146]},
 {id:'mixed',name:'Все вперемешку',short:'Все 151 слово без группировки',nums:verbs.map(v=>v.n),mixed:true}
 ]
+const IPA_FIX={63:['lent / liːnd','lent / liːnd'],59:['nelt / niːld','nelt / niːld'],2:[null,'əwoʊkən'],103:['spelt / speld','spelt / speld'],109:['spɔɪlt / spɔɪld','spɔɪlt / spɔɪld'],79:['kwɪt / kwɪtəd','kwɪt / kwɪtəd'],64:['lept / liːpt','lept / liːpt'],43:[null,'fɜːrbɪdən']};
+verbs.forEach(v=>{const f=IPA_FIX[v.n];if(f){if(f[0])v.pastIpa=f[0];if(f[1])v.partIpa=f[1]}for(const k of ['pastIpa','partIpa'])v[k]=String(v[k]||'').split('/').map(s=>s.trim()).filter(Boolean).filter((s,i,r)=>r.indexOf(s)===i).join(' / ')});
 const KEY='irregular_trainer_v21';
-let state=JSON.parse(localStorage.getItem(KEY)||localStorage.getItem('irregular_trainer_v16')||localStorage.getItem('irregular_trainer_v15')||'{}');
+function loadState(){let raw=null;try{raw=localStorage.getItem(KEY)||localStorage.getItem('irregular_trainer_v16')||localStorage.getItem('irregular_trainer_v15');const s=raw?JSON.parse(raw):{};return s&&typeof s==='object'&&!Array.isArray(s)?s:{}}catch(e){try{if(raw)localStorage.setItem(KEY+'_backup',raw)}catch(_){}return {}}}
+let state=loadState();if(!state.version)state.version=1;
 if(!state.v) state.v={};
 if(!state.customFolders) state.customFolders={};
 if(!state.customStats) state.customStats={};
@@ -20,13 +23,17 @@ if(!state.customFolders[state.myWordsFolder]) state.customFolders[state.myWordsF
 let selectedGroup=state.selectedGroup||state.selectedBlock||1, selectedFolder=state.selectedFolder||'irregular';
 let theme=state.theme||'light';
 if(!LEARNING_GROUPS.some(g=>String(g.id)===String(selectedGroup)||LEARNING_GROUPS.indexOf(g)+1===Number(selectedGroup))) selectedGroup=1;
-let session=null, soundOn=state.soundOn!==false;
-function save(){state.selectedGroup=selectedGroup;state.selectedFolder=selectedFolder;state.theme=theme;localStorage.setItem(KEY,JSON.stringify(state));}
+let session=null, soundOn=state.soundOn!==false, advanceTimer=null, fbCtx=null;
+function save(){state.selectedGroup=selectedGroup;state.selectedFolder=selectedFolder;state.theme=theme;try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
 function normalize(x){return String(x||'').trim().toLowerCase().replace(/[’‘`]/g,"'").replace(/\s+/g,' ').replace(/[.!?]+$/,'')}
 function pluralizeRu(n,one,two,five){const x=Math.abs(Number(n))%100,y=x%10;if(x>=11&&x<=14)return five;if(y===1)return one;if(y>=2&&y<=4)return two;return five}
 function countLabel(n){return `${n} ${pluralizeRu(n,'слово','слова','слов')}`}
 function verbCountLabel(n){return `${n} ${pluralizeRu(n,'глагол','глагола','глаголов')}`}
-function accepted(user,correct){const u=normalize(user);return String(correct).split('/').some(x=>normalize(x)===u)}
+function accepted(user,correct){const sl=s=>s.replace(/\s*\/\s*/g,'/'),u=sl(normalize(user)),c=String(correct);return sl(normalize(c))===u||c.split('/').some(x=>normalize(x)===u)}
+function ruTokens(s){return String(s||'').split(/[,;]/).map(normalize).filter(Boolean)}
+function sameMeaning(a,b){const t=ruTokens(b.ru);return ruTokens(a.ru).some(x=>t.includes(x))}
+function pickOthers(v){return shuffle(verbs.filter(x=>x.n!==v.n&&!sameMeaning(x,v)))}
+function acceptsInf(v,val){const t=normalize(val);return normalize(v.inf)===t||verbs.some(x=>sameMeaning(x,v)&&normalize(x.inf)===t)}
 function shuffle(a){const x=[...a];for(let i=x.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[x[i],x[j]]=[x[j],x[i]]}return x}
 function groupMeta(n=selectedGroup){const idx=typeof n==='number'?n-1:LEARNING_GROUPS.findIndex(g=>String(g.id)===String(n));return LEARNING_GROUPS[idx]||LEARNING_GROUPS[0]}
 function groupVerbs(n=selectedGroup){const g=groupMeta(n);return g.nums.map(id=>verbs.find(v=>v.n===id)).filter(Boolean)}
@@ -37,7 +44,7 @@ function st(v){state.v=state.v||{};return state.v[v.n]||(state.v[v.n]={level:0,s
 function mastered(v){const x=st(v);return x.level>=3&&x.streak>=3}
 function percentFor(vs){if(!vs.length)return 0;return Math.round(vs.reduce((sum,v)=>sum+Math.min(1,st(v).level/3),0)/vs.length*100)}
 function due(v){return st(v).due&&st(v).due<=Date.now()}
-function todayCount(){return Object.values(state.v||{}).reduce((a,x)=>a+(x.today||0),0)}
+function todayCount(){const d=new Date().toDateString();if(state.todayDate!==d){Object.values(state.v||{}).forEach(x=>x.today=0);state.todayDate=d}return Object.values(state.v||{}).reduce((a,x)=>a+(x.today||0),0)}
 function renderBlocks(){
   const box=document.getElementById('blocks');
   const selected=groupKey(selectedGroup);
@@ -72,12 +79,13 @@ function renderHome(){
 }
 
 function show(id){
-  ['home','learn','quiz','result','dictionary'].forEach(x=>document.getElementById(x).classList.toggle('hidden',x!==id));
+  clearTimeout(advanceTimer);
+  ['home','learn','quiz','result','dictionary','errors'].forEach(x=>document.getElementById(x).classList.toggle('hidden',x!==id));
   const body=document.body, header=document.querySelector('header'), actions=document.querySelector('.header-actions'), homeHeading=document.querySelector('.home-heading');
   body.classList.toggle('home-page',id==='home');
   if(id==='home'){ if(homeHeading&&actions)homeHeading.appendChild(actions); }
   else { if(header&&actions)header.appendChild(actions); }
-  if(id==='home')renderHome();if(id==='learn')renderLearn();if(id==='dictionary')renderDictionary();
+  if(id==='home')renderHome();if(id==='learn')renderLearn();if(id==='dictionary')renderDictionary();if(id==='errors')renderErrors();
 }
 function ipaCell(word,ipa){return `<div class="learn-word"><b>${htmlEscape(word)}</b>${ipa?`<span class="learn-ipa">/${htmlEscape(ipa)}/</span>`:''}</div>`}
 function renderLearn(){
@@ -106,8 +114,8 @@ function startMixed(kind='new',groupN=selectedGroup){
   }else{
     selectedGroup=groupN;
     const vs=groupVerbs(groupN);
-    base=kind==='review'?vs.filter(due):kind==='groupRepeat'?vs:vs.filter(v=>!mastered(v));
-    if(!base.length)base=vs;
+    const open=vs.filter(v=>!mastered(v));base=kind==='review'?vs.filter(due):kind==='groupRepeat'?vs:open.filter(v=>st(v).level===0||!st(v).due||due(v));
+    if(!base.length)base=kind==='groupRepeat'?vs:(open.length?open:vs);
     items=chooseModes(base);
     if(items.length<10){
       const extra=chooseModes(shuffle(vs).slice(0,Math.min(10-items.length,vs.length)));
@@ -119,26 +127,24 @@ function startMixed(kind='new',groupN=selectedGroup){
   save();show('quiz');renderQ();
 }
 function renderQ(){const q=session.items[session.index],v=q.v;session.answered=false;document.getElementById('q-meta').innerHTML=`<div class="training-heading">${session.kind==='errors'?'Ошибки':groupMeta(session.group).name}</div><div class="training-badges"><span class="badge">${session.index+1} / ${session.items.length}</span><span class="badge">${Math.round(st(v).level/3*100)}% у глагола</span></div>`;document.getElementById('q-bar').style.width=(session.index/session.items.length*100)+'%';document.getElementById('q-feedback').innerHTML='';document.getElementById('q-hint').textContent='';document.getElementById('q-word').textContent='';document.getElementById('q-ipa').textContent='';document.getElementById('q-ru').textContent='';document.getElementById('sound-btn').classList.add('hidden');let title='',body='';if(q.mode==='write'){title='Укажи 2-ю и 3-ю форму';document.getElementById('q-word').textContent=v.inf;document.getElementById('q-ipa').textContent='';document.getElementById('q-ru').textContent=v.ru;body=writeTask(v)}else if(q.mode==='letters'){title=`Собери ${q.letterForm==='past'?'2-ю':'3-ю'} форму из букв`;document.getElementById('q-word').textContent=v.inf;document.getElementById('q-ru').textContent=v.ru;body=letterTask(v,q.letterForm);document.getElementById('sound-btn').classList.remove('hidden')}else if(q.mode==='cloze'){title=`Вставь пропущенные буквы в ${q.letterForm==='past'?'2-ю':'3-ю'} форму`;document.getElementById('q-word').textContent=v.inf;document.getElementById('q-ru').textContent=v.ru;body=clozeTask(v,q.letterForm);document.getElementById('sound-btn').classList.remove('hidden')}else if(q.mode==='ruToEn'){title='Переведи на английский';document.getElementById('q-ru').innerHTML=`<div class="translation-word">${v.ru}</div>`;body=translationRuToEn(v)}else if(q.mode==='enToRu'){title='Переведи на русский';document.getElementById('q-word').textContent=v.inf;document.getElementById('q-ipa').textContent='';body=translationEnToRu(v);document.getElementById('sound-btn').classList.remove('hidden')}else{title='Послушай и выбери слово';body=listenTask(v);document.getElementById('sound-btn').classList.remove('hidden')}document.getElementById('q-mode').textContent=title;document.getElementById('q-body').innerHTML=body;bindLetters();bindOptions();bindInputs();const safeSound=['write','letters','cloze','enToRu','listen'].includes(q.mode);if(safeSound)document.getElementById('sound-btn').classList.remove('hidden');autoSpeakForQuestion(q)}
-function formsHtml(v,target,cloze=false){const arr=[['Infinitive',v.inf],['V2',v.past],['V3',v.part]];return `<div class="forms-row">${arr.map(([lab,val])=>{const isTarget=lab===target;const shown=isTarget?(cloze?clozePattern(val):'_'.repeat(Math.max(4,val.length))):val;const ipa=lab==='Infinitive'&&!isTarget?`<div class="ipa">/${v.ipa||''}/</div>`:'';return `<div class="form-card ${isTarget?'hidden-form':''}"><small>${lab}</small><b>${shown}</b>${ipa}</div>`}).join('')}</div>`}
 function writeTask(v){return `<div class="input-grid"><label>V2<input id="ans-v2" autocomplete="off" spellcheck="false"></label><label>V3<input id="ans-v3" autocomplete="off" spellcheck="false"></label></div>`}
 function letterTask(v,form){const target=form==='past'?v.past:v.part;const chars=target.split('/')[0].replace(/[^a-z]/gi,'').toLowerCase().split('');const pool=shuffle(chars.map((c,i)=>({c,i})));return `<div class="built" id="built" aria-label="Собранное слово"></div><div class="letters">${pool.map(x=>`<button class="letter" data-char="${x.c}" data-i="${x.i}">${x.c.toUpperCase()}</button>`).join('')}</div><div class="actions" style="justify-content:center"><button id="remove-letter" class="small-action">← Убрать последнюю</button></div><input type="hidden" id="letter-answer">`}
 function clozePattern(word){const w=word.split('/')[0].trim();if(w.length<=3)return w[0]+'_'.repeat(Math.max(0,w.length-1));const hide=Math.max(1,Math.ceil(w.length/3));const idx=shuffle([...Array(w.length).keys()]).slice(0,hide);const set=new Set(idx);return [...w].map((c,i)=>set.has(i)?'_':c).join('')}
 function clozeTask(v,form){const target=form==='past'?v.past:v.part;return `<div class="translation-word cloze-pattern">${clozePattern(target)}</div><div class="single-answer compact-answer"><input id="ans-cloze" autocomplete="off" spellcheck="false" aria-label="Ответ"></div>`}
 function optionSet(correct,others){const seen=new Set();const all=[correct,...others].filter(x=>{const k=normalize(x);if(seen.has(k))return false;seen.add(k);return true});const target=normalize(correct);return shuffle(all).map(x=>`<button class="option" data-option="${htmlEscape(x)}" data-correct="${normalize(x)===target?'1':'0'}">${htmlEscape(x)}</button>`).join('')}
 function htmlEscape(s){return String(s).replaceAll('&','&amp;').replaceAll('"','&quot;').replaceAll('<','&lt;').replaceAll('>','&gt;')}
-function translationRuToEn(v){const others=shuffle(verbs.filter(x=>x.n!==v.n)).slice(0,3).map(x=>`${x.inf} — ${x.past} — ${x.part}`);return `<div class="option-list">${optionSet(`${v.inf} — ${v.past} — ${v.part}`,others)}</div>`}
-function translationRuToEnWord(v){const others=shuffle(verbs.filter(x=>x.n!==v.n)).slice(0,3).map(x=>x.inf);return `<div class="option-list">${optionSet(v.inf,others)}</div>`}
-function translationEnToRu(v){const others=shuffle(verbs.filter(x=>x.n!==v.n)).slice(0,3).map(x=>x.ru);return `<div class="option-list">${optionSet(v.ru,others)}</div>`}
-function listenTask(v){const others=shuffle(verbs.filter(x=>x.n!==v.n)).slice(0,3).map(x=>x.inf);return `<div class="listen-box"><button class="icon-btn listen-play" id="listen-play" title="Прослушать" aria-label="Прослушать">🔊</button><div class="option-list">${optionSet(v.inf,others)}</div></div>`}
+function translationRuToEn(v){const others=pickOthers(v).slice(0,3).map(x=>`${x.inf} — ${x.past} — ${x.part}`);return `<div class="option-list">${optionSet(`${v.inf} — ${v.past} — ${v.part}`,others)}</div>`}
+function translationRuToEnWord(v){const others=pickOthers(v).slice(0,3).map(x=>x.inf);return `<div class="option-list">${optionSet(v.inf,others)}</div>`}
+function translationEnToRu(v){const others=pickOthers(v).slice(0,3).map(x=>x.ru);return `<div class="option-list">${optionSet(v.ru,others)}</div>`}
+function listenTask(v){const others=pickOthers(v).slice(0,3).map(x=>x.inf);return `<div class="listen-box"><button class="icon-btn listen-play" id="listen-play" title="Прослушать" aria-label="Прослушать">🔊</button><div class="option-list">${optionSet(v.inf,others)}</div></div>`}
 function currentAnswers(){const q=session.items[session.index];if(q.mode==='write')return {v2:document.getElementById('ans-v2').value,v3:document.getElementById('ans-v3').value};if(q.mode==='letters'||q.mode==='customLetters')return {letters:document.getElementById('letter-answer')?.value||''};if(q.mode==='cloze')return {cloze:document.getElementById('ans-cloze')?.value||''};if(['ruToEnWrite','enToRuWrite','customRuToEnWrite','customEnToRuWrite'].includes(q.mode))return {folder:document.getElementById('ans-folder')?.value||''};
 if(q.mode==='customWrite'||q.mode==='customCloze')return {custom:document.getElementById('ans-custom')?.value||'',cloze:document.getElementById('ans-custom')?.value||''};return {option:document.getElementById('selected-option')?.value||''}}
 function bindLetters(){const q=session.items[session.index];document.querySelectorAll('.letter').forEach(btn=>btn.onclick=()=>{if(session.answered||btn.disabled)return;const inp=document.getElementById('letter-answer'),built=document.getElementById('built');inp.value+=btn.dataset.char;btn.disabled=true;const span=document.createElement('button');span.type='button';span.className='built-letter';span.textContent=btn.dataset.char.toUpperCase();span.dataset.i=btn.dataset.i;span.title='Нажми, чтобы убрать эту букву';span.onclick=()=>{if(session.answered)return;const idx=span.dataset.i;const source=document.querySelector(`.letter[data-i=\"${idx}\"]`);if(source)source.disabled=false;const spans=[...built.querySelectorAll('.built-letter')];const pos=spans.indexOf(span);spans.slice(pos).forEach(x=>{const src=document.querySelector(`.letter[data-i=\"${x.dataset.i}\"]`);if(src)src.disabled=false;x.remove()});inp.value=spans.slice(0,pos).map(x=>x.textContent.toLowerCase()).join('')};built.appendChild(span);if(inp.value.length===(q.letterForm==='past'?q.v.past:q.v.part).split('/')[0].replace(/[^a-z]/gi,'').length)checkCurrent()});const remove=document.getElementById('remove-letter');if(remove)remove.onclick=()=>{if(session.answered)return;const inp=document.getElementById('letter-answer'),built=document.getElementById('built'),last=built.lastElementChild;if(!last)return;last.click()};const play=document.getElementById('listen-play');if(play)play.onclick=()=>speak(session.items[session.index].v.inf,true)}
-function bindCustomLetters(){const q=session.items[session.index];document.querySelectorAll('.letter').forEach(btn=>btn.onclick=()=>{if(session.answered||btn.disabled)return;const inp=document.getElementById('letter-answer'),built=document.getElementById('built');inp.value+=btn.dataset.char;btn.disabled=true;const span=document.createElement('button');span.type='button';span.className='built-letter';span.textContent=btn.dataset.char.toUpperCase();span.dataset.i=btn.dataset.i;span.onclick=()=>{if(session.answered)return;const spans=[...built.querySelectorAll('.built-letter')],pos=spans.indexOf(span);spans.slice(pos).forEach(x=>{const src=document.querySelector(`.letter[data-i=\"${x.dataset.i}\"]`);if(src)src.disabled=false;x.remove()});inp.value=spans.slice(0,pos).map(x=>x.textContent.toLowerCase()).join('')};built.appendChild(span);if(inp.value.length===q.v.word.length)checkFolderCurrent()});const remove=document.getElementById('remove-letter');if(remove)remove.onclick=()=>{const built=document.getElementById('built');if(built?.lastElementChild)built.lastElementChild.click()}}
 function bindOptions(){document.querySelectorAll('.option').forEach(btn=>btn.onclick=()=>{if(session.answered)return;document.querySelectorAll('.option').forEach(x=>x.classList.remove('selected'));btn.classList.add('selected');let hidden=document.getElementById('selected-option');if(!hidden){hidden=document.createElement('input');hidden.type='hidden';hidden.id='selected-option';document.getElementById('q-body').appendChild(hidden)}hidden.value=btn.dataset.option;if(session.folder)checkFolderCurrent();else checkCurrent()})}
 function bindInputs(){
   const q=session.items[session.index];
   if(q.mode!=="write"&&q.mode!=="cloze"&&!['ruToEnWrite','enToRuWrite','customRuToEnWrite','customEnToRuWrite'].includes(q.mode)) return;
-  if(['ruToEnWrite','enToRuWrite','customRuToEnWrite','customEnToRuWrite'].includes(q.mode)){const el=document.getElementById('ans-folder');if(el){el.oninput=()=>{const v=q.v;const target=['ruToEnWrite','customRuToEnWrite'].includes(q.mode)?(q.custom?v.word:v.inf):(q.custom?v.translation:v.ru);if(normalize(el.value)===normalize(target))checkFolderCurrent();};el.onkeydown=e=>{if(e.key==='Enter'&&el.value.trim())checkFolderCurrent();}}return;}
+  if(['ruToEnWrite','enToRuWrite','customRuToEnWrite','customEnToRuWrite'].includes(q.mode)){const el=document.getElementById('ans-folder');if(el){el.oninput=()=>{const v=q.v;const target=['ruToEnWrite','customRuToEnWrite'].includes(q.mode)?(q.custom?v.word:v.inf):(q.custom?v.translation:v.ru);if(normalize(el.value)===normalize(target)||(q.mode==='ruToEnWrite'&&acceptsInf(v,el.value)))checkFolderCurrent();};el.onkeydown=e=>{if(e.key==='Enter'&&el.value.trim())checkFolderCurrent();}}return;}
   if(q.mode==='write'){
     const v=q.v, v2=document.getElementById('ans-v2'), v3=document.getElementById('ans-v3');
     if(!v2||!v3)return;
@@ -170,8 +176,8 @@ function bindInputs(){
   };
 }
 
-function markAttempt(v,ok,mode){const x=st(v);x.attempts=(x.attempts||0)+1;x.today=(x.today||0)+1;x.last=Date.now();x.wrongModes=x.wrongModes||{};const intervals=[10*60*1000,24*60*60*1000,3*24*60*60*1000,7*24*60*60*1000];if(ok){x.streak=(x.streak||0)+1;x.level=Math.min(3,x.level+1);x.due=Date.now()+intervals[Math.min(x.level-1,intervals.length-1)]}else{x.streak=0;x.level=0;x.due=Date.now()+10*60*1000;x.wrong=(x.wrong||0)+1;x.wrongModes[mode]=(x.wrongModes[mode]||0)+1;if(mode==='write'){x.wrongV2=(x.wrongV2||0)+1;x.wrongV3=(x.wrongV3||0)+1}if(mode==='letters'){if(session.items[session.index].letterForm==='past')x.wrongV2=(x.wrongV2||0)+1;else x.wrongV3=(x.wrongV3||0)+1}if(mode==='cloze')x.spelling=(x.spelling||0)+1}save()}
-function checkCurrent(force=false){if(session.answered)return;const q=session.items[session.index],v=q.v,a=currentAnswers();let ok=false,detail='';if(force){ok=false;detail='Ответ: '+(q.mode==='write'?v.past+' — '+v.part:q.mode==='letters'?(q.letterForm==='past'?v.past:v.part):q.mode==='cloze'?(q.letterForm==='past'?v.past:v.part):q.mode==='ruToEn'?v.inf+' — '+v.past+' — '+v.part:q.mode==='enToRu'?v.ru:v.inf)}else if(q.mode==='write'){const a2=accepted(a.v2,v.past),a3=accepted(a.v3,v.part);document.getElementById('ans-v2').classList.toggle('correct',a2);document.getElementById('ans-v3').classList.toggle('correct',a3);if(!(a2&&a3))return;ok=true;detail='V2 и V3 правильно'}else if(q.mode==='letters'){ok=accepted(a.letters,q.letterForm==='past'?v.past:v.part);detail=ok?'✓ Правильно':'Правильно: '+(q.letterForm==='past'?v.past:v.part)}else if(q.mode==='cloze'){ok=accepted(a.cloze,q.letterForm==='past'?v.past:v.part);detail=ok?'✓ Правильно':'Правильно: '+(q.letterForm==='past'?v.past:v.part)}else if(q.mode==='ruToEn'||q.mode==='enToRu'||q.mode==='listen'){const selected=document.querySelector('.option.selected');ok=selected?.dataset.correct==='1';detail=ok?'✓ Правильно':'Правильно: '+(q.mode==='ruToEn'?`${v.inf} — ${v.past} — ${v.part}`:q.mode==='enToRu'?v.ru:v.inf)}markAttempt(v,ok,q.mode);if(!ok&&!force&&q.mode!=='write'){const pos=Math.min(session.items.length,session.index+3);session.items.splice(pos,0,makeItem(v,q.mode))}session.answered=true;if(ok)session.score++;document.querySelectorAll('.option').forEach(btn=>{const val=btn.dataset.option;if((q.mode==='ruToEn'&&val===`${v.inf} — ${v.past} — ${v.part}`)||(q.mode==='enToRu'&&normalize(val)===normalize(v.ru))||(q.mode==='listen'&&normalize(val)===normalize(v.inf))){btn.classList.add('correct')}else if(btn.classList.contains('selected')&&!ok)btn.classList.add('wrong')});document.getElementById('q-feedback').innerHTML='';playFeedbackSound(ok);if(!ok&&force&&['letters','cloze','write'].includes(q.mode))document.getElementById('sound-btn').classList.remove('hidden');if(ok||force){setTimeout(nextQ,ok?430:1100)}else{setTimeout(nextQ,1400)}renderHome()}
+function markAttempt(v,ok,mode){const x=st(v);x.attempts=(x.attempts||0)+1;x.today=(x.today||0)+1;x.last=Date.now();x.wrongModes=x.wrongModes||{};const intervals=[10*60*1000,24*60*60*1000,3*24*60*60*1000],now=Date.now(),gate=!(session&&session.folder);if(ok){x.streak=(x.streak||0)+1;if(!gate||x.level===0||!x.due||x.due<=now){x.level=Math.min(3,x.level+1);x.due=now+intervals[x.level-1]}}else{x.streak=0;x.level=Math.max(0,x.level-1);x.due=now+10*60*1000;x.wrong=(x.wrong||0)+1;x.wrongModes[mode]=(x.wrongModes[mode]||0)+1;if(mode==='write'){x.wrongV2=(x.wrongV2||0)+1;x.wrongV3=(x.wrongV3||0)+1}if(mode==='letters'){if(session.items[session.index].letterForm==='past')x.wrongV2=(x.wrongV2||0)+1;else x.wrongV3=(x.wrongV3||0)+1}if(mode==='cloze')x.spelling=(x.spelling||0)+1}save()}
+function checkCurrent(force=false){if(session.answered)return;const q=session.items[session.index],v=q.v,a=currentAnswers();let ok=false,detail='';if(force){ok=false;detail='Ответ: '+(q.mode==='write'?v.past+' — '+v.part:q.mode==='letters'?(q.letterForm==='past'?v.past:v.part):q.mode==='cloze'?(q.letterForm==='past'?v.past:v.part):q.mode==='ruToEn'?v.inf+' — '+v.past+' — '+v.part:q.mode==='enToRu'?v.ru:v.inf)}else if(q.mode==='write'){const a2=accepted(a.v2,v.past),a3=accepted(a.v3,v.part);document.getElementById('ans-v2').classList.toggle('correct',a2);document.getElementById('ans-v3').classList.toggle('correct',a3);if(!(a2&&a3))return;ok=true;detail='V2 и V3 правильно'}else if(q.mode==='letters'){ok=accepted(a.letters,q.letterForm==='past'?v.past:v.part);detail=ok?'✓ Правильно':'Правильно: '+(q.letterForm==='past'?v.past:v.part)}else if(q.mode==='cloze'){ok=accepted(a.cloze,q.letterForm==='past'?v.past:v.part);detail=ok?'✓ Правильно':'Правильно: '+(q.letterForm==='past'?v.past:v.part)}else if(q.mode==='ruToEn'||q.mode==='enToRu'||q.mode==='listen'){const selected=document.querySelector('.option.selected');ok=selected?.dataset.correct==='1';detail=ok?'✓ Правильно':'Правильно: '+(q.mode==='ruToEn'?`${v.inf} — ${v.past} — ${v.part}`:q.mode==='enToRu'?v.ru:v.inf)}markAttempt(v,ok,q.mode);if(!ok){const pos=Math.min(session.items.length,session.index+3);session.items.splice(pos,0,makeItem(v,q.mode))}session.answered=true;if(ok)session.score++;document.querySelectorAll('.option').forEach(btn=>{const val=btn.dataset.option;if((q.mode==='ruToEn'&&val===`${v.inf} — ${v.past} — ${v.part}`)||(q.mode==='enToRu'&&normalize(val)===normalize(v.ru))||(q.mode==='listen'&&normalize(val)===normalize(v.inf))){btn.classList.add('correct')}else if(btn.classList.contains('selected')&&!ok)btn.classList.add('wrong')});document.getElementById('q-feedback').innerHTML=ok?'':'<span class="bad-t">'+htmlEscape(detail)+'</span>';playFeedbackSound(ok);if(!ok&&force&&['letters','cloze','write'].includes(q.mode))document.getElementById('sound-btn').classList.remove('hidden');advanceTimer=setTimeout(nextQ,ok?430:2200);renderHome()}
 function dontKnow(){if(session.answered)return;if(session.folder){checkFolderCurrent(true);return}checkCurrent(true)}
 function nextQ(){if(!session||!session.answered)return;session.index++;if(session.index>=session.items.length)finishSession();else renderQ()}
 function giveHint(){
@@ -201,7 +207,7 @@ function playLocalAudio(n,force=false){
   const key=String(n);
   try{
     if(currentAudio){currentAudio.pause();currentAudio.currentTime=0;}
-    const src=AUDIO_DATA[key]; if(!src)return false; const audio=new Audio(src);
+    const src=AUDIO_DATA[key]; if(!src)return false; const audio=currentAudio||new Audio();audio.src=src;
     currentAudio=audio; currentAudioKey=key; audio.preload='auto'; audio.volume=1;
     const p=audio.play();
     if(p&&typeof p.catch==='function')p.catch(()=>{if(currentAudioKey===key)fallbackSpeak(verbs.find(v=>v.n===n)?.inf||'')});
@@ -216,11 +222,11 @@ function playFeedbackSound(ok){
   if(!soundOn)return;
   try{
     const C=window.AudioContext||window.webkitAudioContext;if(!C)return;
-    const c=new C(),now=c.currentTime;
+    fbCtx=fbCtx||new C();const c=fbCtx;if(c.resume)c.resume();const now=c.currentTime;
     const master=c.createGain();master.gain.setValueAtTime(.0001,now);master.gain.exponentialRampToValueAtTime(.32,now+.012);master.gain.exponentialRampToValueAtTime(.0001,now+(ok?.52:.3));master.connect(c.destination);
     const tones=ok?[{f:784,t:0,d:.22},{f:1046.5,t:.07,d:.30},{f:1318.5,t:.14,d:.32}]:[{f:220,t:0,d:.13},{f:165,t:.08,d:.21}];
     tones.forEach(({f,t,d})=>{const o=c.createOscillator(),g=c.createGain();o.type=ok?'sine':'triangle';o.frequency.setValueAtTime(f,now+t);g.gain.setValueAtTime(.0001,now+t);g.gain.exponentialRampToValueAtTime(ok?.72:.5,now+t+.012);g.gain.exponentialRampToValueAtTime(.0001,now+t+d);o.connect(g);g.connect(master);o.start(now+t);o.stop(now+t+d+.02)});
-    setTimeout(()=>c.close(),700);
+    
   }catch(e){}
 }
 function finishSession(){
@@ -243,7 +249,7 @@ function renderDictionary(){
   const custom=state.customFolders||{}; const myId=state.myWordsFolder;
   const folders=[{id:'irregular',name:'Неправильные глаголы',count:verbs.length,built:true},{id:myId,name:'Мои слова',count:(custom[myId]?.words||[]).length,built:false,system:true},...Object.entries(custom).filter(([id,f])=>id!==myId&&normalize(f.name)!=='мои слова').map(([id,f])=>({id,name:f.name,count:(f.words||[]).length,built:false}))];
   if(!folders.some(f=>f.id===selectedFolder))selectedFolder='irregular';
-  document.getElementById('folders').innerHTML=folders.map(f=>{const fp=folderPercent(f.id);return `<div class="folder-card ${selectedFolder===f.id?'selected':''}" data-folder-card="${f.id}"><div class="folder-card-head"><h3>📁 ${htmlEscape(f.name)}</h3><span class="badge ${fp>=100?'good':''}">${fp}%</span></div><div class="muted">${countLabel(f.count)}</div><div class="progress"><div class="bar ${fp>=100?'good':''}" style="width:${fp}%"></div></div>${!f.built&&!f.system?'<button class="folder-delete" data-delete-folder="'+f.id+'" title="Удалить папку" aria-label="Удалить папку">×</button>':''}</div>`}).join('');
+  document.getElementById('folders').innerHTML=folders.map(f=>{const fp=folderPercent(f.id);return `<div class="folder-card ${selectedFolder===f.id?'selected':''}" data-folder-card="${f.id}" role="button" tabindex="0"><div class="folder-card-head"><h3>📁 ${htmlEscape(f.name)}</h3><span class="badge ${fp>=100?'good':''}">${fp}%</span></div><div class="muted">${countLabel(f.count)}</div><div class="progress"><div class="bar ${fp>=100?'good':''}" style="width:${fp}%"></div></div>${!f.built&&!f.system?'<button class="folder-delete" data-delete-folder="'+f.id+'" title="Удалить папку" aria-label="Удалить папку">×</button>':''}</div>`}).join('');
   document.querySelectorAll('[data-folder-card]').forEach(card=>card.onclick=()=>{selectedFolder=card.dataset.folderCard;save();renderDictionary();if(window.innerWidth<=700){requestAnimationFrame(()=>{const list=document.getElementById('dict-list');if(list)list.scrollIntoView({behavior:'smooth',block:'start'});});}});
   document.querySelectorAll('[data-delete-folder]').forEach(b=>b.onclick=e=>{e.stopPropagation();openModal('confirm','Удалить папку?','Папка будет удалена.','deleteFolder',b.dataset.deleteFolder)});
   const title=folders.find(f=>f.id===selectedFolder)||folders[0];
@@ -329,7 +335,7 @@ function renderQFolder(){
   }else if(q.mode==='enToRuWrite'){
     title='Напиши перевод'; document.getElementById('q-word').textContent=v.inf; body=`<div class="single-answer compact-answer"><input id="ans-folder" autocomplete="off" spellcheck="false" aria-label="Ответ"></div>`; document.getElementById('sound-btn').classList.remove('hidden');
   }else if(q.mode==='listen'){
-    title='Какое слово ты услышала?'; body=`<div class="listen-box"><div class="listen-icon">🔊</div><div class="option-list">${optionSet(v.inf,shuffle(verbs.filter(x=>x.n!==v.n)).slice(0,3).map(x=>x.inf))}</div></div>`; document.getElementById('sound-btn').classList.remove('hidden');
+    title='Какое слово ты слышишь?'; body=`<div class="listen-box"><div class="listen-icon">🔊</div><div class="option-list">${optionSet(v.inf,pickOthers(v).slice(0,3).map(x=>x.inf))}</div></div>`; document.getElementById('sound-btn').classList.remove('hidden');
   }else if(q.mode==='customRuToEn'){
     title='Переведи на английский'; document.getElementById('q-ru').innerHTML=`<div class="translation-word">${htmlEscape(v.translation)}</div>`; body=`<div class="option-list">${optionSet(v.word,customOptions(v,'word').slice(1))}</div>`;
   }else if(q.mode==='customEnToRu'){
@@ -339,7 +345,7 @@ function renderQFolder(){
   }else if(q.mode==='customEnToRuWrite'){
     title='Напиши перевод'; document.getElementById('q-word').textContent=v.word; body=`<div class="single-answer compact-answer"><input id="ans-folder" autocomplete="off" spellcheck="false" aria-label="Ответ"></div>`; document.getElementById('sound-btn').classList.remove('hidden');
   }else{
-    title='Какое слово ты услышала?'; body=`<div class="listen-box"><div class="listen-icon">🔊</div><div class="option-list">${optionSet(v.word,customOptions(v,'word').slice(1))}</div></div>`; document.getElementById('sound-btn').classList.remove('hidden');
+    title='Какое слово ты слышишь?'; body=`<div class="listen-box"><div class="listen-icon">🔊</div><div class="option-list">${optionSet(v.word,customOptions(v,'word').slice(1))}</div></div>`; document.getElementById('sound-btn').classList.remove('hidden');
   }
   document.getElementById('q-mode').textContent=title; document.getElementById('q-body').innerHTML=body; bindOptions(); bindInputs();
   autoSpeakForQuestion(q);
@@ -351,7 +357,7 @@ function checkFolderCurrent(force=false){
   else if(q.mode==='customRuToEn'||q.mode==='customEnToRu'||q.mode==='customListen'||q.mode==='ruToEn'||q.mode==='enToRu'||q.mode==='listen'){const selected=document.querySelector('.option.selected');ok=selected?.dataset.correct==='1';}
   else if(q.mode==='customRuToEnWrite')ok=normalize(a.folder)===normalize(v.word);
   else if(q.mode==='customEnToRuWrite')ok=normalize(a.folder)===normalize(v.translation);
-  else if(q.mode==='ruToEnWrite')ok=normalize(a.folder)===normalize(v.inf);
+  else if(q.mode==='ruToEnWrite')ok=acceptsInf(v,a.folder);
   else if(q.mode==='enToRuWrite')ok=normalize(a.folder)===normalize(v.ru);
   session.answered=true;
   if(ok)session.score++;
@@ -372,7 +378,8 @@ function checkFolderCurrent(force=false){
     else if(q.mode==='enToRu')correct=normalize(v.ru);
     if(val===correct)btn.classList.add('correct'); else if(btn.classList.contains('selected')&&!ok)btn.classList.add('wrong');
   });
-  document.getElementById('q-feedback').innerHTML='';
+  const corr={customRuToEn:v.word,customListen:v.word,customRuToEnWrite:v.word,customEnToRu:v.translation,customEnToRuWrite:v.translation,ruToEn:v.inf,listen:v.inf,ruToEnWrite:v.inf,enToRu:v.ru,enToRuWrite:v.ru}[q.mode];
+  document.getElementById('q-feedback').innerHTML=ok||!corr?'':'<span class="bad-t">Правильно: '+htmlEscape(corr)+'</span>';
   playFeedbackSound(ok);
   if(!ok){
     q.retries=(q.retries||0)+1;
@@ -380,7 +387,7 @@ function checkFolderCurrent(force=false){
     const insertAt=Math.min(session.items.length,session.index+4+Math.floor(Math.random()*3));
     session.items.splice(insertAt,0,q);
   }
-  setTimeout(nextFolderQ,ok?430:850);
+  advanceTimer=setTimeout(nextFolderQ,ok?430:2200);
 }
 function nextFolderQ(){if(!session||!session.answered)return;session.index++;if(session.index>=session.items.length)finishSession();else renderQFolder()}
 
@@ -407,11 +414,11 @@ function addFolder(){openModal('folder','Новая папка')}
 function addWord(){if(selectedFolder==='irregular'){selectedFolder=state.myWordsFolder;save();renderDictionary()}openModal('word','Добавить слово')}
 function modalConfirm(){
   const back=document.getElementById('modal-backdrop'),type=back.dataset.type,action=back.dataset.action;
-  if(type==='folder'){const name=normalize(document.getElementById('modal-folder-name')?.value);if(!name)return;state.customFolders=state.customFolders||{};const id='f_'+Date.now();state.customFolders[id]={name,words:[]};selectedFolder=id;save();closeModal();renderDictionary();return}
+  if(type==='folder'){const name=(document.getElementById('modal-folder-name')?.value||'').trim().replace(/\s+/g,' ');if(!name)return;state.customFolders=state.customFolders||{};const id='f_'+Date.now();state.customFolders[id]={name,words:[]};selectedFolder=id;save();closeModal();renderDictionary();return}
   if(type==='word'){const word=document.getElementById('modal-word')?.value.trim(),translation=document.getElementById('modal-translation')?.value.trim();if(!word||!translation)return;state.customFolders=state.customFolders||{};const target=selectedFolder==='irregular'?state.myWordsFolder:selectedFolder;state.customFolders[target]=state.customFolders[target]||{name:'Мои слова',words:[]};state.customFolders[target].words.push({id:'w_'+Date.now(),word,translation});save();closeModal();renderDictionary();return}
   if(type==='editWord'){const wordId=back.dataset.wordId,word=document.getElementById('modal-word')?.value.trim(),translation=document.getElementById('modal-translation')?.value.trim();if(!word||!translation)return;const custom=state.customFolders||{};for(const f of Object.values(custom)){for(const w of (f.words||[])){if(w.id===wordId){w.word=word;w.translation=translation}}}state.customFolders=custom;save();closeModal();renderDictionary();return}
   if(type==='move'){const wordId=back.dataset.wordId,currentFolder=back.dataset.currentFolder,custom=state.customFolders||{};const selected=[...back.querySelectorAll('[data-move-folder]:checked')].map(x=>x.dataset.moveFolder);
-    // remove the word from every folder, then add the same record to all selected folders
+    if(!selected.length){const m=back.querySelector('.modal-message .muted');if(m)m.textContent='Выбери хотя бы одну папку или удали слово корзиной.';return}
     let word=null;for(const f of Object.values(custom)){const w=(f.words||[]).find(x=>x.id===wordId);if(w){word=w;break}}
     if(word){for(const f of Object.values(custom))f.words=(f.words||[]).filter(x=>x.id!==wordId);for(const id of selected){custom[id].words=custom[id].words||[];custom[id].words.push({...word})}}
     state.customFolders=custom;save();closeModal();renderDictionary();return}
@@ -448,3 +455,8 @@ nav('modal-ok').onclick=modalConfirm;
 document.getElementById('modal-backdrop').onclick=e=>{if(e.target.id==='modal-backdrop')closeModal()};
 show('home');
 if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js'))}
+nav('errors-btn').onclick=()=>{show('errors');window.scrollTo({top:0,behavior:'smooth'})};
+nav('errors-back').onclick=()=>{show('home');window.scrollTo({top:0,behavior:'smooth'})};
+document.querySelectorAll('.mini-row').forEach(r=>{const b=r.querySelector('button'),w=r.querySelector('b');if(b&&w)b.onclick=()=>speak(w.textContent,true)});
+document.addEventListener('keydown',e=>{const c=e.target;if(c&&c.matches&&c.matches('[data-folder-card]')&&(e.key==='Enter'||e.key===' ')){e.preventDefault();c.click()}});
+document.addEventListener('pointerdown',()=>{try{fbCtx=fbCtx||new (window.AudioContext||window.webkitAudioContext)();if(fbCtx.resume)fbCtx.resume()}catch(e){}try{currentAudio=currentAudio||new Audio();const au=currentAudio;au.src=AUDIO_DATA[1];au.volume=0;const p=au.play();if(p&&p.then)p.then(()=>{au.pause();au.currentTime=0;au.volume=1}).catch(()=>{au.volume=1})}catch(e){}},{once:true});
