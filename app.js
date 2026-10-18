@@ -69,8 +69,7 @@ function renderHome(){
   document.getElementById('selected-note').textContent=`Закреплено: ${vs.filter(mastered).length} из ${vs.length}`;
   document.getElementById('continue-btn').textContent=p>=100?'Повторить блок':'Начать тренировку';
   renderBlocks();
-  document.getElementById('s-mastered').textContent=verbs.filter(mastered).length;
-  document.getElementById('s-today').textContent=todayCount();
+  renderMotivation();
   const masteredCount=verbs.filter(mastered).length;
   const overall=Math.round(verbs.reduce((sum,v)=>sum+Math.min(1,st(v).level/3),0)/verbs.length*100);
   const hp=document.getElementById('home-progress-percent'); if(hp)hp.textContent=overall+'%';
@@ -80,7 +79,7 @@ function renderHome(){
 
 function show(id){
   clearTimeout(advanceTimer);
-  ['home','learn','quiz','result','dictionary','errors'].forEach(x=>document.getElementById(x).classList.toggle('hidden',x!==id));
+  ['home','learn','quiz','result','dictionary','errors','cards'].forEach(x=>document.getElementById(x).classList.toggle('hidden',x!==id));
   const body=document.body, header=document.querySelector('header'), actions=document.querySelector('.header-actions'), homeHeading=document.querySelector('.home-heading');
   body.classList.toggle('home-page',id==='home');
   if(id==='home'){ if(homeHeading&&actions)homeHeading.appendChild(actions); }
@@ -126,7 +125,7 @@ function startMixed(kind='new',groupN=selectedGroup){
   session={items:shuffle(items),index:0,score:0,kind,group:kind==='errors'?null:groupN,answered:false,folder:false,returnTo:'home'};
   save();show('quiz');renderQ();
 }
-function renderQ(){const q=session.items[session.index],v=q.v;session.answered=false;document.getElementById('q-meta').innerHTML=`<div class="training-heading">${session.kind==='errors'?'Ошибки':groupMeta(session.group).name}</div><div class="training-badges"><span class="badge">${session.index+1} / ${session.items.length}</span><span class="badge">${Math.round(st(v).level/3*100)}% у глагола</span></div>`;document.getElementById('q-bar').style.width=(session.index/session.items.length*100)+'%';document.getElementById('q-feedback').innerHTML='';document.getElementById('q-hint').textContent='';document.getElementById('q-word').textContent='';document.getElementById('q-ipa').textContent='';document.getElementById('q-ru').textContent='';document.getElementById('sound-btn').classList.add('hidden');let title='',body='';if(q.mode==='write'){title='Укажи 2-ю и 3-ю форму';document.getElementById('q-word').textContent=v.inf;document.getElementById('q-ipa').textContent='';document.getElementById('q-ru').textContent=v.ru;body=writeTask(v)}else if(q.mode==='letters'){title=`Собери ${q.letterForm==='past'?'2-ю':'3-ю'} форму из букв`;document.getElementById('q-word').textContent=v.inf;document.getElementById('q-ru').textContent=v.ru;body=letterTask(v,q.letterForm);document.getElementById('sound-btn').classList.remove('hidden')}else if(q.mode==='cloze'){title=`Вставь пропущенные буквы в ${q.letterForm==='past'?'2-ю':'3-ю'} форму`;document.getElementById('q-word').textContent=v.inf;document.getElementById('q-ru').textContent=v.ru;body=clozeTask(v,q.letterForm);document.getElementById('sound-btn').classList.remove('hidden')}else if(q.mode==='ruToEn'){title='Переведи на английский';document.getElementById('q-ru').innerHTML=`<div class="translation-word">${v.ru}</div>`;body=translationRuToEn(v)}else if(q.mode==='enToRu'){title='Переведи на русский';document.getElementById('q-word').textContent=v.inf;document.getElementById('q-ipa').textContent='';body=translationEnToRu(v);document.getElementById('sound-btn').classList.remove('hidden')}else{title='Послушай и выбери слово';body=listenTask(v);document.getElementById('sound-btn').classList.remove('hidden')}document.getElementById('q-mode').textContent=title;document.getElementById('q-body').innerHTML=body;bindLetters();bindOptions();bindInputs();const safeSound=['write','letters','cloze','enToRu','listen'].includes(q.mode);if(safeSound)document.getElementById('sound-btn').classList.remove('hidden');autoSpeakForQuestion(q)}
+function renderQ(){const q=session.items[session.index],v=q.v;session.answered=false;document.getElementById('q-meta').innerHTML=`<div class="training-heading">${session.kind==='errors'?'Ошибки':session.kind==='review'?'Повторение':groupMeta(session.group).name}</div><div class="training-badges"><span class="badge">${session.index+1} / ${session.items.length}</span><span class="badge">${Math.round(st(v).level/3*100)}% у глагола</span></div>`;document.getElementById('q-bar').style.width=(session.index/session.items.length*100)+'%';document.getElementById('q-feedback').innerHTML='';document.getElementById('q-hint').textContent='';document.getElementById('q-word').textContent='';document.getElementById('q-ipa').textContent='';document.getElementById('q-ru').textContent='';document.getElementById('sound-btn').classList.add('hidden');let title='',body='';if(q.mode==='write'){title='Укажи 2-ю и 3-ю форму';document.getElementById('q-word').textContent=v.inf;document.getElementById('q-ipa').textContent='';document.getElementById('q-ru').textContent=v.ru;body=writeTask(v)}else if(q.mode==='letters'){title=`Собери ${q.letterForm==='past'?'2-ю':'3-ю'} форму из букв`;document.getElementById('q-word').textContent=v.inf;document.getElementById('q-ru').textContent=v.ru;body=letterTask(v,q.letterForm);document.getElementById('sound-btn').classList.remove('hidden')}else if(q.mode==='cloze'){title=`Вставь пропущенные буквы в ${q.letterForm==='past'?'2-ю':'3-ю'} форму`;document.getElementById('q-word').textContent=v.inf;document.getElementById('q-ru').textContent=v.ru;body=clozeTask(v,q.letterForm);document.getElementById('sound-btn').classList.remove('hidden')}else if(q.mode==='ruToEn'){title='Переведи на английский';document.getElementById('q-ru').innerHTML=`<div class="translation-word">${v.ru}</div>`;body=translationRuToEn(v)}else if(q.mode==='enToRu'){title='Переведи на русский';document.getElementById('q-word').textContent=v.inf;document.getElementById('q-ipa').textContent='';body=translationEnToRu(v);document.getElementById('sound-btn').classList.remove('hidden')}else{title='Послушай и выбери слово';body=listenTask(v);document.getElementById('sound-btn').classList.remove('hidden')}document.getElementById('q-mode').textContent=title;document.getElementById('q-body').innerHTML=body;bindLetters();bindOptions();bindInputs();const safeSound=['write','letters','cloze','enToRu','listen'].includes(q.mode);if(safeSound)document.getElementById('sound-btn').classList.remove('hidden');autoSpeakForQuestion(q)}
 function writeTask(v){return `<div class="input-grid"><label>V2<input id="ans-v2" autocomplete="off" spellcheck="false"></label><label>V3<input id="ans-v3" autocomplete="off" spellcheck="false"></label></div>`}
 function letterTask(v,form){const target=form==='past'?v.past:v.part;const chars=target.split('/')[0].replace(/[^a-z]/gi,'').toLowerCase().split('');const pool=shuffle(chars.map((c,i)=>({c,i})));return `<div class="built" id="built" aria-label="Собранное слово"></div><div class="letters">${pool.map(x=>`<button class="letter" data-char="${x.c}" data-i="${x.i}">${x.c.toUpperCase()}</button>`).join('')}</div><div class="actions" style="justify-content:center"><button id="remove-letter" class="small-action">← Убрать последнюю</button></div><input type="hidden" id="letter-answer">`}
 function clozePattern(word){const w=word.split('/')[0].trim();if(w.length<=3)return w[0]+'_'.repeat(Math.max(0,w.length-1));const hide=Math.max(1,Math.ceil(w.length/3));const idx=shuffle([...Array(w.length).keys()]).slice(0,hide);const set=new Set(idx);return [...w].map((c,i)=>set.has(i)?'_':c).join('')}
@@ -176,8 +175,8 @@ function bindInputs(){
   };
 }
 
-function markAttempt(v,ok,mode){const x=st(v);x.attempts=(x.attempts||0)+1;x.today=(x.today||0)+1;x.last=Date.now();x.wrongModes=x.wrongModes||{};const intervals=[10*60*1000,24*60*60*1000,3*24*60*60*1000],now=Date.now(),gate=!(session&&session.folder);if(ok){x.streak=(x.streak||0)+1;if(!gate||x.level===0||!x.due||x.due<=now){x.level=Math.min(3,x.level+1);x.due=now+intervals[x.level-1]}}else{x.streak=0;x.level=Math.max(0,x.level-1);x.due=now+10*60*1000;x.wrong=(x.wrong||0)+1;x.wrongModes[mode]=(x.wrongModes[mode]||0)+1;if(mode==='write'){x.wrongV2=(x.wrongV2||0)+1;x.wrongV3=(x.wrongV3||0)+1}if(mode==='letters'){if(session.items[session.index].letterForm==='past')x.wrongV2=(x.wrongV2||0)+1;else x.wrongV3=(x.wrongV3||0)+1}if(mode==='cloze')x.spelling=(x.spelling||0)+1}save()}
-function checkCurrent(force=false){if(session.answered)return;const q=session.items[session.index],v=q.v,a=currentAnswers();let ok=false,detail='';if(force){ok=false;detail='Ответ: '+(q.mode==='write'?v.past+' — '+v.part:q.mode==='letters'?(q.letterForm==='past'?v.past:v.part):q.mode==='cloze'?(q.letterForm==='past'?v.past:v.part):q.mode==='ruToEn'?v.inf+' — '+v.past+' — '+v.part:q.mode==='enToRu'?v.ru:v.inf)}else if(q.mode==='write'){const a2=accepted(a.v2,v.past),a3=accepted(a.v3,v.part);document.getElementById('ans-v2').classList.toggle('correct',a2);document.getElementById('ans-v3').classList.toggle('correct',a3);if(!(a2&&a3))return;ok=true;detail='V2 и V3 правильно'}else if(q.mode==='letters'){ok=accepted(a.letters,q.letterForm==='past'?v.past:v.part);detail=ok?'✓ Правильно':'Правильно: '+(q.letterForm==='past'?v.past:v.part)}else if(q.mode==='cloze'){ok=accepted(a.cloze,q.letterForm==='past'?v.past:v.part);detail=ok?'✓ Правильно':'Правильно: '+(q.letterForm==='past'?v.past:v.part)}else if(q.mode==='ruToEn'||q.mode==='enToRu'||q.mode==='listen'){const selected=document.querySelector('.option.selected');ok=selected?.dataset.correct==='1';detail=ok?'✓ Правильно':'Правильно: '+(q.mode==='ruToEn'?`${v.inf} — ${v.past} — ${v.part}`:q.mode==='enToRu'?v.ru:v.inf)}markAttempt(v,ok,q.mode);if(!ok){const pos=Math.min(session.items.length,session.index+3);session.items.splice(pos,0,makeItem(v,q.mode))}session.answered=true;if(ok)session.score++;document.querySelectorAll('.option').forEach(btn=>{const val=btn.dataset.option;if((q.mode==='ruToEn'&&val===`${v.inf} — ${v.past} — ${v.part}`)||(q.mode==='enToRu'&&normalize(val)===normalize(v.ru))||(q.mode==='listen'&&normalize(val)===normalize(v.inf))){btn.classList.add('correct')}else if(btn.classList.contains('selected')&&!ok)btn.classList.add('wrong')});document.getElementById('q-feedback').innerHTML=ok?'':'<span class="bad-t">'+htmlEscape(detail)+'</span>';playFeedbackSound(ok);if(!ok&&force&&['letters','cloze','write'].includes(q.mode))document.getElementById('sound-btn').classList.remove('hidden');advanceTimer=setTimeout(nextQ,ok?430:2200);renderHome()}
+function markAttempt(v,ok,mode){const x=st(v);x.attempts=(x.attempts||0)+1;logActivity();x.today=(x.today||0)+1;x.last=Date.now();x.wrongModes=x.wrongModes||{};const intervals=[10*60*1000,24*60*60*1000,3*24*60*60*1000],now=Date.now(),gate=!(session&&session.folder);if(ok){x.streak=(x.streak||0)+1;if(!gate||x.level===0||!x.due||x.due<=now){x.level=Math.min(3,x.level+1);x.due=now+intervals[x.level-1]}}else{x.streak=0;x.level=Math.max(0,x.level-1);x.due=now+10*60*1000;x.wrong=(x.wrong||0)+1;x.wrongModes[mode]=(x.wrongModes[mode]||0)+1;if(mode==='write'){x.wrongV2=(x.wrongV2||0)+1;x.wrongV3=(x.wrongV3||0)+1}if(mode==='letters'){if(session.items[session.index].letterForm==='past')x.wrongV2=(x.wrongV2||0)+1;else x.wrongV3=(x.wrongV3||0)+1}if(mode==='cloze')x.spelling=(x.spelling||0)+1}save()}
+function checkCurrent(force=false){if(session.answered)return;const q=session.items[session.index],v=q.v,a=currentAnswers();let ok=false,detail='';if(force){ok=false;detail='Ответ: '+(q.mode==='write'?v.past+' — '+v.part:q.mode==='letters'?(q.letterForm==='past'?v.past:v.part):q.mode==='cloze'?(q.letterForm==='past'?v.past:v.part):q.mode==='ruToEn'?v.inf+' — '+v.past+' — '+v.part:q.mode==='enToRu'?v.ru:v.inf)}else if(q.mode==='write'){const a2=accepted(a.v2,v.past),a3=accepted(a.v3,v.part);document.getElementById('ans-v2').classList.toggle('correct',a2);document.getElementById('ans-v3').classList.toggle('correct',a3);if(!(a2&&a3))return;ok=true;detail='V2 и V3 правильно'}else if(q.mode==='letters'){ok=accepted(a.letters,q.letterForm==='past'?v.past:v.part);detail=ok?'✓ Правильно':'Правильно: '+(q.letterForm==='past'?v.past:v.part)}else if(q.mode==='cloze'){ok=accepted(a.cloze,q.letterForm==='past'?v.past:v.part);detail=ok?'✓ Правильно':'Правильно: '+(q.letterForm==='past'?v.past:v.part)}else if(q.mode==='ruToEn'||q.mode==='enToRu'||q.mode==='listen'){const selected=document.querySelector('.option.selected');ok=selected?.dataset.correct==='1';detail=ok?'✓ Правильно':'Правильно: '+(q.mode==='ruToEn'?`${v.inf} — ${v.past} — ${v.part}`:q.mode==='enToRu'?v.ru:v.inf)}markAttempt(v,ok,q.mode);if(!ok){const pos=Math.min(session.items.length,session.index+3);session.items.splice(pos,0,makeItem(v,q.mode))}session.answered=true;if(ok)session.score++;document.querySelectorAll('.option').forEach(btn=>{const val=btn.dataset.option;if((q.mode==='ruToEn'&&val===`${v.inf} — ${v.past} — ${v.part}`)||(q.mode==='enToRu'&&normalize(val)===normalize(v.ru))||(q.mode==='listen'&&normalize(val)===normalize(v.inf))){btn.classList.add('correct')}else if(btn.classList.contains('selected')&&!ok)btn.classList.add('wrong')});document.getElementById('q-feedback').innerHTML=ok?'':'<span class="bad-t">'+htmlEscape(detail)+'</span>';playFeedbackSound(ok);if(!ok&&force&&['letters','cloze','write'].includes(q.mode))document.getElementById('sound-btn').classList.remove('hidden');if(!ok&&['write','cloze'].includes(q.mode))showAnswerCard(v,true,nextQ);else advanceTimer=setTimeout(nextQ,ok?430:2200);renderHome()}
 function dontKnow(){if(session.answered)return;if(session.folder){checkFolderCurrent(true);return}checkCurrent(true)}
 function nextQ(){if(!session||!session.answered)return;session.index++;if(session.index>=session.items.length)finishSession();else renderQ()}
 function giveHint(){
@@ -258,8 +257,8 @@ function renderDictionary(){
   const selectedMastered=selectedWords.filter(v=>title.built?mastered(v):customStat(v.id).level>=3).length;
   document.getElementById('dict-title').textContent=title.name;
   document.getElementById('dict-progress').innerHTML=`<div class="dict-progress-line"><span>Прогресс</span><b>${selectedProgress}%</b></div><div class="progress"><div class="bar ${selectedProgress>=100?'good':''}" style="width:${selectedProgress}%"></div></div><div class="muted">Закреплено: ${selectedMastered} из ${selectedWords.length}</div>`;
-  document.getElementById('dict-tools').innerHTML=`<button class="primary" id="train-folder">Тренировать папку</button>${title.built||title.system?'':'<button id="add-to-current">+ Добавить слово</button>'}`;
-  document.getElementById('train-folder').onclick=()=>startFolderTraining(false,title.id);
+  document.getElementById('dict-tools').innerHTML=`<button class="primary" id="cards-folder">Карточки</button><button id="train-folder">Тренировать папку</button>${title.built||title.system?'':'<button id="add-to-current">+ Добавить слово</button>'}`;
+  document.getElementById('train-folder').onclick=()=>startFolderTraining(false,title.id);document.getElementById('cards-folder').onclick=()=>startCards('folder',title.id);
   if(!title.built&&!title.system)document.getElementById('add-to-current').onclick=()=>openModal('word');
   const words=title.built?verbs:(custom[title.id]?.words||[]);
   if(title.built){
@@ -362,7 +361,7 @@ function checkFolderCurrent(force=false){
   session.answered=true;
   if(ok)session.score++;
   if(q.custom){
-    const cs=customStat(v.id);cs.attempts=(cs.attempts||0)+1;
+    const cs=customStat(v.id);cs.attempts=(cs.attempts||0)+1;logActivity();
     if(ok){cs.level=Math.min(3,(cs.level||0)+1);cs.streak=(cs.streak||0)+1}else{cs.wrong=(cs.wrong||0)+1;cs.level=0;cs.streak=0}
     if(cs.level>=3)session.completedIds?.add(v.id);
   }else{
@@ -378,7 +377,7 @@ function checkFolderCurrent(force=false){
     else if(q.mode==='enToRu')correct=normalize(v.ru);
     if(val===correct)btn.classList.add('correct'); else if(btn.classList.contains('selected')&&!ok)btn.classList.add('wrong');
   });
-  const corr={customRuToEn:v.word,customListen:v.word,customRuToEnWrite:v.word,customEnToRu:v.translation,customEnToRuWrite:v.translation,ruToEn:v.inf,listen:v.inf,ruToEnWrite:v.inf,enToRu:v.ru,enToRuWrite:v.ru}[q.mode];
+  const manual=['ruToEnWrite','enToRuWrite','customRuToEnWrite','customEnToRuWrite'].includes(q.mode);const corr={customRuToEn:v.word,customListen:v.word,customRuToEnWrite:v.word,customEnToRu:v.translation,customEnToRuWrite:v.translation,ruToEn:v.inf,listen:v.inf,ruToEnWrite:v.inf,enToRu:v.ru,enToRuWrite:v.ru}[q.mode];
   document.getElementById('q-feedback').innerHTML=ok||!corr?'':'<span class="bad-t">Правильно: '+htmlEscape(corr)+'</span>';
   playFeedbackSound(ok);
   if(!ok){
@@ -387,7 +386,7 @@ function checkFolderCurrent(force=false){
     const insertAt=Math.min(session.items.length,session.index+4+Math.floor(Math.random()*3));
     session.items.splice(insertAt,0,q);
   }
-  advanceTimer=setTimeout(nextFolderQ,ok?430:2200);
+  if(!ok&&manual)showAnswerCard(v,!q.custom,nextFolderQ);else advanceTimer=setTimeout(nextFolderQ,ok?430:2200);
 }
 function nextFolderQ(){if(!session||!session.answered)return;session.index++;if(session.index>=session.items.length)finishSession();else renderQFolder()}
 
@@ -432,7 +431,7 @@ nav('hint-btn').onclick=giveHint;
 nav('sound-btn').onclick=()=>speak(session.items[session.index].v.word||session.items[session.index].v.inf,true);
 nav('add-folder').onclick=addFolder;
 nav('add-word').onclick=addWord;
-nav('result-again').onclick=()=>{if(session&&session.folder)startFolderTraining(false,session.folderId,true);else startMixed('new')};
+nav('result-again').onclick=()=>{if(session&&session.folder)startFolderTraining(false,session.folderId,true);else if(session&&session.kind==='review')startReview();else startMixed('new')};
 nav('result-home').onclick=()=>{if(session&&session.folder){show('dictionary');window.scrollTo({top:0,behavior:'smooth'});}else{show('home');window.scrollTo({top:0,behavior:'smooth'});}};
 nav('finish-training').onclick=()=>{if(session){session.answered=true;const target=session.folder?'dictionary':'home';show(target);window.scrollTo({top:0,behavior:'smooth'});}};
 nav('scroll-top').onclick=()=>window.scrollTo({top:0,behavior:'smooth'});
@@ -460,3 +459,75 @@ nav('errors-back').onclick=()=>{show('home');window.scrollTo({top:0,behavior:'sm
 document.querySelectorAll('.mini-row').forEach(r=>{const b=r.querySelector('button'),w=r.querySelector('b');if(b&&w)b.onclick=()=>speak(w.textContent,true)});
 document.addEventListener('keydown',e=>{const c=e.target;if(c&&c.matches&&c.matches('[data-folder-card]')&&(e.key==='Enter'||e.key===' ')){e.preventDefault();c.click()}});
 document.addEventListener('pointerdown',()=>{try{fbCtx=fbCtx||new (window.AudioContext||window.webkitAudioContext)();if(fbCtx.resume)fbCtx.resume()}catch(e){}try{currentAudio=currentAudio||new Audio();const au=currentAudio;au.src=AUDIO_DATA[1];au.volume=0;const p=au.play();if(p&&p.then)p.then(()=>{au.pause();au.currentTime=0;au.volume=1}).catch(()=>{au.volume=1})}catch(e){}},{once:true});
+let cardS=null;
+function cardWords(type,id){
+  if(type==='group')return groupVerbs(selectedGroup).map(v=>({irr:true,v}));
+  if(id==='irregular'){const open=verbs.filter(v=>!mastered(v));return shuffle(open.length?open:verbs).slice(0,15).map(v=>({irr:true,v}))}
+  return (state.customFolders?.[id]?.words||[]).map(v=>({irr:false,v}));
+}
+function formsBlock(v){const c=(w,i,l)=>`<div class="card-form"><small>${l}</small><b>${htmlEscape(w)}</b>${i?`<i>/${htmlEscape(i)}/</i>`:''}</div>`;return `<div class="card-forms">${c(v.inf,v.ipa,'V1')}${c(v.past,v.pastIpa||v.ipa,'V2')}${c(v.part,v.partIpa||v.pastIpa||v.ipa,'V3')}</div>`}
+function answerCardHtml(v,irr){const ru=irr?v.ru:v.translation,en=irr?v.inf:v.word;return `<div class="flashcard static"><div class="card-main">${htmlEscape(irr?ru:en)}</div>${irr?formsBlock(v):`<div class="card-sub">${htmlEscape(ru)}</div>`}</div>`}
+function showAnswerCard(v,irr,next){
+  ['q-word','q-ipa','q-ru','q-feedback','q-hint'].forEach(id=>{const e=document.getElementById(id);if(e)e.innerHTML=''});
+  document.getElementById('q-mode').textContent='Запомни слово';
+  document.getElementById('q-body').innerHTML=answerCardHtml(v,irr)+'<div class="actions" style="justify-content:center"><button class="icon-btn" id="ac-sound" title="Прослушать" aria-label="Прослушать">🔊</button><button class="primary" id="ac-next" type="button">Продолжить</button></div>';
+  const en=irr?v.inf:v.word,b=document.getElementById('ac-next');
+  document.getElementById('ac-sound').onclick=()=>speak(en,true);
+  b.onclick=()=>next();b.focus({preventScroll:true});
+  document.getElementById('sound-btn').classList.add('hidden');
+  autoSpeakCurrent(en);
+}
+function startCards(type,id){const items=cardWords(type,id);if(!items.length){show('dictionary');return}cardS={type,id,items,i:0,back:type==='group'?'learn':'dictionary'};show('cards');renderCard();window.scrollTo({top:0})}
+function renderCard(){
+  const s=cardS;if(!s)return;const n=s.items.length;
+  const box=document.getElementById('cards-body'),act=document.getElementById('cards-actions'),on=(id,f)=>{const e=document.getElementById(id);if(e)e.onclick=f},exit=()=>{show(s.back);window.scrollTo({top:0})};
+  document.getElementById('cards-bar').style.width=(Math.min(s.i,n)/n*100)+'%';
+  document.getElementById('cards-meta').innerHTML=`<div class="training-heading">Карточки</div><div class="training-badges"><span class="badge">${Math.min(s.i+1,n)} / ${n}</span></div>`;
+  if(s.i>=n){
+    box.innerHTML='<div class="card-done"><div class="result-mark">✓</div><h2>Все карточки просмотрены</h2><div class="muted">Теперь проверь себя в тренировке.</div></div>';
+    act.innerHTML='<button class="primary" id="card-test">Проверить себя</button><button id="card-exit">Назад</button>';
+    on('card-test',()=>s.type==='group'?startMixed('new',selectedGroup):startFolderTraining(false,s.id));on('card-exit',exit);playFeedbackSound(true);return;
+  }
+  const it=s.items[s.i],en=it.irr?it.v.inf:it.v.word;
+  box.innerHTML=answerCardHtml(it.v,it.irr);
+  act.innerHTML=`${s.i?'<button id="card-prev" class="small-action">← Назад</button>':''}<button class="icon-btn" id="card-sound" title="Прослушать" aria-label="Прослушать">🔊</button><button class="primary" id="card-next" type="button">Продолжить</button><button id="card-exit" class="small-action">Закончить</button>`;
+  on('card-prev',()=>{s.i--;renderCard()});on('card-next',()=>{s.i++;renderCard()});on('card-sound',()=>speak(en,true));on('card-exit',exit);
+  autoSpeakCurrent(en);document.getElementById('card-next').focus({preventScroll:true});
+}
+nav('learn-cards').onclick=()=>startCards('group');
+function dayKey(d=new Date()){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function logActivity(){state.activity=state.activity||{};const k=dayKey();state.activity[k]=(state.activity[k]||0)+1;const ks=Object.keys(state.activity).sort();while(ks.length>90)delete state.activity[ks.shift()]}
+function streakDays(){const act=state.activity||{};const d=new Date();let n=0;if(!act[dayKey(d)])d.setDate(d.getDate()-1);while(act[dayKey(d)]){n++;d.setDate(d.getDate()-1)}return n}
+function dueWords(){const now=Date.now();return verbs.filter(v=>{const x=st(v);return x.attempts>0&&x.due&&x.due<=now})}
+function ringSvg(p){
+  const R=42,w=10,N=Math.max(1,Math.min(72,Math.round(p*.72))),stops=[[255,200,87],[121,87,255],[255,95,162]];
+  const col=t=>{const k=t<.5?0:1,u=t<.5?t*2:(t-.5)*2,a=stops[k],b=stops[k+1];return 'rgb('+a.map((x,i)=>Math.round(x+(b[i]-x)*u)).join(',')+')'};
+  const pt=d=>{const r=(d-90)*Math.PI/180;return [50+R*Math.cos(r),50+R*Math.sin(r)]},f=x=>x.toFixed(2);
+  let segs='';
+  if(p>0){const total=Math.min(p,99.99)*3.6;
+    for(let i=0;i<N;i++){const a0=total*i/N,a1=Math.min(total,total*(i+1)/N+.6),[x0,y0]=pt(a0),[x1,y1]=pt(a1);segs+=`<path d="M${f(x0)} ${f(y0)}A${R} ${R} 0 0 1 ${f(x1)} ${f(y1)}" stroke="${col((i+.5)/N)}"/>`}
+    const [sx,sy]=pt(0),[ex,ey]=pt(total);segs+=`<circle cx="${f(sx)}" cy="${f(sy)}" r="${w/2}" fill="${col(0)}" stroke="none"/><circle cx="${f(ex)}" cy="${f(ey)}" r="${w/2}" fill="${col(1)}" stroke="none"/>`}
+  return `<svg viewBox="0 0 100 100" class="gring-svg" aria-hidden="true"><circle class="gring-track" cx="50" cy="50" r="${R}"/><g fill="none" stroke-width="${w}">${segs}</g></svg>`;
+}
+function paintRing(id,p){const e=document.querySelector('#'+id+' .gring-mount');if(e)e.innerHTML=ringSvg(p)}
+function renderMotivation(){
+  const set=(id,f)=>{const e=document.getElementById(id);if(e)f(e)};
+  paintRing('ring-selected',groupPercent(selectedGroup));paintRing('ring-total',percentFor(verbs));
+  const act=state.activity||{},today=act[dayKey()]||0,goal=state.dailyGoal||20,sd=streakDays(),left=Math.max(0,goal-today);
+  set('streak-days',e=>e.textContent=`${sd} ${pluralizeRu(sd,'день','дня','дней')}`);
+  set('streak-dots',e=>{const nm=['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];let h='';for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);h+=`<span class="sdot ${act[dayKey(d)]?'on':''} ${i===0?'today':''}"><i></i>${nm[d.getDay()]}</span>`}e.innerHTML=h});
+  set('goal-text',e=>e.textContent=`${Math.min(today,goal)} / ${goal}`);
+  set('goal-bar',e=>{e.style.width=Math.min(100,today/goal*100)+'%';e.classList.toggle('good',today>=goal)});
+  set('goal-note',e=>e.textContent=left?`Ещё ${left} ${pluralizeRu(left,'ответ','ответа','ответов')} до цели`:'Цель выполнена — отличная работа!');
+  const due=dueWords().length;set('due-count',e=>e.textContent=due);
+  set('review-btn',e=>{e.disabled=!due;e.textContent=due?'Повторить':'Всё повторено'});
+}
+function startReview(){
+  const base=dueWords();if(!base.length)return;
+  const items=chooseModes(shuffle(base).slice(0,18));
+  session={items,index:0,score:0,kind:'review',group:null,answered:false,folder:false,returnTo:'home'};
+  save();show('quiz');renderQ();
+}
+nav('review-btn').onclick=startReview;
+nav('goal-edit').onclick=()=>{const g=[10,20,30,50],cur=state.dailyGoal||20;state.dailyGoal=g[(g.indexOf(cur)+1)%g.length];save();renderMotivation()};
+renderMotivation();
