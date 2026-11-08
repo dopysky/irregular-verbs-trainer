@@ -23,9 +23,11 @@ if(!state.customFolders[state.myWordsFolder]) state.customFolders[state.myWordsF
 let selectedGroup=state.selectedGroup||state.selectedBlock||1, selectedFolder=state.selectedFolder||'irregular';
 let theme=state.theme||'light';
 if(!LEARNING_GROUPS.some(g=>String(g.id)===String(selectedGroup)||LEARNING_GROUPS.indexOf(g)+1===Number(selectedGroup))) selectedGroup=1;
-let session=null, soundOn=state.soundOn!==false, advanceTimer=null, fbCtx=null;
+let currentView='home';
+let session=null, soundOn=state.soundOn!==false, advanceTimer=null, legacyInputDispose=null, fbCtx=null;
+if(window.VocabularyImport&&window.VOCABULARY_READY){window.VocabularyImport.apply(state,verbs,window.VOCABULARY_READY);window.VerbVocabulary.apply(state,verbs);if(selectedFolder==='irregular')selectedFolder=window.VerbVocabulary.defaultFolder(state);save();}
 function save(){state.selectedGroup=selectedGroup;state.selectedFolder=selectedFolder;state.theme=theme;try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
-function normalize(x){return String(x||'').trim().toLowerCase().replace(/[’‘`]/g,"'").replace(/\s+/g,' ').replace(/[.!?]+$/,'')}
+function normalize(x){return String(x||'').normalize('NFKC').trim().toLowerCase().replace(/[’‘`]/g,"'").replace(/\s+/g,' ').replace(/[.!?]+$/,'')}
 function pluralizeRu(n,one,two,five){const x=Math.abs(Number(n))%100,y=x%10;if(x>=11&&x<=14)return five;if(y===1)return one;if(y>=2&&y<=4)return two;return five}
 function countLabel(n){return `${n} ${pluralizeRu(n,'слово','слова','слов')}`}
 function verbCountLabel(n){return `${n} ${pluralizeRu(n,'глагол','глагола','глаголов')}`}
@@ -45,20 +47,21 @@ function mastered(v){const x=st(v);return x.level>=3&&x.streak>=3}
 function percentFor(vs){if(!vs.length)return 0;return Math.round(vs.reduce((sum,v)=>sum+Math.min(1,st(v).level/3),0)/vs.length*100)}
 function due(v){return st(v).due&&st(v).due<=Date.now()}
 function todayCount(){const d=new Date().toDateString();if(state.todayDate!==d){Object.values(state.v||{}).forEach(x=>x.today=0);state.todayDate=d}return Object.values(state.v||{}).reduce((a,x)=>a+(x.today||0),0)}
-function renderBlocks(){
-  const box=document.getElementById('blocks');
+function renderBlocks(targetId='blocks'){
+  const box=document.getElementById(targetId);if(!box)return;
   const selected=groupKey(selectedGroup);
   box.innerHTML=LEARNING_GROUPS.map((g,i)=>{
     const n=i+1, key=g.id, vs=groupVerbs(key), p=groupPercent(key), sel=key===selected;
     return `<button class="group-card ${sel?'selected ':''}block-tone-${n%2?'odd':'even'}" data-group="${htmlEscape(String(key))}" data-art="${n}"><div class="group-card-top"><div><div class="block-title">${htmlEscape(g.name)}</div><div class="block-meta">${g.short} · ${countLabel(vs.length)}</div></div><span class="badge ${p>=100?'good':''}">${p}%</span></div><div class="group-art art-${n}"><i class="art-rope rope-a"></i><i class="art-rope rope-b"></i><i class="art-dot"></i><span class="art-word art-word-a"><b>${htmlEscape(vs[0]?.inf||'learn')}</b><small>${htmlEscape(vs[0]?.ru||'учить')}</small></span><span class="art-word art-word-b"><b>${htmlEscape(vs[1]?.inf||'remember')}</b><small>${htmlEscape(vs[1]?.ru||'помнить')}</small></span><span class="art-word art-word-c"><b>${htmlEscape(vs[2]?.inf||'repeat')}</b><small>${htmlEscape(vs[2]?.ru||'повторять')}</small></span><i class="art-spark">✦</i><i class="art-star">✦</i></div><div class="progress"><div class="bar ${p>=100?'good':''}" style="width:${p}%"></div></div></button>`;
   }).join('');
   document.querySelectorAll('[data-group]').forEach(card=>card.onclick=()=>{
-    selectedGroup=card.dataset.group;save();renderHome();
+    selectedGroup=card.dataset.group;save();if(targetId==='verb-blocks'){show('learn');return;}renderHome();
     const target=document.querySelector('.home-main');
     if(target)target.scrollIntoView({behavior:'smooth',block:'start'});
   });
 }
 function renderHome(){
+  if(window.englishPractice){window.englishPractice.renderDashboard();return;}
   const g=groupMeta(selectedGroup),vs=groupVerbs(selectedGroup),p=groupPercent(selectedGroup);
   document.getElementById('selected-title').textContent=g.name;
   document.getElementById('selected-sub').textContent=`${g.short} · ${countLabel(vs.length)} · ${p}% выучено`;
@@ -78,21 +81,26 @@ function renderHome(){
 }
 
 function show(id){
+  currentView=id;if(id!=='practice')window.PageState?.activate('legacy');
+  legacyInputDispose?.();legacyInputDispose=null;
+  if(id!=="quiz"&&session)session.answered=true;
   clearTimeout(advanceTimer);
-  ['home','learn','quiz','result','dictionary','errors','cards'].forEach(x=>document.getElementById(x).classList.toggle('hidden',x!==id));
-  const body=document.body, header=document.querySelector('header'), actions=document.querySelector('.header-actions'), homeHeading=document.querySelector('.home-heading');
+  stopPronunciation();
+  ['home','learn','quiz','result','dictionary','errors','cards','practice'].forEach(x=>document.getElementById(x)?.classList.toggle('hidden',x!==id));
+  const body=document.body, header=document.querySelector('header'), actions=document.querySelector('.header-actions');
   body.classList.toggle('home-page',id==='home');
-  if(id==='home'){ if(homeHeading&&actions)homeHeading.appendChild(actions); }
-  else { if(header&&actions)header.appendChild(actions); }
+  if(id==='home'){document.querySelector('.home-heading')?.appendChild(actions);}else if(header&&actions)header.appendChild(actions);
+
   if(id==='home')renderHome();if(id==='learn')renderLearn();if(id==='dictionary')renderDictionary();if(id==='errors')renderErrors();
+  window.dispatchEvent(new CustomEvent('trainer-view',{detail:id}));
 }
 function ipaCell(word,ipa){return `<div class="learn-word"><b>${htmlEscape(word)}</b>${ipa?`<span class="learn-ipa">/${htmlEscape(ipa)}/</span>`:''}</div>`}
 function renderLearn(){
   const g=groupMeta(selectedGroup),vs=groupVerbs(selectedGroup);
   document.getElementById('learn-title').textContent=g.name;
   document.getElementById('learn-note').textContent=`${countLabel(vs.length)} · посмотри формы, послушай произношение и потом проверь себя в тренировке.`;
-  document.getElementById('learn-list').innerHTML=`<div class="learn-table-wrap"><table class="learn-table"><thead><tr><th>V1 · Infinitive</th><th>V2 · Past Simple</th><th>V3 · Past Participle</th><th>Перевод</th><th></th></tr></thead><tbody>${vs.map(v=>`<tr><td>${ipaCell(v.inf,v.ipa)}</td><td>${ipaCell(v.past,v.pastIpa===v.ipa?'':v.pastIpa)}</td><td>${ipaCell(v.part,v.partIpa===v.pastIpa?'':v.partIpa)}</td><td class="learn-translation">${htmlEscape(v.ru)}</td><td><button class="icon-btn listen-button" title="Прослушать" aria-label="Прослушать" data-speak="${v.n}">🔊</button></td></tr>`).join('')}</tbody></table></div>`;
-  document.querySelectorAll('[data-speak]').forEach(b=>b.onclick=()=>speak(verbs.find(v=>v.n==b.dataset.speak).inf,true));
+  document.getElementById('learn-list').innerHTML=`<div class="learn-table-wrap"><table class="learn-table"><thead><tr><th>V1 · Infinitive</th><th>V2 · Past Simple</th><th>V3 · Past Participle</th><th>Перевод</th><th></th></tr></thead><tbody>${vs.map(v=>`<tr><td>${ipaCell(v.inf,v.ipa)}</td><td>${ipaCell(v.past,v.pastIpa===v.ipa?'':v.pastIpa)}</td><td>${ipaCell(v.part,v.partIpa===v.pastIpa?'':v.partIpa)}</td><td class="learn-translation">${htmlEscape(v.ru)}</td><td><button class="icon-btn listen-button" title="Прослушать" aria-label="Прослушать" data-speak="${v.n}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a8 8 0 0 1 0 11"/></svg></button></td></tr>`).join('')}</tbody></table></div>`;
+  document.querySelectorAll('[data-speak]').forEach(b=>b.onclick=()=>speak(window.CardSpeech.formsText(verbs.find(v=>v.n==b.dataset.speak)),true));
 }
 function startStudy(){show('learn')}
 function makeItem(v,mode){return {v,mode,letterForm:Math.random()<.5?'past':'part',hintLevel:0}}
@@ -125,9 +133,13 @@ function startMixed(kind='new',groupN=selectedGroup){
   session={items:shuffle(items),index:0,score:0,kind,group:kind==='errors'?null:groupN,answered:false,folder:false,returnTo:'home'};
   save();show('quiz');renderQ();
 }
-function renderQ(){const q=session.items[session.index],v=q.v;session.answered=false;document.getElementById('q-meta').innerHTML=`<div class="training-heading">${session.kind==='errors'?'Ошибки':session.kind==='review'?'Повторение':groupMeta(session.group).name}</div><div class="training-badges"><span class="badge">${session.index+1} / ${session.items.length}</span><span class="badge">${Math.round(st(v).level/3*100)}% у глагола</span></div>`;document.getElementById('q-bar').style.width=(session.index/session.items.length*100)+'%';document.getElementById('q-feedback').innerHTML='';document.getElementById('q-hint').textContent='';document.getElementById('q-word').textContent='';document.getElementById('q-ipa').textContent='';document.getElementById('q-ru').textContent='';document.getElementById('sound-btn').classList.add('hidden');let title='',body='';if(q.mode==='write'){title='Укажи 2-ю и 3-ю форму';document.getElementById('q-word').textContent=v.inf;document.getElementById('q-ipa').textContent='';document.getElementById('q-ru').textContent=v.ru;body=writeTask(v)}else if(q.mode==='letters'){title=`Собери ${q.letterForm==='past'?'2-ю':'3-ю'} форму из букв`;document.getElementById('q-word').textContent=v.inf;document.getElementById('q-ru').textContent=v.ru;body=letterTask(v,q.letterForm);document.getElementById('sound-btn').classList.remove('hidden')}else if(q.mode==='cloze'){title=`Вставь пропущенные буквы в ${q.letterForm==='past'?'2-ю':'3-ю'} форму`;document.getElementById('q-word').textContent=v.inf;document.getElementById('q-ru').textContent=v.ru;body=clozeTask(v,q.letterForm);document.getElementById('sound-btn').classList.remove('hidden')}else if(q.mode==='ruToEn'){title='Переведи на английский';document.getElementById('q-ru').innerHTML=`<div class="translation-word">${v.ru}</div>`;body=translationRuToEn(v)}else if(q.mode==='enToRu'){title='Переведи на русский';document.getElementById('q-word').textContent=v.inf;document.getElementById('q-ipa').textContent='';body=translationEnToRu(v);document.getElementById('sound-btn').classList.remove('hidden')}else{title='Послушай и выбери слово';body=listenTask(v);document.getElementById('sound-btn').classList.remove('hidden')}document.getElementById('q-mode').textContent=title;document.getElementById('q-body').innerHTML=body;bindLetters();bindOptions();bindInputs();const safeSound=['write','letters','cloze','enToRu','listen'].includes(q.mode);if(safeSound)document.getElementById('sound-btn').classList.remove('hidden');autoSpeakForQuestion(q)}
+function renderQ(){legacyInputDispose?.();legacyInputDispose=null;stopPronunciation();setPracticeActions(false);const q=session.items[session.index],v=q.v;session.answered=false;document.getElementById('q-meta').innerHTML=`<div class="training-heading">${session.kind==='errors'?'Ошибки':session.kind==='review'?'Повторение':groupMeta(session.group).name}</div><div class="training-badges"><span class="badge">${session.index+1} / ${session.items.length}</span><span class="badge">${Math.round(st(v).level/3*100)}% у глагола</span></div>`;document.getElementById('q-bar').style.width=(session.index/session.items.length*100)+'%';document.getElementById('q-feedback').innerHTML='';document.getElementById('q-hint').textContent='';document.getElementById('q-word').textContent='';document.getElementById('q-ipa').textContent='';document.getElementById('q-ru').textContent='';document.getElementById('sound-btn').classList.add('hidden');let title='',body='';if(q.mode==='write'){title='Укажи 2-ю и 3-ю форму';document.getElementById('q-word').textContent=v.inf;document.getElementById('q-ipa').textContent='';document.getElementById('q-ru').textContent=v.ru;body=writeTask(v)}else if(q.mode==='letters'){title=`Собери ${q.letterForm==='past'?'2-ю':'3-ю'} форму из букв`;document.getElementById('q-word').textContent=v.inf;document.getElementById('q-ru').textContent=v.ru;body=letterTask(v,q.letterForm);document.getElementById('sound-btn').classList.remove('hidden')}else if(q.mode==='cloze'){title=`Вставь пропущенные буквы в ${q.letterForm==='past'?'2-ю':'3-ю'} форму`;document.getElementById('q-word').textContent=v.inf;document.getElementById('q-ru').textContent=v.ru;body=clozeTask(v,q.letterForm);document.getElementById('sound-btn').classList.remove('hidden')}else if(q.mode==='ruToEn'){title='Переведи на английский';document.getElementById('q-ru').innerHTML=`<div class="translation-word">${v.ru}</div>`;body=translationRuToEn(v)}else if(q.mode==='enToRu'){title='Переведи на русский';document.getElementById('q-word').textContent=v.inf;document.getElementById('q-ipa').textContent='';body=translationEnToRu(v);document.getElementById('sound-btn').classList.remove('hidden')}else{title='Послушай и выбери слово';body=listenTask(v);document.getElementById('sound-btn').classList.remove('hidden')}document.getElementById('q-mode').textContent=title;document.getElementById('q-body').innerHTML=body;bindLetters();bindOptions();bindInputs();const safeSound=['write','letters','cloze','enToRu','listen'].includes(q.mode);if(safeSound)document.getElementById('sound-btn').classList.remove('hidden');autoSpeakForQuestion(q);window.PageState?.activate('legacy');}
 function writeTask(v){return `<div class="input-grid"><label>V2<input id="ans-v2" autocomplete="off" spellcheck="false"></label><label>V3<input id="ans-v3" autocomplete="off" spellcheck="false"></label></div>`}
-function letterTask(v,form){const target=form==='past'?v.past:v.part;const chars=target.split('/')[0].replace(/[^a-z]/gi,'').toLowerCase().split('');const pool=shuffle(chars.map((c,i)=>({c,i})));return `<div class="built" id="built" aria-label="Собранное слово"></div><div class="letters">${pool.map(x=>`<button class="letter" data-char="${x.c}" data-i="${x.i}">${x.c.toUpperCase()}</button>`).join('')}</div><div class="actions" style="justify-content:center"><button id="remove-letter" class="small-action">← Убрать последнюю</button></div><input type="hidden" id="letter-answer">`}
+function letterTask(v,form){
+  const target=form==='past'?v.past:v.part,chars=target.split('/')[0].replace(/[^a-z]/gi,'').toLowerCase().split('');
+  const pool=shuffle(chars.map((c,i)=>({c,i})));
+  return '<div class="built" id="built" aria-label="Собранное слово"></div><div class="letters">'+pool.map(x=>'<button type="button" class="letter" data-char="'+x.c+'" data-i="'+x.i+'">'+x.c.toUpperCase()+'</button>').join('')+'</div><input type="hidden" id="letter-answer">';
+}
 function clozePattern(word){const w=word.split('/')[0].trim();if(w.length<=3)return w[0]+'_'.repeat(Math.max(0,w.length-1));const hide=Math.max(1,Math.ceil(w.length/3));const idx=shuffle([...Array(w.length).keys()]).slice(0,hide);const set=new Set(idx);return [...w].map((c,i)=>set.has(i)?'_':c).join('')}
 function clozeTask(v,form){const target=form==='past'?v.past:v.part;return `<div class="translation-word cloze-pattern">${clozePattern(target)}</div><div class="single-answer compact-answer"><input id="ans-cloze" autocomplete="off" spellcheck="false" aria-label="Ответ"></div>`}
 function optionSet(correct,others){const seen=new Set();const all=[correct,...others].filter(x=>{const k=normalize(x);if(seen.has(k))return false;seen.add(k);return true});const target=normalize(correct);return shuffle(all).map(x=>`<button class="option" data-option="${htmlEscape(x)}" data-correct="${normalize(x)===target?'1':'0'}">${htmlEscape(x)}</button>`).join('')}
@@ -135,48 +147,72 @@ function htmlEscape(s){return String(s).replaceAll('&','&amp;').replaceAll('"','
 function translationRuToEn(v){const others=pickOthers(v).slice(0,3).map(x=>`${x.inf} — ${x.past} — ${x.part}`);return `<div class="option-list">${optionSet(`${v.inf} — ${v.past} — ${v.part}`,others)}</div>`}
 function translationRuToEnWord(v){const others=pickOthers(v).slice(0,3).map(x=>x.inf);return `<div class="option-list">${optionSet(v.inf,others)}</div>`}
 function translationEnToRu(v){const others=pickOthers(v).slice(0,3).map(x=>x.ru);return `<div class="option-list">${optionSet(v.ru,others)}</div>`}
-function listenTask(v){const others=pickOthers(v).slice(0,3).map(x=>x.inf);return `<div class="listen-box"><button class="icon-btn listen-play" id="listen-play" title="Прослушать" aria-label="Прослушать">🔊</button><div class="option-list">${optionSet(v.inf,others)}</div></div>`}
+function listenTask(v){const others=pickOthers(v).slice(0,3).map(x=>x.inf);return `<div class="listen-box"><button class="icon-btn listen-play" id="listen-play" title="Прослушать" aria-label="Прослушать"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a8 8 0 0 1 0 11"/></svg></button><div class="option-list">${optionSet(v.inf,others)}</div></div>`}
 function currentAnswers(){const q=session.items[session.index];if(q.mode==='write')return {v2:document.getElementById('ans-v2').value,v3:document.getElementById('ans-v3').value};if(q.mode==='letters'||q.mode==='customLetters')return {letters:document.getElementById('letter-answer')?.value||''};if(q.mode==='cloze')return {cloze:document.getElementById('ans-cloze')?.value||''};if(['ruToEnWrite','enToRuWrite','customRuToEnWrite','customEnToRuWrite'].includes(q.mode))return {folder:document.getElementById('ans-folder')?.value||''};
 if(q.mode==='customWrite'||q.mode==='customCloze')return {custom:document.getElementById('ans-custom')?.value||'',cloze:document.getElementById('ans-custom')?.value||''};return {option:document.getElementById('selected-option')?.value||''}}
-function bindLetters(){const q=session.items[session.index];document.querySelectorAll('.letter').forEach(btn=>btn.onclick=()=>{if(session.answered||btn.disabled)return;const inp=document.getElementById('letter-answer'),built=document.getElementById('built');inp.value+=btn.dataset.char;btn.disabled=true;const span=document.createElement('button');span.type='button';span.className='built-letter';span.textContent=btn.dataset.char.toUpperCase();span.dataset.i=btn.dataset.i;span.title='Нажми, чтобы убрать эту букву';span.onclick=()=>{if(session.answered)return;const idx=span.dataset.i;const source=document.querySelector(`.letter[data-i=\"${idx}\"]`);if(source)source.disabled=false;const spans=[...built.querySelectorAll('.built-letter')];const pos=spans.indexOf(span);spans.slice(pos).forEach(x=>{const src=document.querySelector(`.letter[data-i=\"${x.dataset.i}\"]`);if(src)src.disabled=false;x.remove()});inp.value=spans.slice(0,pos).map(x=>x.textContent.toLowerCase()).join('')};built.appendChild(span);if(inp.value.length===(q.letterForm==='past'?q.v.past:q.v.part).split('/')[0].replace(/[^a-z]/gi,'').length)checkCurrent()});const remove=document.getElementById('remove-letter');if(remove)remove.onclick=()=>{if(session.answered)return;const inp=document.getElementById('letter-answer'),built=document.getElementById('built'),last=built.lastElementChild;if(!last)return;last.click()};const play=document.getElementById('listen-play');if(play)play.onclick=()=>speak(session.items[session.index].v.inf,true)}
-function bindOptions(){document.querySelectorAll('.option').forEach(btn=>btn.onclick=()=>{if(session.answered)return;document.querySelectorAll('.option').forEach(x=>x.classList.remove('selected'));btn.classList.add('selected');let hidden=document.getElementById('selected-option');if(!hidden){hidden=document.createElement('input');hidden.type='hidden';hidden.id='selected-option';document.getElementById('q-body').appendChild(hidden)}hidden.value=btn.dataset.option;if(session.folder)checkFolderCurrent();else checkCurrent()})}
-function bindInputs(){
-  const q=session.items[session.index];
-  if(q.mode!=="write"&&q.mode!=="cloze"&&!['ruToEnWrite','enToRuWrite','customRuToEnWrite','customEnToRuWrite'].includes(q.mode)) return;
-  if(['ruToEnWrite','enToRuWrite','customRuToEnWrite','customEnToRuWrite'].includes(q.mode)){const el=document.getElementById('ans-folder');if(el){el.oninput=()=>{const v=q.v;const target=['ruToEnWrite','customRuToEnWrite'].includes(q.mode)?(q.custom?v.word:v.inf):(q.custom?v.translation:v.ru);if(normalize(el.value)===normalize(target)||(q.mode==='ruToEnWrite'&&acceptsInf(v,el.value)))checkFolderCurrent();};el.onkeydown=e=>{if(e.key==='Enter'&&el.value.trim())checkFolderCurrent();}}return;}
-  if(q.mode==='write'){
-    const v=q.v, v2=document.getElementById('ans-v2'), v3=document.getElementById('ans-v3');
-    if(!v2||!v3)return;
-    v2.oninput=function(){
-      const ok2=accepted(v2.value,v.past);
-      v2.classList.toggle('correct',ok2);
-      if(ok2&&!accepted(v3.value,v.part)){
-        v3.focus();
-        v3.select?.();
-      }
-      if(ok2&&accepted(v3.value,v.part))checkCurrent();
-    };
-    v3.oninput=function(){
-      const ok2=accepted(v2.value,v.past), ok3=accepted(v3.value,v.part);
-      v2.classList.toggle('correct',ok2);
-      v3.classList.toggle('correct',ok3);
-      if(ok2&&ok3)checkCurrent();
-    };
-    return;
-  }
-  const el=document.getElementById('ans-cloze');
-  if(!el)return;
-  el.oninput=function(){
-    const v=q.v;
-    if(accepted(el.value,q.letterForm==='past'?v.past:v.part)){
-      el.classList.add('correct');
-      checkCurrent();
+function bindLetters(){
+  const q=session.items[session.index],s=session,buttons=[...document.querySelectorAll('.letter')];
+  if(!buttons.length)return;
+  q.selectedTileIds=[];
+  const input=document.getElementById('letter-answer'),built=document.getElementById('built');
+  const target=(q.letterForm==='past'?q.v.past:q.v.part).split('/')[0].replace(/[^a-z]/gi,'');
+  const ready=addReadyButton();
+  legacyInputDispose=window.TrainingUI.bindReady([input],{button:ready,active:()=>session===s&&!s.answered&&q.selectedTileIds.length===target.length,commit:()=>checkCurrent()});
+  function refresh(){
+    input.value=q.selectedTileIds.map(id=>buttons.find(b=>b.dataset.i===id).dataset.char).join('');
+    built.innerHTML='';
+    for(const id of q.selectedTileIds){
+      const source=buttons.find(b=>b.dataset.i===id),tile=document.createElement('button');
+      tile.type='button';tile.className='built-letter';tile.textContent=source.dataset.char.toUpperCase();tile.dataset.i=id;
+      tile.title='Убрать эту букву';tile.setAttribute('aria-label','Убрать букву '+tile.textContent);
+      tile.onclick=()=>{if(s.answered)return;q.selectedTileIds=window.TrainingUI.removeTile(q.selectedTileIds,id);source.disabled=false;refresh();};
+      built.appendChild(tile);
     }
-  };
+    legacyInputDispose?.refresh();
+  }
+  for(const source of buttons)source.onclick=()=>{if(s.answered||source.disabled)return;q.selectedTileIds.push(source.dataset.i);source.disabled=true;refresh();};
 }
-
+function bindOptions(){const play=document.getElementById('listen-play');if(play)play.onclick=()=>{const v=session.items[session.index].v;speak(v.inf||v.word,true);};document.querySelectorAll('.option').forEach(btn=>btn.onclick=()=>{if(session.answered)return;document.querySelectorAll('.option').forEach(x=>x.classList.remove('selected'));btn.classList.add('selected');let hidden=document.getElementById('selected-option');if(!hidden){hidden=document.createElement('input');hidden.type='hidden';hidden.id='selected-option';document.getElementById('q-body').appendChild(hidden)}hidden.value=btn.dataset.option;if(session.folder)checkFolderCurrent();else checkCurrent()})}
+function addReadyButton(){
+  const ready=document.getElementById('complete-legacy-answer');ready.hidden=false;return ready;
+}
+function bindInputs(){
+  const s=session,q=s.items[s.index],inputs=[...document.querySelectorAll('#q-body input:not([type="hidden"])')];
+  if(!inputs.length)return;
+  legacyInputDispose=window.TrainingUI.bindReady(inputs,{button:addReadyButton(),active:()=>session===s&&!s.answered,commit:()=>s.folder?checkFolderCurrent():checkCurrent()});
+}
+function setPracticeActions(answered){
+  for(const id of ['dontknow','hint-btn'])document.getElementById(id)?.classList.toggle('hidden',answered);
+  const ready=document.getElementById('complete-legacy-answer');if(ready)ready.hidden=true;
+  const review=document.getElementById('review-controls');if(review){review.hidden=true;review.innerHTML='';}
+  if(answered){document.getElementById('q-hint').textContent='';document.getElementById('sound-btn').classList.add('hidden');}
+}
 function markAttempt(v,ok,mode){const x=st(v);x.attempts=(x.attempts||0)+1;logActivity();x.today=(x.today||0)+1;x.last=Date.now();x.wrongModes=x.wrongModes||{};const intervals=[10*60*1000,24*60*60*1000,3*24*60*60*1000],now=Date.now(),gate=!(session&&session.folder);if(ok){x.streak=(x.streak||0)+1;if(!gate||x.level===0||!x.due||x.due<=now){x.level=Math.min(3,x.level+1);x.due=now+intervals[x.level-1]}}else{x.streak=0;x.level=Math.max(0,x.level-1);x.due=now+10*60*1000;x.wrong=(x.wrong||0)+1;x.wrongModes[mode]=(x.wrongModes[mode]||0)+1;if(mode==='write'){x.wrongV2=(x.wrongV2||0)+1;x.wrongV3=(x.wrongV3||0)+1}if(mode==='letters'){if(session.items[session.index].letterForm==='past')x.wrongV2=(x.wrongV2||0)+1;else x.wrongV3=(x.wrongV3||0)+1}if(mode==='cloze')x.spelling=(x.spelling||0)+1}save()}
-function checkCurrent(force=false){if(session.answered)return;const q=session.items[session.index],v=q.v,a=currentAnswers();let ok=false,detail='';if(force){ok=false;detail='Ответ: '+(q.mode==='write'?v.past+' — '+v.part:q.mode==='letters'?(q.letterForm==='past'?v.past:v.part):q.mode==='cloze'?(q.letterForm==='past'?v.past:v.part):q.mode==='ruToEn'?v.inf+' — '+v.past+' — '+v.part:q.mode==='enToRu'?v.ru:v.inf)}else if(q.mode==='write'){const a2=accepted(a.v2,v.past),a3=accepted(a.v3,v.part);document.getElementById('ans-v2').classList.toggle('correct',a2);document.getElementById('ans-v3').classList.toggle('correct',a3);if(!(a2&&a3))return;ok=true;detail='V2 и V3 правильно'}else if(q.mode==='letters'){ok=accepted(a.letters,q.letterForm==='past'?v.past:v.part);detail=ok?'✓ Правильно':'Правильно: '+(q.letterForm==='past'?v.past:v.part)}else if(q.mode==='cloze'){ok=accepted(a.cloze,q.letterForm==='past'?v.past:v.part);detail=ok?'✓ Правильно':'Правильно: '+(q.letterForm==='past'?v.past:v.part)}else if(q.mode==='ruToEn'||q.mode==='enToRu'||q.mode==='listen'){const selected=document.querySelector('.option.selected');ok=selected?.dataset.correct==='1';detail=ok?'✓ Правильно':'Правильно: '+(q.mode==='ruToEn'?`${v.inf} — ${v.past} — ${v.part}`:q.mode==='enToRu'?v.ru:v.inf)}markAttempt(v,ok,q.mode);if(!ok){const pos=Math.min(session.items.length,session.index+3);session.items.splice(pos,0,makeItem(v,q.mode))}session.answered=true;if(ok)session.score++;document.querySelectorAll('.option').forEach(btn=>{const val=btn.dataset.option;if((q.mode==='ruToEn'&&val===`${v.inf} — ${v.past} — ${v.part}`)||(q.mode==='enToRu'&&normalize(val)===normalize(v.ru))||(q.mode==='listen'&&normalize(val)===normalize(v.inf))){btn.classList.add('correct')}else if(btn.classList.contains('selected')&&!ok)btn.classList.add('wrong')});document.getElementById('q-feedback').innerHTML=ok?'':'<span class="bad-t">'+htmlEscape(detail)+'</span>';playFeedbackSound(ok);if(!ok&&force&&['letters','cloze','write'].includes(q.mode))document.getElementById('sound-btn').classList.remove('hidden');if(!ok&&['write','cloze'].includes(q.mode))showAnswerCard(v,true,nextQ);else advanceTimer=setTimeout(nextQ,ok?430:2200);renderHome()}
+function checkCurrent(force=false){
+  const s=session;if(!s||s.answered)return;
+  const q=s.items[s.index],v=q.v,a=currentAnswers();let ok=false;
+  if(!force){
+    if(q.mode==='write')ok=accepted(a.v2,v.past)&&accepted(a.v3,v.part);
+    else if(q.mode==='letters')ok=accepted(a.letters,q.letterForm==='past'?v.past:v.part);
+    else if(q.mode==='cloze')ok=accepted(a.cloze,q.letterForm==='past'?v.past:v.part);
+    else ok=document.querySelector('.option.selected')?.dataset.correct==='1';
+  }
+  q.savedDraft=window.PageState?window.TrainingUI.captureDraft(document.getElementById('q-body')):null;s.response={ok};
+  legacyInputDispose?.();legacyInputDispose=null;s.answered=true;setPracticeActions(true);
+  markAttempt(v,ok,q.mode);
+  if(!ok)s.items.splice(Math.min(s.items.length,s.index+3),0,makeItem(v,q.mode));else s.score++;
+  presentLegacyAnswer(q,ok,nextQ);
+}
+function presentLegacyAnswer(q,ok,next,silent=false){
+  const s=session;s.answered=true;setPracticeActions(true);
+  const counter=document.querySelector('#q-meta .training-badges .badge');if(counter)counter.textContent=(s.index+1)+' / '+s.items.length;
+  document.querySelectorAll('#q-body input,.option,.letter,.built-letter').forEach(el=>{el.disabled=true;if(el.matches('input'))el.classList.add(ok?'correct':'wrong');});
+  document.querySelectorAll('.option').forEach(btn=>{if(btn.dataset.correct==='1')btn.classList.add('correct');else if(btn.classList.contains('selected'))btn.classList.add('wrong');});
+  if(!silent)playFeedbackSound(ok);
+  if(!ok){showAnswerCard(q.v,!q.custom,next);window.PageState?.checkpoint();return;}
+  document.getElementById('q-feedback').innerHTML='';window.TrainingUI.showCorrect(document.getElementById('q-body'));
+  advanceTimer=setTimeout(()=>{if(session===s&&s.answered)next();},650);window.PageState?.checkpoint();
+}
 function dontKnow(){if(session.answered)return;if(session.folder){checkFolderCurrent(true);return}checkCurrent(true)}
 function nextQ(){if(!session||!session.answered)return;session.index++;if(session.index>=session.items.length)finishSession();else renderQ()}
 function giveHint(){
@@ -195,10 +231,12 @@ function giveHint(){
   else text=partial(v.inf||v.word,q.hintLevel);
   document.getElementById('q-hint').textContent='Подсказка: '+text;
 }
+let speechTimer=null;
+function stopPronunciation(){clearTimeout(speechTimer);currentAudioKey='';if(currentAudio){currentAudio.pause();currentAudio.currentTime=0;}try{window.speechSynthesis?.cancel();}catch{}}
 let speechVoice=null;
 let currentAudio=null;
 let currentAudioKey='';
-function pickSpeechVoice(){if(!('speechSynthesis' in window))return null;const voices=window.speechSynthesis.getVoices();speechVoice=voices.find(v=>/^en-US$/i.test(v.lang))||voices.find(v=>/^en/i.test(v.lang))||voices[0]||null;return speechVoice}
+function pickSpeechVoice(){if(!('speechSynthesis' in window))return null;const voices=window.speechSynthesis.getVoices();speechVoice=window.CardSpeech.chooseVoice(voices);return speechVoice}
 if('speechSynthesis' in window){pickSpeechVoice();window.speechSynthesis.onvoiceschanged=pickSpeechVoice}
 function findVerbNumber(text){const t=normalize(text);const v=verbs.find(x=>normalize(x.inf)===t);return v?.n||null}
 function playLocalAudio(n,force=false){
@@ -213,9 +251,9 @@ function playLocalAudio(n,force=false){
     return true;
   }catch(e){return false}
 }
-function fallbackSpeak(text){if(!text||!('speechSynthesis' in window))return;try{window.speechSynthesis.cancel();window.speechSynthesis.resume?.();const u=new SpeechSynthesisUtterance(String(text));u.lang='en-US';u.rate=.8;u.pitch=1;u.volume=1;const v=speechVoice||pickSpeechVoice();if(v)u.voice=v;window.speechSynthesis.speak(u)}catch(e){}}
-function speak(text,force=false){if(!force&&!soundOn)return;if(!text)return;const n=findVerbNumber(text);if(n&&playLocalAudio(n,force))return;fallbackSpeak(text)}
-function autoSpeakCurrent(text){if(!soundOn||!text)return;window.setTimeout(()=>speak(text,false),120)}
+function fallbackSpeak(text){if(!soundOn||!text||!('speechSynthesis' in window))return;try{window.speechSynthesis.cancel();window.speechSynthesis.resume?.();const u=new SpeechSynthesisUtterance(String(text));u.lang='en-US';u.rate=.95;u.pitch=1;u.volume=1;const v=speechVoice||pickSpeechVoice();if(v)u.voice=v;window.speechSynthesis.speak(u)}catch(e){}}
+function speak(text,force=false){if(!soundOn)return;if(!text)return;if(currentAudio){currentAudio.pause();currentAudio.currentTime=0;}currentAudioKey='';fallbackSpeak(text)}
+function autoSpeakCurrent(text){clearTimeout(speechTimer);if(!soundOn||!text)return;speechTimer=window.setTimeout(()=>speak(text,false),120)}
 function autoSpeakForQuestion(q){if(!soundOn||!q)return;const mode=q.mode;const english=q.v?.inf||q.v?.word;if(!english)return;const modes=['write','letters','cloze','enToRu','listen','enToRuWrite','customEnToRu','customEnToRuWrite','customListen'];if(modes.includes(mode))autoSpeakCurrent(english)}
 function playFeedbackSound(ok){
   if(!soundOn)return;
@@ -225,10 +263,10 @@ function playFeedbackSound(ok){
     const master=c.createGain();master.gain.setValueAtTime(.0001,now);master.gain.exponentialRampToValueAtTime(.32,now+.012);master.gain.exponentialRampToValueAtTime(.0001,now+(ok?.52:.3));master.connect(c.destination);
     const tones=ok?[{f:784,t:0,d:.22},{f:1046.5,t:.07,d:.30},{f:1318.5,t:.14,d:.32}]:[{f:220,t:0,d:.13},{f:165,t:.08,d:.21}];
     tones.forEach(({f,t,d})=>{const o=c.createOscillator(),g=c.createGain();o.type=ok?'sine':'triangle';o.frequency.setValueAtTime(f,now+t);g.gain.setValueAtTime(.0001,now+t);g.gain.exponentialRampToValueAtTime(ok?.72:.5,now+t+.012);g.gain.exponentialRampToValueAtTime(.0001,now+t+d);o.connect(g);g.connect(master);o.start(now+t);o.stop(now+t+d+.02)});
-    
+
   }catch(e){}
 }
-function finishSession(){
+function finishSession(silent=false){
   const total=session.items.length,score=session.score,folderId=session.folderId;
   const current=folderId?folderPercent(folderId):(session.group?groupPercent(session.group):0), before=session.startedPercent||0;
   const diff=current-before;
@@ -241,32 +279,31 @@ function finishSession(){
   document.getElementById('result-grid').innerHTML=`<div class="result-box result-main"><span>${session.folder?'Закреплено':'Правильно'}</span><b>${session.folder?uniqueDone:score}</b></div><div class="result-box"><span>Осталось</span><b>${retryCount}</b></div><div class="result-box"><span>Прогресс</span><b>${current}%</b></div><div class="result-box"><span>Изменение</span><b class="${diff>0?'result-up':''}">${diff>0?'+'+diff+'%':diff===0?'—':'0%'}</b></div>`;
   document.getElementById('result-again').textContent=retryCount?'Повторить сложные слова':'Продолжить';
   document.getElementById('result-home').textContent=session.folder?'В словарь':'К блокам';
-  playFeedbackSound(complete);
+  if(!silent)playFeedbackSound(complete);
   show('result');
 }
+function visibleFolderWords(id){return window.VocabularyImport.visibleWords(state,id).map(record=>window.VerbVocabulary.resolve(record,verbs,window.VocabularyPronunciation)).filter(Boolean);}
 function renderDictionary(){
   const custom=state.customFolders||{}; const myId=state.myWordsFolder;
-  const folders=[{id:'irregular',name:'Неправильные глаголы',count:verbs.length,built:true},{id:myId,name:'Мои слова',count:(custom[myId]?.words||[]).length,built:false,system:true},...Object.entries(custom).filter(([id,f])=>id!==myId&&normalize(f.name)!=='мои слова').map(([id,f])=>({id,name:f.name,count:(f.words||[]).length,built:false}))];
-  if(!folders.some(f=>f.id===selectedFolder))selectedFolder='irregular';
-  document.getElementById('folders').innerHTML=folders.map(f=>{const fp=folderPercent(f.id);return `<div class="folder-card ${selectedFolder===f.id?'selected':''}" data-folder-card="${f.id}" role="button" tabindex="0"><div class="folder-card-head"><h3>📁 ${htmlEscape(f.name)}</h3><span class="badge ${fp>=100?'good':''}">${fp}%</span></div><div class="muted">${countLabel(f.count)}</div><div class="progress"><div class="bar ${fp>=100?'good':''}" style="width:${fp}%"></div></div>${!f.built&&!f.system?'<button class="folder-delete" data-delete-folder="'+f.id+'" title="Удалить папку" aria-label="Удалить папку">×</button>':''}</div>`}).join('');
-  document.querySelectorAll('[data-folder-card]').forEach(card=>card.onclick=()=>{selectedFolder=card.dataset.folderCard;save();renderDictionary();if(window.innerWidth<=700){requestAnimationFrame(()=>{const list=document.getElementById('dict-list');if(list)list.scrollIntoView({behavior:'smooth',block:'start'});});}});
+  const folders=[{id:myId,name:'Мои слова',count:visibleFolderWords(myId).length,built:false,system:true},...Object.entries(custom).filter(([id,f])=>id!==myId&&normalize(f.name)!=='мои слова'&&!window.VocabularyImport.isExcludedFolder(f)).map(([id,f])=>({id,name:f.name,count:visibleFolderWords(id).length,built:false,managed:!!f.managed||!!f.sourceBlock}))];
+  if(!folders.some(f=>f.id===selectedFolder))selectedFolder=window.VerbVocabulary.defaultFolder(state);
+  document.getElementById('folders').innerHTML=folders.map(f=>{const fp=folderPercent(f.id);return `<div class="folder-card ${selectedFolder===f.id?'selected':''}" data-folder-card="${f.id}" role="button" tabindex="0"><div class="folder-card-head"><h3>📁 ${htmlEscape(f.name)}</h3><span class="badge ${fp>=100?'good':''}">${fp}%</span></div><div class="muted">${countLabel(f.count)}</div><div class="progress"><div class="bar ${fp>=100?'good':''}" style="width:${fp}%"></div></div>${window.VocabularyImport.canDeleteFolder(state,f.id)?'<button class="folder-delete" data-delete-folder="'+f.id+'" title="Удалить папку" aria-label="Удалить папку">×</button>':''}</div>`}).join('');
+  document.querySelectorAll('[data-folder-card]').forEach(card=>card.onclick=()=>{selectedFolder=card.dataset.folderCard;save();renderDictionary();requestAnimationFrame(()=>{document.getElementById('dict-title')?.closest('.panel')?.scrollIntoView({behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'start'});});});
   document.querySelectorAll('[data-delete-folder]').forEach(b=>b.onclick=e=>{e.stopPropagation();openModal('confirm','Удалить папку?','Папка будет удалена.','deleteFolder',b.dataset.deleteFolder)});
   const title=folders.find(f=>f.id===selectedFolder)||folders[0];
   const selectedProgress=folderPercent(title.id);
-  const selectedWords=title.built?verbs:(custom[title.id]?.words||[]);
-  const selectedMastered=selectedWords.filter(v=>title.built?mastered(v):customStat(v.id).level>=3).length;
+  const selectedWords=visibleFolderWords(title.id);
+  const selectedMastered=selectedWords.filter(v=>customStat(v.id).level>=3).length;
   document.getElementById('dict-title').textContent=title.name;
   document.getElementById('dict-progress').innerHTML=`<div class="dict-progress-line"><span>Прогресс</span><b>${selectedProgress}%</b></div><div class="progress"><div class="bar ${selectedProgress>=100?'good':''}" style="width:${selectedProgress}%"></div></div><div class="muted">Закреплено: ${selectedMastered} из ${selectedWords.length}</div>`;
-  document.getElementById('dict-tools').innerHTML=`<button class="primary" id="cards-folder">Карточки</button><button id="train-folder">Тренировать папку</button>${title.built||title.system?'':'<button id="add-to-current">+ Добавить слово</button>'}`;
+  document.getElementById('dict-tools').innerHTML=`<button class="primary" id="cards-folder">Карточки</button><button id="train-folder">Тренировать папку</button>${title.system||title.managed?'':'<button id="add-to-current">+ Добавить слово</button>'}`;
   document.getElementById('train-folder').onclick=()=>startFolderTraining(false,title.id);document.getElementById('cards-folder').onclick=()=>startCards('folder',title.id);
-  if(!title.built&&!title.system)document.getElementById('add-to-current').onclick=()=>openModal('word');
-  const words=title.built?verbs:(custom[title.id]?.words||[]);
-  if(title.built){
-    document.getElementById('dict-list').innerHTML=`<div class="learn-table-wrap"><table class="learn-table"><thead><tr><th>V1 · Infinitive</th><th>V2 · Past Simple</th><th>V3 · Past Participle</th><th>Перевод</th><th></th></tr></thead><tbody>${words.map(v=>`<tr><td>${ipaCell(v.inf,v.ipa)}</td><td>${ipaCell(v.past,v.pastIpa===v.ipa?'':v.pastIpa)}</td><td>${ipaCell(v.part,v.partIpa===v.pastIpa?'':v.partIpa)}</td><td class="learn-translation">${htmlEscape(v.ru)}</td><td><button class="icon-btn listen-button" title="Прослушать" aria-label="Прослушать" data-dict-speak="${htmlEscape(v.inf)}">🔊</button></td></tr>`).join('')}</tbody></table></div>`;
-  }else{
-    document.getElementById('dict-list').innerHTML=words.map(v=>`<div class="word-item custom-word-line"><span><b>${htmlEscape(v.word)}</b></span><span>${htmlEscape(v.translation)}</span><div class="word-actions"><button class="icon-btn small-action" data-edit-word="${v.id}" title="Редактировать" aria-label="Редактировать">✎</button><button class="icon-btn small-action" data-manage-word="${v.id}" title="Переместить" aria-label="Переместить">↔</button><button class="icon-btn danger small-action" data-delete-word="${v.id}" title="Удалить" aria-label="Удалить">🗑</button></div></div>`).join('');
-  }
-  document.querySelectorAll('[data-dict-speak]').forEach(b=>b.onclick=()=>speak(b.dataset.dictSpeak,true));
+  if(!title.system&&!title.managed)document.getElementById('add-to-current').onclick=()=>openModal('word');
+  const words=visibleFolderWords(title.id);
+
+    const personal=words.some(v=>window.VocabularyImport.canManageWord(state,v.id));
+    document.getElementById('dict-list').innerHTML='<div class="learn-table-wrap"><table class="learn-table vocabulary-table'+(personal?' has-personal':'')+'"><thead><tr><th>Слово</th><th>Перевод</th><th><span class="sr-only">Действия</span></th></tr></thead><tbody>'+words.map(v=>'<tr><td>'+ipaCell(v.word,v.ipa||window.VocabularyPronunciation.get(v.word))+'</td><td class="learn-translation">'+htmlEscape(v.translation)+'</td><td><div class="word-actions"><button type="button" class="icon-btn listen-button" title="Прослушать" aria-label="Прослушать '+htmlEscape(v.word)+'" data-dict-speak="'+htmlEscape(v.word)+'">'+window.TrainingUI.icon('sound')+'</button>'+(window.VocabularyImport.canManageWord(state,v.id)?'<button class="icon-btn small-action" data-edit-word="'+v.id+'" title="Редактировать" aria-label="Редактировать">✎</button><button class="icon-btn small-action" data-manage-word="'+v.id+'" title="Переместить" aria-label="Переместить">↔</button><button class="icon-btn small-action" data-delete-word="'+v.id+'" title="Удалить" aria-label="Удалить">×</button>':'')+'</div></td></tr>').join('')+'</tbody></table></div>';
+  document.querySelectorAll('[data-dict-speak]').forEach(b=>b.onclick=()=>speak(b.dataset.dictVerb?window.CardSpeech.formsText(verbs.find(v=>v.n==b.dataset.dictVerb)):b.dataset.dictSpeak,true));
   document.querySelectorAll('[data-delete-word]').forEach(b=>b.onclick=()=>openModal('confirm','Удалить слово?','Слово будет удалено из этой папки.','deleteWord',b.dataset.deleteWord,title.id));
   document.querySelectorAll('[data-edit-word]').forEach(b=>b.onclick=()=>openModal('editWord','Редактировать слово',null,'editWord',b.dataset.editWord));
   document.querySelectorAll('[data-manage-word]').forEach(b=>b.onclick=()=>openModal('move','Перенести слово',null,'manageWord',b.dataset.manageWord,title.id));
@@ -281,11 +318,12 @@ function renderErrors(){
 }
 function customStat(id){state.customStats=state.customStats||{};return state.customStats[id]||(state.customStats[id]={level:0,wrong:0})}
 function makeCustomItem(v,mode){return {v,mode,custom:true,hintLevel:0,letterForm:Math.random()<.5?'word':'cloze'}}
-function customOptions(v,kind){const custom=state.customFolders||{};const folderWords=(custom[selectedFolder]?.words||[]).filter(x=>x.id!==v.id);const source=kind==='word'?v.word:v.translation;const same=folderWords.map(x=>kind==='word'?x.word:x.translation);const irregular=shuffle(verbs).map(x=>kind==='word'?x.inf:x.ru);const pool=[];for(const x of shuffle(same.concat(irregular))){if(normalize(x)!==normalize(source)&&!pool.some(y=>normalize(y)===normalize(x)))pool.push(x);if(pool.length>=3)break}return [source,...pool]}
+function acceptsWordMeaning(v,value){const candidates=v.verbNumber?String(v.translation).split(/[,;]\s*/):[v.translation];return normalize(value)===normalize(v.translation)||candidates.some(meaning=>normalize(value)===normalize(meaning));}
+function customOptions(v,kind){const custom=state.customFolders||{};const folderWords=visibleFolderWords(selectedFolder).filter(x=>x.id!==v.id&&(kind!=='word'||normalize(x.translation)!==normalize(v.translation)));const source=kind==='word'?v.word:v.translation;const same=folderWords.map(x=>kind==='word'?x.word:x.translation);const irregular=shuffle(verbs).map(x=>kind==='word'?x.inf:x.ru);const pool=[];for(const x of shuffle(same.concat(irregular))){if(normalize(x)!==normalize(source)&&!pool.some(y=>normalize(y)===normalize(x)))pool.push(x);if(pool.length>=3)break}return [source,...pool]}
 function folderAchievementTarget(count){if(count<=5)return 4;if(count<=10)return 3;return 2}
 function folderPercent(folderId){
   if(folderId==='irregular')return percentFor(verbs);
-  const words=(state.customFolders?.[folderId]?.words||[]);
+  const words=visibleFolderWords(folderId);
   if(!words.length)return 0;
   return Math.round(words.reduce((sum,w)=>sum+Math.min(1,(customStat(w.id).level||0)/3),0)/words.length*100);
 }
@@ -308,14 +346,15 @@ function buildFolderItems(base,folderId){
 function startFolderTraining(mix=false, folderId=selectedFolder, reviewWeak=false){
   selectedFolder=folderId||selectedFolder||'irregular';
   const custom=state.customFolders||{};
-  let base=selectedFolder==='irregular'?shuffle(verbs).slice(0,15):shuffle(custom[selectedFolder]?.words||[]);
-  if(reviewWeak){base=selectedFolder==='irregular'?shuffle(verbs.filter(v=>st(v).level<3)).slice(0,15):shuffle((custom[selectedFolder]?.words||[]).filter(w=>customStat(w.id).level<3));}
+  let base=selectedFolder==='irregular'?shuffle(verbs).slice(0,15):shuffle(visibleFolderWords(selectedFolder));
+  if(reviewWeak){base=selectedFolder==='irregular'?shuffle(verbs.filter(v=>st(v).level<3)).slice(0,15):shuffle(visibleFolderWords(selectedFolder).filter(w=>customStat(w.id).level<3));}
   if(!base.length){renderDictionary();return;}
   const items=buildFolderItems(base,selectedFolder);
   session={items,index:0,score:0,kind:'folder',group:selectedGroup,answered:false,folder:true,mix:false,returnTo:'dictionary',folderId:selectedFolder,startedPercent:folderPercent(selectedFolder),initialCount:base.length,initialIds:base.map(v=>v.id||v.n),completedIds:new Set(),pending:base.length,completed:0,reviewed:0};
   save();show('quiz');renderQFolder();
 }
 function renderQFolder(){
+  legacyInputDispose?.();legacyInputDispose=null;stopPronunciation();setPracticeActions(false);
   const q=session.items[session.index],v=q.v;
   session.answered=false;
   const folderName=state.customFolders?.[selectedFolder]?.name||(selectedFolder==='irregular'?'Неправильные глаголы':'Мои слова');
@@ -347,50 +386,32 @@ function renderQFolder(){
     title='Какое слово ты слышишь?'; body=`<div class="listen-box"><div class="listen-icon">🔊</div><div class="option-list">${optionSet(v.word,customOptions(v,'word').slice(1))}</div></div>`; document.getElementById('sound-btn').classList.remove('hidden');
   }
   document.getElementById('q-mode').textContent=title; document.getElementById('q-body').innerHTML=body; bindOptions(); bindInputs();
-  autoSpeakForQuestion(q);
+  autoSpeakForQuestion(q);window.PageState?.activate('legacy');
 }
 function checkFolderCurrent(force=false){
-  if(session.answered)return;
-  const q=session.items[session.index],v=q.v,a=currentAnswers(); let ok=false;
-  if(force){ok=false;}
-  else if(q.mode==='customRuToEn'||q.mode==='customEnToRu'||q.mode==='customListen'||q.mode==='ruToEn'||q.mode==='enToRu'||q.mode==='listen'){const selected=document.querySelector('.option.selected');ok=selected?.dataset.correct==='1';}
-  else if(q.mode==='customRuToEnWrite')ok=normalize(a.folder)===normalize(v.word);
-  else if(q.mode==='customEnToRuWrite')ok=normalize(a.folder)===normalize(v.translation);
-  else if(q.mode==='ruToEnWrite')ok=acceptsInf(v,a.folder);
-  else if(q.mode==='enToRuWrite')ok=normalize(a.folder)===normalize(v.ru);
-  session.answered=true;
-  if(ok)session.score++;
-  if(q.custom){
-    const cs=customStat(v.id);cs.attempts=(cs.attempts||0)+1;logActivity();
-    if(ok){cs.level=Math.min(3,(cs.level||0)+1);cs.streak=(cs.streak||0)+1}else{cs.wrong=(cs.wrong||0)+1;cs.level=0;cs.streak=0}
-    if(cs.level>=3)session.completedIds?.add(v.id);
-  }else{
-    markAttempt(v,ok,q.mode);
-    if(mastered(v))session.completedIds?.add(v.n);
+  const s=session;if(!s||s.answered)return;
+  const q=s.items[s.index],v=q.v,a=currentAnswers();let ok=false;
+  if(!force){
+    if(['customRuToEn','customEnToRu','customListen','ruToEn','enToRu','listen'].includes(q.mode))ok=document.querySelector('.option.selected')?.dataset.correct==='1';
+    else if(q.mode==='customRuToEnWrite')ok=normalize(a.folder)===normalize(v.word);
+    else if(q.mode==='customEnToRuWrite')ok=acceptsWordMeaning(v,a.folder);
+    else if(q.mode==='ruToEnWrite')ok=acceptsInf(v,a.folder);
+    else if(q.mode==='enToRuWrite')ok=normalize(a.folder)===normalize(v.ru);
   }
+  q.savedDraft=window.PageState?window.TrainingUI.captureDraft(document.getElementById('q-body')):null;s.response={ok};
+  legacyInputDispose?.();legacyInputDispose=null;s.answered=true;setPracticeActions(true);
+  if(ok)s.score++;
+  if(q.custom){const cs=customStat(v.id);cs.attempts=(cs.attempts||0)+1;logActivity();if(ok){cs.level=Math.min(3,(cs.level||0)+1);cs.streak=(cs.streak||0)+1}else{cs.wrong=(cs.wrong||0)+1;cs.level=0;cs.streak=0}if(cs.level>=3)s.completedIds?.add(v.id);}
+  else{markAttempt(v,ok,q.mode);if(mastered(v))s.completedIds?.add(v.n);}
   save();
-  document.querySelectorAll('.option').forEach(btn=>{
-    const val=normalize(btn.dataset.option); let correct='';
-    if(q.mode==='customRuToEn'||q.mode==='customListen')correct=normalize(v.word);
-    else if(q.mode==='customEnToRu')correct=normalize(v.translation);
-    else if(q.mode==='ruToEn'||q.mode==='listen')correct=normalize(v.inf);
-    else if(q.mode==='enToRu')correct=normalize(v.ru);
-    if(val===correct)btn.classList.add('correct'); else if(btn.classList.contains('selected')&&!ok)btn.classList.add('wrong');
-  });
-  const manual=['ruToEnWrite','enToRuWrite','customRuToEnWrite','customEnToRuWrite'].includes(q.mode);const corr={customRuToEn:v.word,customListen:v.word,customRuToEnWrite:v.word,customEnToRu:v.translation,customEnToRuWrite:v.translation,ruToEn:v.inf,listen:v.inf,ruToEnWrite:v.inf,enToRu:v.ru,enToRuWrite:v.ru}[q.mode];
-  document.getElementById('q-feedback').innerHTML=ok||!corr?'':'<span class="bad-t">Правильно: '+htmlEscape(corr)+'</span>';
-  playFeedbackSound(ok);
-  if(!ok){
-    q.retries=(q.retries||0)+1;
-    q.mode=makeFolderItem(v,session.folderId).mode;
-    const insertAt=Math.min(session.items.length,session.index+4+Math.floor(Math.random()*3));
-    session.items.splice(insertAt,0,q);
-  }
-  if(!ok&&manual)showAnswerCard(v,!q.custom,nextFolderQ);else advanceTimer=setTimeout(nextFolderQ,ok?430:2200);
+  if(!ok){q.retries=(q.retries||0)+1;const retry=makeFolderItem(v,s.folderId);retry.retries=q.retries;s.items.splice(Math.min(s.items.length,s.index+4+Math.floor(Math.random()*3)),0,retry);}
+  presentLegacyAnswer(q,ok,nextFolderQ);
 }
 function nextFolderQ(){if(!session||!session.answered)return;session.index++;if(session.index>=session.items.length)finishSession();else renderQFolder()}
 
 function openModal(type,title,message,action,arg1,arg2){
+  if((type==='editWord'||type==='move'||action==='deleteWord')&&!window.VocabularyImport.canManageWord(state,arg1))return;
+  if(action==='deleteFolder'&&!window.VocabularyImport.canDeleteFolder(state,arg1))return;
   const back=document.getElementById('modal-backdrop'),content=document.getElementById('modal-content');
   document.getElementById('modal-title').textContent=title||'';
   back.dataset.type=type;back.dataset.action=action||'';back.dataset.arg1=arg1||'';back.dataset.arg2=arg2||'';
@@ -401,7 +422,7 @@ function openModal(type,title,message,action,arg1,arg2){
     const wordId=arg1,currentFolder=arg2,custom=state.customFolders||{};
     const word=(custom[currentFolder]?.words||[]).find(w=>w.id===wordId);
     const memberships=[];for(const [id,f] of Object.entries(custom)){if((f.words||[]).some(w=>w.id===wordId))memberships.push(id)}
-    content.innerHTML=`<div class="modal-message">${htmlEscape(word?.word||'Слово')}<br><span class="muted">Выбери папки, в которых оно должно остаться.</span></div><div class="folder-checks">${Object.entries(custom).filter(([id])=>id!==state.myWordsFolder||true).map(([id,f])=>`<label><input type="checkbox" data-move-folder="${id}" ${memberships.includes(id)?'checked':''}> ${htmlEscape(f.name)}</label>`).join('')}</div>`;
+    content.innerHTML=`<div class="modal-message">${htmlEscape(word?.word||'Слово')}<br><span class="muted">Выбери папки, в которых оно должно остаться.</span></div><div class="folder-checks">${Object.entries(custom).filter(([,f])=>!window.VocabularyImport.isExcludedFolder(f)).map(([id,f])=>`<label><input type="checkbox" data-move-folder="${id}" ${memberships.includes(id)?'checked':''}> ${htmlEscape(f.name)}</label>`).join('')}</div>`;
     document.getElementById('modal-ok').textContent='Сохранить';
     back.dataset.wordId=wordId;back.dataset.currentFolder=currentFolder;
   }
@@ -410,22 +431,23 @@ function openModal(type,title,message,action,arg1,arg2){
 }
 function closeModal(){document.getElementById('modal-backdrop').classList.add('hidden')}
 function addFolder(){openModal('folder','Новая папка')}
-function addWord(){if(selectedFolder==='irregular'){selectedFolder=state.myWordsFolder;save();renderDictionary()}openModal('word','Добавить слово')}
+function addWord(){if(selectedFolder==='irregular'||state.customFolders?.[selectedFolder]?.managed||state.customFolders?.[selectedFolder]?.sourceBlock){selectedFolder=state.myWordsFolder;save();renderDictionary()}openModal('word','Добавить слово')}
 function modalConfirm(){
   const back=document.getElementById('modal-backdrop'),type=back.dataset.type,action=back.dataset.action;
+  if((type==='editWord'||type==='move'||action==='deleteWord')&&!window.VocabularyImport.canManageWord(state,type==='editWord'||type==='move'?back.dataset.wordId:back.dataset.arg1)){closeModal();return;}
   if(type==='folder'){const name=(document.getElementById('modal-folder-name')?.value||'').trim().replace(/\s+/g,' ');if(!name)return;state.customFolders=state.customFolders||{};const id='f_'+Date.now();state.customFolders[id]={name,words:[]};selectedFolder=id;save();closeModal();renderDictionary();return}
-  if(type==='word'){const word=document.getElementById('modal-word')?.value.trim(),translation=document.getElementById('modal-translation')?.value.trim();if(!word||!translation)return;state.customFolders=state.customFolders||{};const target=selectedFolder==='irregular'?state.myWordsFolder:selectedFolder;state.customFolders[target]=state.customFolders[target]||{name:'Мои слова',words:[]};state.customFolders[target].words.push({id:'w_'+Date.now(),word,translation});save();closeModal();renderDictionary();return}
+  if(type==='word'){const word=document.getElementById('modal-word')?.value.trim(),translation=document.getElementById('modal-translation')?.value.trim();if(!word||!translation)return;state.customFolders=state.customFolders||{};const target=selectedFolder==='irregular'||state.customFolders?.[selectedFolder]?.managed||state.customFolders?.[selectedFolder]?.sourceBlock?state.myWordsFolder:selectedFolder;state.customFolders[target]=state.customFolders[target]||{name:'Мои слова',words:[]};state.customFolders[target].words.push({id:'w_'+Date.now(),word,translation});save();closeModal();renderDictionary();return}
   if(type==='editWord'){const wordId=back.dataset.wordId,word=document.getElementById('modal-word')?.value.trim(),translation=document.getElementById('modal-translation')?.value.trim();if(!word||!translation)return;const custom=state.customFolders||{};for(const f of Object.values(custom)){for(const w of (f.words||[])){if(w.id===wordId){w.word=word;w.translation=translation}}}state.customFolders=custom;save();closeModal();renderDictionary();return}
   if(type==='move'){const wordId=back.dataset.wordId,currentFolder=back.dataset.currentFolder,custom=state.customFolders||{};const selected=[...back.querySelectorAll('[data-move-folder]:checked')].map(x=>x.dataset.moveFolder);
     if(!selected.length){const m=back.querySelector('.modal-message .muted');if(m)m.textContent='Выбери хотя бы одну папку или удали слово корзиной.';return}
     let word=null;for(const f of Object.values(custom)){const w=(f.words||[]).find(x=>x.id===wordId);if(w){word=w;break}}
-    if(word){for(const f of Object.values(custom))f.words=(f.words||[]).filter(x=>x.id!==wordId);for(const id of selected){custom[id].words=custom[id].words||[];custom[id].words.push({...word})}}
+    if(word){for(const f of Object.values(custom))f.words=(f.words||[]).filter(x=>x.id!==wordId);for(const id of selected){if(!custom[id])continue;custom[id].words=custom[id].words||[];custom[id].words.push({...word})}}
     state.customFolders=custom;save();closeModal();renderDictionary();return}
-  if(type==='confirm'){if(action==='deleteFolder'){const custom=state.customFolders||{};delete custom[back.dataset.arg1];state.customFolders=custom;selectedFolder=state.myWordsFolder||'irregular';save();closeModal();renderDictionary()}else if(action==='deleteWord'){const custom=state.customFolders||{},folder=custom[back.dataset.arg2];if(folder)folder.words=(folder.words||[]).filter(w=>w.id!==back.dataset.arg1);state.customFolders=custom;save();closeModal();renderDictionary()}else closeModal()}
+  if(type==='confirm'){if(action==='deleteFolder'){if(!window.VocabularyImport.canDeleteFolder(state,back.dataset.arg1)){closeModal();return;}const custom=state.customFolders||{};delete custom[back.dataset.arg1];state.customFolders=custom;selectedFolder=state.myWordsFolder||'irregular';save();closeModal();renderDictionary()}else if(action==='deleteWord'){const custom=state.customFolders||{},folder=custom[back.dataset.arg2];if(folder)folder.words=(folder.words||[]).filter(w=>w.id!==back.dataset.arg1);state.customFolders=custom;save();closeModal();renderDictionary()}else closeModal()}
 }
 
 const nav=id=>document.getElementById(id);
-nav('nav-home').onclick=()=>{show('home');window.scrollTo({top:0,behavior:'smooth'})};
+nav('nav-home').onclick=()=>{if(window.englishPractice)window.englishPractice.navigate('all');else show('home');window.scrollTo({top:0,behavior:'smooth'})};
 nav('dontknow').onclick=dontKnow;
 nav('hint-btn').onclick=giveHint;
 nav('sound-btn').onclick=()=>speak(session.items[session.index].v.word||session.items[session.index].v.inf,true);
@@ -447,50 +469,52 @@ function renderThemeToggle(){const dark=theme==='dark';document.documentElement.
 themeToggle.onclick=()=>{theme=theme==='dark'?'light':'dark';save();renderThemeToggle();};
 renderThemeToggle();
 function renderSoundToggle(){soundToggle.setAttribute('aria-pressed',String(soundOn));soundToggle.title=soundOn?'Выключить звук':'Включить звук';soundToggle.classList.toggle('is-on',soundOn);}
-soundToggle.onclick=()=>{soundOn=!soundOn;state.soundOn=soundOn;save();renderSoundToggle()};
+soundToggle.onclick=()=>{soundOn=!soundOn;if(!soundOn)stopPronunciation();state.soundOn=soundOn;save();renderSoundToggle()};
 renderSoundToggle();
 nav('modal-cancel').onclick=closeModal;
 nav('modal-ok').onclick=modalConfirm;
 document.getElementById('modal-backdrop').onclick=e=>{if(e.target.id==='modal-backdrop')closeModal()};
 show('home');
-if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js'))}
+if('serviceWorker' in navigator && location.protocol!=='file:'){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}))}
 nav('errors-btn').onclick=()=>{show('errors');window.scrollTo({top:0,behavior:'smooth'})};
 nav('errors-back').onclick=()=>{show('home');window.scrollTo({top:0,behavior:'smooth'})};
 document.querySelectorAll('.mini-row').forEach(r=>{const b=r.querySelector('button'),w=r.querySelector('b');if(b&&w)b.onclick=()=>speak(w.textContent,true)});
 document.addEventListener('keydown',e=>{const c=e.target;if(c&&c.matches&&c.matches('[data-folder-card]')&&(e.key==='Enter'||e.key===' ')){e.preventDefault();c.click()}});
-document.addEventListener('pointerdown',()=>{try{fbCtx=fbCtx||new (window.AudioContext||window.webkitAudioContext)();if(fbCtx.resume)fbCtx.resume()}catch(e){}try{currentAudio=currentAudio||new Audio();const au=currentAudio;au.src=AUDIO_DATA[1];au.volume=0;const p=au.play();if(p&&p.then)p.then(()=>{au.pause();au.currentTime=0;au.volume=1}).catch(()=>{au.volume=1})}catch(e){}},{once:true});
+document.addEventListener('pointerdown',()=>{try{fbCtx=fbCtx||new (window.AudioContext||window.webkitAudioContext)();if(fbCtx.resume)fbCtx.resume()}catch(e){}},{once:true});
 let cardS=null;
 function cardWords(type,id){
   if(type==='group')return groupVerbs(selectedGroup).map(v=>({irr:true,v}));
   if(id==='irregular'){const open=verbs.filter(v=>!mastered(v));return shuffle(open.length?open:verbs).slice(0,15).map(v=>({irr:true,v}))}
-  return (state.customFolders?.[id]?.words||[]).map(v=>({irr:false,v}));
+  return visibleFolderWords(id).map(v=>({irr:false,v}));
 }
-function formsBlock(v){const c=(w,i,l)=>`<div class="card-form"><small>${l}</small><b>${htmlEscape(w)}</b>${i?`<i>/${htmlEscape(i)}/</i>`:''}</div>`;return `<div class="card-forms">${c(v.inf,v.ipa,'V1')}${c(v.past,v.pastIpa||v.ipa,'V2')}${c(v.part,v.partIpa||v.pastIpa||v.ipa,'V3')}</div>`}
-function answerCardHtml(v,irr){const ru=irr?v.ru:v.translation,en=irr?v.inf:v.word;return `<div class="flashcard static"><div class="card-main">${htmlEscape(irr?ru:en)}</div>${irr?formsBlock(v):`<div class="card-sub">${htmlEscape(ru)}</div>`}</div>`}
+function formsBlock(v){const c=(w,i,l)=>`<div class="card-form"><small>${l}</small><b>${htmlEscape(w)}</b>${i?`<i>/${htmlEscape(i)}/</i>`:''}</div>`;return `<div class="card-forms">${c(v.inf,v.ipa,'V1')}${c(v.past,v.pastIpa||(v.past===v.inf?v.ipa:''),'V2')}${c(v.part,v.partIpa||(v.part===v.past?v.pastIpa:v.part===v.inf?v.ipa:''),'V3')}</div>`}
+function answerCardHtml(v,irr){const ru=irr?v.ru:v.translation,en=irr?v.inf:v.word,ipa=irr?'':v.ipa||window.VocabularyPronunciation.get(v.word);return `<div class="flashcard static"><div class="card-main">${htmlEscape(irr?ru:en)}</div>${irr?formsBlock(v):`<div class="card-sub">${htmlEscape(ru)}</div>${ipa?`<div class="learn-ipa">/${htmlEscape(ipa)}/</div>`:''}`}</div>`}
 function showAnswerCard(v,irr,next){
-  ['q-word','q-ipa','q-ru','q-feedback','q-hint'].forEach(id=>{const e=document.getElementById(id);if(e)e.innerHTML=''});
+  clearTimeout(advanceTimer);legacyInputDispose?.();legacyInputDispose=null;stopPronunciation();setPracticeActions(true);
+  for(const id of ['q-word','q-ipa','q-ru','q-feedback','q-hint'])document.getElementById(id).innerHTML='';
   document.getElementById('q-mode').textContent='Запомни слово';
-  document.getElementById('q-body').innerHTML=answerCardHtml(v,irr)+'<div class="actions" style="justify-content:center"><button class="icon-btn" id="ac-sound" title="Прослушать" aria-label="Прослушать">🔊</button><button class="primary" id="ac-next" type="button">Продолжить</button></div>';
-  const en=irr?v.inf:v.word,b=document.getElementById('ac-next');
-  document.getElementById('ac-sound').onclick=()=>speak(en,true);
-  b.onclick=()=>next();b.focus({preventScroll:true});
-  document.getElementById('sound-btn').classList.add('hidden');
-  autoSpeakCurrent(en);
+  document.getElementById('q-body').innerHTML=window.TrainingUI.reviewCard({material:irr?v.ru:v.word,language:irr?'ru':'en',translation:irr?'':v.translation,detailsHTML:irr?formsBlock(v):'',explanation:irr?'Вторая форма используется в Past Simple; третья — в конструкциях Perfect и пассивном залоге.':'',soundId:'ac-sound',nextId:'ac-next',neutral:true,actions:false});
+  const controls=document.getElementById('review-controls');controls.innerHTML=window.TrainingUI.reviewActions({soundId:'ac-sound',nextId:'ac-next'});controls.hidden=false;
+  const text=irr?window.CardSpeech.formsText(v):v.word;
+  document.getElementById('ac-sound').onclick=()=>speak(text,true);
+  const advance=document.getElementById('ac-next');advance.onclick=()=>{stopPronunciation();next();};advance.focus({preventScroll:true});
+  document.getElementById('sound-btn').classList.add('hidden');autoSpeakCurrent(text);
 }
 function startCards(type,id){const items=cardWords(type,id);if(!items.length){show('dictionary');return}cardS={type,id,items,i:0,back:type==='group'?'learn':'dictionary'};show('cards');renderCard();window.scrollTo({top:0})}
 function renderCard(){
+  stopPronunciation();
   const s=cardS;if(!s)return;const n=s.items.length;
-  const box=document.getElementById('cards-body'),act=document.getElementById('cards-actions'),on=(id,f)=>{const e=document.getElementById(id);if(e)e.onclick=f},exit=()=>{show(s.back);window.scrollTo({top:0})};
+  const box=document.getElementById('cards-body'),act=document.getElementById('cards-actions');act.classList.add('training-footer');const on=(id,f)=>{const e=document.getElementById(id);if(e)e.onclick=f},exit=()=>{show(s.back);window.scrollTo({top:0})};
   document.getElementById('cards-bar').style.width=(Math.min(s.i,n)/n*100)+'%';
   document.getElementById('cards-meta').innerHTML=`<div class="training-heading">Карточки</div><div class="training-badges"><span class="badge">${Math.min(s.i+1,n)} / ${n}</span></div>`;
   if(s.i>=n){
     box.innerHTML='<div class="card-done"><div class="result-mark">✓</div><h2>Все карточки просмотрены</h2><div class="muted">Теперь проверь себя в тренировке.</div></div>';
-    act.innerHTML='<button class="primary" id="card-test">Проверить себя</button><button id="card-exit">Назад</button>';
+    act.innerHTML='<button class="exit-training" id="card-exit">Назад</button><div class="answer-controls"><button class="primary" id="card-test">Проверить себя</button></div>';
     on('card-test',()=>s.type==='group'?startMixed('new',selectedGroup):startFolderTraining(false,s.id));on('card-exit',exit);playFeedbackSound(true);return;
   }
-  const it=s.items[s.i],en=it.irr?it.v.inf:it.v.word;
+  const it=s.items[s.i],en=it.irr?window.CardSpeech.formsText(it.v):it.v.word;
   box.innerHTML=answerCardHtml(it.v,it.irr);
-  act.innerHTML=`${s.i?'<button id="card-prev" class="small-action">← Назад</button>':''}<button class="icon-btn" id="card-sound" title="Прослушать" aria-label="Прослушать">🔊</button><button class="primary" id="card-next" type="button">Продолжить</button><button id="card-exit" class="small-action">Закончить</button>`;
+  act.innerHTML=`<button id="card-exit" class="exit-training">Закончить</button><div class="answer-controls">${s.i?'<button id="card-prev" class="small-action">← Назад</button>':''}<button class="icon-btn" id="card-sound" title="Прослушать" aria-label="Прослушать"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a8 8 0 0 1 0 11"/></svg></button><button class="primary" id="card-next" type="button">Продолжить</button></div>`;
   on('card-prev',()=>{s.i--;renderCard()});on('card-next',()=>{s.i++;renderCard()});on('card-sound',()=>speak(en,true));on('card-exit',exit);
   autoSpeakCurrent(en);document.getElementById('card-next').focus({preventScroll:true});
 }
@@ -529,5 +553,79 @@ function startReview(){
   save();show('quiz');renderQ();
 }
 nav('review-btn').onclick=startReview;
-nav('goal-edit').onclick=()=>{const g=[10,20,30,50],cur=state.dailyGoal||20;state.dailyGoal=g[(g.indexOf(cur)+1)%g.length];save();renderMotivation()};
+if(nav('goal-edit'))nav('goal-edit').onclick=()=>{const g=[10,20,30,50],cur=state.dailyGoal||20;state.dailyGoal=g[(g.indexOf(cur)+1)%g.length];save();renderMotivation()};
 renderMotivation();
+
+// Общая главная использует прежние разделы и их хранилище без миграции данных.
+window.legacyTrainer = {
+  open: show,
+  pronounce:text=>speak(text,true),
+  renderGroups:()=>renderBlocks('verb-blocks'),
+  start:()=>startMixed(groupPercent(selectedGroup)>=100?'groupRepeat':'new',selectedGroup),
+  review:startReview,
+  dashboard:renderMotivation,
+  paint:paintRing,
+  recordGrammarActivity:()=>{logActivity();save();},
+  summary: () => ({
+    progressSum:verbs.reduce((sum,v)=>sum+Math.min(1,st(v).level/3),0),
+    due:dueWords().length,
+    total: verbs.length,
+    mastered: verbs.filter(mastered).length,
+    progress: percentFor(verbs),
+    words: Object.keys(state.customFolders || {}).reduce((sum,id)=>sum+visibleFolderWords(id).length,0),
+    groups: LEARNING_GROUPS.length
+  })
+};
+
+
+function encodeStudySession(s){
+  if(!s)return null;
+  const {items,completedIds,...other}=s;
+  return {...other,items:items.map(q=>({...q,v:q.custom?{id:q.v.id}:{n:q.v.n}})),completedIds:completedIds?[...completedIds]:undefined};
+}
+function decodeStudySession(saved){
+  if(!saved||!Array.isArray(saved.items)||!saved.items.length||saved.items.length>20000||!Number.isInteger(saved.index)||saved.index<0||saved.index>saved.items.length)return null;
+  const custom=new Map(Object.keys(state.customFolders||{}).flatMap(visibleFolderWords).map(w=>[w.id,w]));
+  const modes=new Set(['write','letters','cloze','ruToEn','enToRu','listen','ruToEnWrite','enToRuWrite','customRuToEn','customEnToRu','customRuToEnWrite','customEnToRuWrite','customListen']);
+  const items=saved.items.map(q=>({...q,v:q.custom?custom.get(q.v?.id):verbs.find(v=>v.n===q.v?.n)}));
+  if(items.some(q=>!q.v||!modes.has(q.mode)))return null;
+  return {...saved,items,completedIds:Array.isArray(saved.completedIds)?new Set(saved.completedIds):undefined};
+}
+function captureLegacyPage(){
+  const data={view:currentView,group:selectedGroup,folder:selectedFolder};
+  if(currentView==='quiz'||currentView==='result'){
+    data.session=encodeStudySession(session);
+    if(currentView==='quiz'){const q=session?.items[session.index];data.draft=session?.answered?q?.savedDraft:window.TrainingUI.captureDraft(document.getElementById('q-body'));data.hint=document.getElementById('q-hint').textContent;}
+  }
+  if(currentView==='cards'&&cardS)data.cards={...cardS,items:cardS.items.map(it=>({irr:it.irr,id:it.irr?it.v.n:it.v.id}))};
+  return data;
+}
+function restoreLegacyPage(data){
+  if(!data||!['home','learn','dictionary','errors','cards','quiz','result'].includes(data.view))return false;
+  if(data.group!==undefined)selectedGroup=data.group;
+  if(data.folder&&state.customFolders[data.folder])selectedFolder=data.folder;
+  if(data.view==='quiz'||data.view==='result'){
+    const restored=decodeStudySession(data.session);if(!restored||data.view==='quiz'&&!restored.items[restored.index])return false;
+    session=restored;
+    if(data.view==='result'){finishSession(true);return true;}
+    const answered=!!restored.answered,response=restored.response;
+    show('quiz');if(session.folder)renderQFolder();else renderQ();
+    window.TrainingUI.restoreDraft(document.getElementById('q-body'),data.draft);
+    bindOptions();
+    const q=session.items[session.index];
+    if(q.mode==='letters')for(const id of data.draft?.selectedLetters||[]){const b=[...document.querySelectorAll('.letters .letter')].find(b=>b.dataset.i===id);if(b&&!b.disabled)b.onclick();}
+    document.getElementById('q-hint').textContent=data.hint||'';
+    stopPronunciation();
+    if(answered){session.response=response;q.savedDraft=data.draft;session.answered=true;presentLegacyAnswer(q,response?.ok===true,session.folder?nextFolderQ:nextQ,true);}
+    return true;
+  }
+  if(data.view==='cards'){
+    const saved=data.cards;if(!saved||!Array.isArray(saved.items)||!Number.isInteger(saved.i)||saved.i<0||saved.i>saved.items.length)return false;
+    const custom=new Map(Object.keys(state.customFolders||{}).flatMap(visibleFolderWords).map(w=>[w.id,w]));
+    const items=saved.items.map(it=>({irr:!!it.irr,v:it.irr?verbs.find(v=>v.n===it.id):custom.get(it.id)}));
+    if(items.some(it=>!it.v))return false;
+    cardS={...saved,items};show('cards');renderCard();return true;
+  }
+  show(data.view);return true;
+}
+window.PageState?.register('legacy',{capture:captureLegacyPage,restore:restoreLegacyPage});

@@ -54,6 +54,10 @@ nav button{font-size:16px;padding:10px 16px;border-radius:13px}
 .word-item{border-radius:14px;padding:12px 15px}
 .custom-word-line{grid-template-columns:minmax(160px,1fr) minmax(160px,1fr) auto}
 .word-actions{gap:6px}
+@media(max-width:700px){
+  .custom-word-line{grid-template-columns:minmax(0,1fr) auto}
+  .custom-word-line>span{min-width:0;overflow-wrap:anywhere}
+}
 .learn-head{margin-bottom:16px}
 .learn-head h2{font-size:27px}
 .learn-head .section-note{background:transparent;border:0;padding:0;margin-top:4px}
@@ -761,7 +765,7 @@ h1:before{background:linear-gradient(135deg,var(--v28-purple),var(--v28-orange))
 /* No mascot / error-progress card. Keep motivation text as a clean card. */
 .side-tip{display:none!important}
 .stat-purple{display:none!important}
-.stats-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+.stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
 /* Learning list contains the translation explicitly. */
 .learn-translation{font-weight:600;color:#655a70;min-width:140px}
 .learn-table th,.learn-table td{font-family:Arial,Helvetica,sans-serif}
@@ -808,7 +812,7 @@ html[data-theme="dark"] .hint{color:#eadfed!important}
   .home-heading:after{font-size:34px;right:7%;bottom:10px}
   .home-main{padding:20px!important}
   .stats-grid{grid-template-columns:1fr 1fr!important}
-  .stats-grid .stat:last-child{grid-column:1/-1}
+  .stats-grid .stat:last-child{grid-column:auto}
   .block-grid{grid-template-columns:1fr!important}
   .learn-table{min-width:760px}
   #learn .actions{flex-direction:column;align-items:stretch}
@@ -845,7 +849,7 @@ header h1{font-size:30px!important;line-height:1.08!important}
 .selected-progress-ring{background:conic-gradient(var(--v29-purple) 0 var(--ring-progress,0%),var(--v29-yellow) var(--ring-progress,0%) 100%)!important}
 /* Stats: only meaningful progress indicators. */
 .stat-purple{display:none!important}
-.stats-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+.stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
 /* Block cards: distinct compositions, vivid purple/orange/yellow. */
 .group-card{background:rgba(255,255,255,.96)!important;border-color:#e0d6ea!important}
 .group-card.selected{outline:3px solid rgba(113,69,232,.20)!important;border-color:#9d7bed!important}
@@ -896,7 +900,7 @@ html[data-theme="dark"] .ru,html[data-theme="dark"] .hint{color:#eee4f2!importan
   .home-heading h2{font-size:27px!important}
   .home-main{padding:19px!important}
   .stats-grid{grid-template-columns:1fr 1fr!important}
-  .stats-grid .stat:last-child{grid-column:1/-1}
+  .stats-grid .stat:last-child{grid-column:auto}
   .block-grid{grid-template-columns:1fr!important}
   .group-card{min-height:160px!important}
   .learn-table{min-width:760px}
@@ -1081,11 +1085,11 @@ body.home-page .header-home{display:none!important}
 .selected-progress-ring:before{content:"";position:absolute;inset:0;border-radius:50%;background:conic-gradient(from -90deg,transparent 0 var(--ring-progress),rgba(230,224,234,.9) var(--ring-progress) 100%);z-index:1}
 .selected-progress-ring:after{z-index:2}
 .selected-progress-ring>div{z-index:3}
-/* Correct answers use the site's lilac/pink palette instead of green/yellow. */
-.option.correct{background:#eee8ff!important;border-color:#9b7ae8!important;color:#4f329f!important}
-.input-grid input.correct,.single-answer input.correct{background:#f0ebff!important;border-color:#9b7ae8!important;color:#4f329f!important}
-html[data-theme="dark"] .option.correct{background:#34294c!important;border-color:#a98af0!important;color:#eee7ff!important}
-html[data-theme="dark"] .input-grid input.correct,html[data-theme="dark"] .single-answer input.correct{background:#34294c!important;border-color:#a98af0!important;color:#eee7ff!important}
+/* Цвет успеха общий для всех видов практики (training.css). */
+.option.correct{background:var(--answer-good-bg)!important;border-color:var(--answer-good-border)!important;color:var(--answer-good-text)!important}
+.input-grid input.correct,.single-answer input.correct{background:var(--answer-input-good-bg)!important;border-color:var(--answer-good-border)!important;color:var(--answer-good-text)!important}
+html[data-theme="dark"] .option.correct{background:var(--answer-good-bg)!important;border-color:var(--answer-good-border)!important;color:var(--answer-good-text)!important}
+html[data-theme="dark"] .input-grid input.correct,html[data-theme="dark"] .single-answer input.correct{background:var(--answer-good-bg)!important;border-color:var(--answer-good-border)!important;color:var(--answer-good-text)!important}
 /* Tiny unobtrusive back-to-top control. */
 .scroll-top{width:27px!important;height:27px!important;right:12px!important;bottom:12px!important;border:0!important;background:rgba(118,81,232,.10)!important;color:#7651e8!important;box-shadow:none!important;font-size:14px!important;opacity:.52}
 .scroll-top.show{opacity:.62}
