@@ -113,27 +113,13 @@ window.GrammarCards = {
         "note": "Under — под предметом, below — ниже уровня или ориентира, above — выше, over — над чем-то или через верх.",
         "figures": [
           {
-            "src": "assets/grammar/place/kitten-under.webp",
-            "alt": "Котёнок находится под большим колокольчиком.",
+            "src": "assets/grammar/place/under-below-above-over.png",
+            "alt": "Котик под цветком, рыбка ниже поверхности воды, фонарь над дверью и самолёт над городком.",
             "captions": [
-              [
-                "The kitten is under the bell.",
-                "Котёнок под колокольчиком."
-              ]
-            ]
-          },
-          {
-            "src": "assets/grammar/place/cloud-above.webp",
-            "alt": "Пушистое облако над тремя чайниками.",
-            "captions": [
-              [
-                "The cloud is above the teapots.",
-                "Облако над чайниками."
-              ],
-              [
-                "The teapots are below the cloud.",
-                "Чайники ниже облака."
-              ]
+              ["The cat is under the flower.", "Котик под цветком."],
+              ["The fish is below the surface of the water.", "Рыбка ниже поверхности воды."],
+              ["The light is above the door.", "Фонарь над дверью."],
+              ["The plane is flying over the town.", "Самолёт пролетает над городком."]
             ]
           },
           {
@@ -209,13 +195,12 @@ window.GrammarCards = {
         "note": "Behind — сзади, in front of — спереди, opposite — напротив, например на другой стороне улицы.",
         "figures": [
           {
-            "src": "assets/grammar/place/houses-opposite.webp",
-            "alt": "Два домика расположены напротив друг друга, за одним из них стоит машина.",
+            "src": "assets/grammar/place/fluffy-town-behind-opposite.png",
+            "alt": "Машина за домом, машина перед отелем и кафе напротив друг друга через дорогу.",
             "captions": [
-              [
-                "The houses are opposite each other.",
-                "Домики напротив друг друга."
-              ]
+              ["The car is behind the house.", "Машина за домом."],
+              ["The car is in front of the hotel.", "Машина перед отелем."],
+              ["The cafés are opposite each other.", "Кафе стоят напротив друг друга, через дорогу."]
             ]
           }
         ],
