@@ -220,7 +220,11 @@
       nextTimer = window.setTimeout(() => { if(session===s && s.answered) next(); }, 650);
     } else {
       const scene=q.source.feedback_image;
-      f.innerHTML=window.TrainingUI.reviewCard({material:q.correctSentence,translation:q.source.russian,explanation:skipped?'':explanation(q),audio:false,actions:false,neutral:skipped,detailsHTML:scene?`<div class="review-scene">${sceneImage(scene)}</div>`:''});
+      const singleBlank=q.mode!=='full'&&!q.fields&&(q.material.match(/_{2,}/g)||[]).length===1&&q.answers?.[0];
+      const material=singleBlank?`Правильный ответ: ${q.answers[0]}`:q.correctSentence;
+      const russian=q.source.russian;
+      const translation=russian&&!(singleBlank&&q.translation)&&normalize(russian)!==normalize(q.translation)&&normalize(russian)!==normalize(q.material)?russian:'';
+      f.innerHTML=window.TrainingUI.reviewCard({material,translation,explanation:skipped?'':explanation(q),audio:false,actions:false,neutral:skipped,detailsHTML:scene?`<div class="review-scene">${sceneImage(scene)}</div>`:''});
       actions.innerHTML=window.TrainingUI.reviewActions({audio:false,nextId:'topic-review-next'});actions.hidden=false;
       const advance=app.querySelector('#topic-review-next');
       advance.onclick=next;advance.focus({preventScroll:true});
