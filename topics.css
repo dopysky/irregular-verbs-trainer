@@ -21,7 +21,8 @@ html[data-theme="dark"] body.unified-site{--ink:#f6effb;--sub:#b8abc6;--surface:
 .back-to-blocks{margin-bottom:18px}
 #practice{color:var(--ink);max-width:1280px;margin:0 auto}
 #practice *{box-sizing:border-box}
-#practice h2,#practice h3,#practice h4{font-family:Arial,Helvetica,sans-serif!important;color:var(--ink)}
+#practice h2:not(.question),#practice h3,#practice h4{font-family:'Unbounded',Arial,Helvetica,sans-serif!important;color:var(--ink)}
+#practice h2.question{font-family:Arial,Helvetica,sans-serif!important}
 #practice button{font-family:inherit;font-size:16px;padding:12px 18px;min-height:44px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink);cursor:pointer;box-shadow:none;transform:none}
 #practice button:hover{border-color:#bca2df}
 #practice button.primary{background:#7951cb;color:#fff;border-color:#7951cb}
@@ -69,6 +70,8 @@ html[data-theme="dark"] body.unified-site{--ink:#f6effb;--sub:#b8abc6;--surface:
 .rule-card{--scene-radius:14px;background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:24px;min-width:0}
 #practice .rule-card h3{margin:0 0 18px;font-size:21px;line-height:1.35}
 .rule-card-body{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:start}
+.no-rule-figures .rule-card-body{grid-template-columns:1fr}
+.no-rule-figures .rule-figures{display:none}
 .rule-copy{min-width:0;font-size:16px;line-height:1.55}
 .rule-copy p{margin:0 0 12px}
 .rule-card-note{color:var(--sub)}
@@ -77,6 +80,7 @@ html[data-theme="dark"] body.unified-site{--ink:#f6effb;--sub:#b8abc6;--surface:
 .rule-with-gallery .rule-figures{grid-template-columns:repeat(2,minmax(0,1fr))}
 .rule-with-gallery .rule-figures:has(> :nth-child(3)){grid-template-columns:repeat(3,minmax(0,1fr))}
 .grammar-figure{margin:0;min-width:0}
+.scene-frame{border-radius:var(--scene-radius,14px);overflow:hidden}
 .grammar-scene{display:block;width:100%;height:auto;border-radius:var(--scene-radius,14px)}
 .rule-figures .grammar-scene{aspect-ratio:auto 3/2;object-fit:contain;background:var(--page)}
 .scene-captions{display:grid;grid-template-columns:repeat(var(--caption-count,1),minmax(0,1fr));gap:8px;margin-top:8px}
@@ -85,8 +89,8 @@ html[data-theme="dark"] body.unified-site{--ink:#f6effb;--sub:#b8abc6;--surface:
 .scene-captions small,.rule-examples small{display:block;color:var(--sub);font-size:14px;margin-top:3px}
 .rule-examples{list-style:none;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,175px),1fr));gap:8px;margin:0;padding:0}
 .rule-examples li{min-width:0;background:var(--page);border-radius:9px;padding:8px 10px}
-.dinner-rule .rule-card-body{grid-template-columns:1fr}
-.dinner-rule .rule-figures{max-width:780px;margin-inline:auto;width:100%}
+.dinner-rule .rule-figures{width:100%}
+.dinner-rule .scene-frame img{transform:scale(1.025)}
 .dinner-frames{display:none}
 .review-scene{width:min(100%,360px);margin-top:12px}
 #practice .question-with-hints{margin-bottom:8px}

@@ -8,18 +8,7 @@ window.GrammarCards = {
         "title": "IN - в каком месте находится предмет или человек",
         "rule": "In означает «в»: предмет или человек находится внутри чего-либо или на территории какого-либо места.",
         "note": "Inside подчёркивает положение внутри. Outside означает «снаружи».",
-        "figures": [
-          {
-            "src": "assets/grammar/place/horse-in-stable.webp",
-            "alt": "Лошадь стоит внутри конюшни.",
-            "captions": [
-              [
-                "The horse is in the stable.",
-                "Лошадь в конюшне."
-              ]
-            ]
-          }
-        ],
+        "figures": [],
         "examples": [
           [
             "The ball is in the box.",
@@ -51,19 +40,9 @@ window.GrammarCards = {
         "id": "P02",
         "title": "ON: на поверхности",
         "rule": "On связывает предмет с поверхностью, на которой он находится.",
-        "figures": [
-          {
-            "src": "assets/grammar/place/p02.webp",
-            "alt": "Чашки стоят на полке.",
-            "captions": [
-              [
-                "The cups are on the shelf.",
-                "Чашки стоят на полке."
-              ]
-            ]
-          }
-        ],
-        "examples": []
+        "figures": [],
+        "examples": [
+          ["The cups are on the shelf.","Чашки стоят на полке."],]
       },
       {
         "id": "P03",
@@ -107,11 +86,6 @@ window.GrammarCards = {
         "rule": "Эти предлоги показывают, как один предмет расположен по отношению к другому. Для каждого важно понимать, с чем мы его сравниваем.",
         "note": "Under — под предметом, below — ниже уровня или ориентира, above — выше, over — над чем-то или через верх.",
         "figures": [
-          {
-            "src": "assets/grammar/place/p05.webp",
-            "alt": "Кот под кроватью, картина над кроватью, мост над рекой и термометр с отметкой ниже нуля.",
-            "captions": []
-          },
           {
             "src": "assets/grammar/place/horse-over-hurdle.webp",
             "alt": "Лошадь перепрыгивает через препятствие.",
@@ -157,16 +131,6 @@ window.GrammarCards = {
         "note": "Between связывает отдельные ориентиры. Among показывает положение среди группы.",
         "figures": [
           {
-            "src": "assets/grammar/place/between-the-trees.webp",
-            "alt": "Девушка стоит между двумя деревьями.",
-            "captions": [
-              [
-                "She is standing between two trees.",
-                "Она стоит между двумя деревьями."
-              ]
-            ]
-          },
-          {
             "src": "assets/grammar/place/among-the-trees.webp",
             "alt": "Один домик стоит среди деревьев.",
             "captions": [
@@ -193,13 +157,7 @@ window.GrammarCards = {
         "title": "BEHIND / IN FRONT OF / OPPOSITE - за, перед и напротив",
         "rule": "Behind - за или позади; in front of - перед; opposite - напротив.",
         "note": "Behind — сзади, in front of — спереди, opposite — напротив, например на другой стороне улицы.",
-        "figures": [
-          {
-            "src": "assets/grammar/place/p07.webp",
-            "alt": "Машина за домом, машина перед отелем и здания напротив друг друга.",
-            "captions": []
-          }
-        ],
+        "figures": [],
         "examples": [
           [
             "The car is behind the house.",
@@ -226,12 +184,16 @@ window.GrammarCards = {
         "note": "Next to и beside указывают, что предметы стоят рядом. Near означает «недалеко».",
         "figures": [
           {
-            "src": "assets/grammar/place/beside-the-chair.webp",
-            "alt": "Торшер стоит рядом с синим креслом.",
+            "src": "assets/grammar/place/near-chair-cat.webp",
+            "alt": "Торшер рядом с креслом, неподалёку сидит котёнок.",
             "captions": [
               [
-                "The lamp is beside the chair.",
+                "The lamp is next to the chair.",
                 "Торшер рядом с креслом."
+              ],
+              [
+                "The kitten is near the chair.",
+                "Котёнок недалеко от кресла."
               ]
             ]
           }
@@ -256,18 +218,7 @@ window.GrammarCards = {
         "title": "IN / ON в транспорте",
         "rule": "Выбор зависит от привычного сочетания с видом транспорта, а не от того, пассажир человек или водитель.",
         "note": "Запоминай сочетания группами: in a car / in a taxi, on a bus / on a train / on a plane, on a bike / on a motorcycle.",
-        "figures": [
-          {
-            "src": "assets/grammar/place/p09.webp",
-            "alt": "Пассажиры в машине и автобусе, на заднем плане поезд и самолёт.",
-            "captions": [
-              [
-                "in a car / on the bus",
-                "в машине / в автобусе"
-              ]
-            ]
-          }
-        ],
+        "figures": [],
         "examples": [
           [
             "She is in a car.",
@@ -366,19 +317,9 @@ window.GrammarCards = {
         "title": "ON - дни, даты и части конкретного дня",
         "rule": "On используем с днями недели, датами, названными праздничными днями и частью конкретного дня.",
         "note": "On Friday night и on Sunday morning называют часть конкретного дня. В сочетании next week предлог не нужен.",
-        "figures": [
-          {
-            "src": "assets/grammar/time/sunday-morning.webp",
-            "alt": "Завтрак на рассвете и календарь с надписью SUNDAY.",
-            "captions": [
-              [
-                "On Sunday morning",
-                "в воскресенье утром"
-              ]
-            ]
-          }
-        ],
+        "figures": [],
         "examples": [
+          ["on Sunday morning","в воскресенье утром"],
           [
             "on Tuesday",
             "во вторник"
@@ -406,18 +347,7 @@ window.GrammarCards = {
         "title": "AT - точное время и устойчивые выражения",
         "rule": "At используем с точным временем и в ряде устойчивых выражений. Не все они обозначают время на часах.",
         "note": "At the weekend чаще употребляют в британском английском, on the weekend — в американском. At Christmas охватывает рождественский период.",
-        "figures": [
-          {
-            "src": "assets/grammar/time/p12.webp",
-            "alt": "Часы показывают девять.",
-            "captions": [
-              [
-                "at nine o’clock",
-                "в девять часов"
-              ]
-            ]
-          }
-        ],
+        "figures": [],
         "examples": [
           [
             "at 7 o’clock",
@@ -453,29 +383,10 @@ window.GrammarCards = {
         "id": "P14",
         "title": "FOR / SINCE: сколько и с какого момента",
         "rule": "For задаёт длительность. Since указывает начальный момент периода.",
-        "figures": [
-          {
-            "src": "assets/grammar/time/for-two-hours.webp",
-            "alt": "За письменным столом, рядом таймер с надписью 2h.",
-            "captions": [
-              [
-                "for two hours",
-                "в течение двух часов"
-              ]
-            ]
-          },
-          {
-            "src": "assets/grammar/time/since-2020.webp",
-            "alt": "Фотография дома, сделанная в 2020 году.",
-            "captions": [
-              [
-                "since 2020",
-                "с 2020 года"
-              ]
-            ]
-          }
-        ],
+        "figures": [],
         "examples": [
+          ["since 2020","с 2020 года"],
+          ["for two hours","в течение двух часов"],
           [
             "I have lived here since 2020.",
             "Я живу здесь с 2020 года."
@@ -486,29 +397,9 @@ window.GrammarCards = {
         "id": "P15",
         "title": "BY / UNTIL: результат к сроку и продолжение",
         "rule": "By задаёт крайний срок получения результата; until — момент, до которого продолжается действие или состояние.",
-        "figures": [
-          {
-            "src": "assets/grammar/time/by-the-deadline.webp",
-            "alt": "Женщина передаёт готовый отчёт к сроку.",
-            "captions": [
-              [
-                "by the deadline",
-                "к указанному сроку"
-              ]
-            ]
-          },
-          {
-            "src": "assets/grammar/time/until-closing.webp",
-            "alt": "Женщина ждёт, рядом видны часы.",
-            "captions": [
-              [
-                "until closing time",
-                "до закрытия"
-              ]
-            ]
-          }
-        ],
+        "figures": [],
         "examples": [
+          ["Wait here until six.","Подожди здесь до шести."],
           [
             "Send the letter by tomorrow.",
             "Отправь письмо не позднее завтра."
@@ -586,8 +477,8 @@ window.GrammarCards = {
       {
         "id": "C01",
         "title": "Сравнительная и превосходная степени прилагательных",
-        "rule": "Сравнительная степень сравнивает два предмета. Превосходная выделяет один предмет как «самый» в группе из трёх и более.",
-        "note": "Than означает «чем» и вводит второй предмет сравнения. В примере с куртками перед smallest ставим the.",
+        "rule": "Сравнительная степень показывает, чем отличаются два предмета. Превосходная выделяет один предмет с самым выраженным признаком среди других.",
+        "note": "Форма зависит от длины прилагательного: к коротким обычно добавляем -er или -est, а с длинными используем more или most. Than означает «чем». Перед превосходной формой обычно ставим the, когда выделяем один предмет среди других.",
         "figures": [
           {
             "src": "assets/grammar/comparison/skirts-and-jackets.webp",
@@ -631,7 +522,7 @@ window.GrammarCards = {
       },
       {
         "id": "C03",
-        "title": "Конечная -e: -r / the -st",
+        "title": "Последняя буква -e: -r / the -st",
         "rule": "Если прилагательное уже оканчивается на e, добавляем только r или st. Перед превосходной формой ставим the.",
         "figures": [
           {
@@ -658,8 +549,8 @@ window.GrammarCards = {
       },
       {
         "id": "C04",
-        "title": "Конечная -y: меняем y на i",
-        "rule": "Если перед конечной y стоит согласная, меняем y на i и добавляем -er или -est. Перед превосходной формой ставим the.",
+        "title": "Последняя буква -y: меняем y на i",
+        "rule": "Если перед последней буквой y стоит согласная, меняем y на i и добавляем -er или -est. Перед превосходной формой ставим the.",
         "figures": [
           {
             "src": "assets/grammar/comparison/three-smiles.webp",
@@ -681,8 +572,8 @@ window.GrammarCards = {
       },
       {
         "id": "C05",
-        "title": "Удвоение конечной согласной",
-        "rule": "В коротких словах типа big, hot и thin перед -er / -est удваиваем конечную согласную. Перед превосходной формой ставим the.",
+        "title": "Удвоение последней согласной",
+        "rule": "В коротких словах типа big, hot и thin перед -er / -est удваиваем последнюю согласную. Перед превосходной формой ставим the.",
         "figures": [
           {
             "src": "assets/grammar/comparison/three-apples.webp",
@@ -727,8 +618,9 @@ window.GrammarCards = {
       },
       {
         "id": "C07",
-        "title": "Неправильные формы: good / bad",
-        "rule": "Good и bad образуют степени сравнения по-особому. Эти формы нужно запомнить.",
+        "title": "Неправильные формы сравнения",
+        "rule": "Good, bad, little, much и many образуют степени сравнения по-особому. Эти формы нужно запомнить.",
+        "note": "Little означает «мало», much и many — «много». Much используется с неисчисляемыми существительными, many — с исчисляемыми во множественном числе.",
         "figures": [
           {
             "src": "assets/grammar/comparison/three-cakes.webp",
@@ -751,7 +643,9 @@ window.GrammarCards = {
             ]
           }
         ],
-        "examples": []
+        "examples": [
+          ["much / many → more → the most","много → больше → больше всего"],
+          ["little → less → the least","мало → меньше → меньше всего"],]
       },
       {
         "id": "C08",
@@ -808,7 +702,7 @@ window.GrammarCards = {
       {"id":"C02-2","mode":"full","instruction":"Переведи предложение на английский","material":"Это самая маленькая коробка.","russian":"Это самая маленькая коробка.","translation":"","answer":"This is the smallest box.","answers":["This is the smallest box."],"accepted_alternatives":[],"correct_sentence":"This is the smallest box.","correct_display":"This is the smallest box.","rule_id":"C02","feedback_explanation":"Smallest выделяет самую маленькую коробку. Добавляем -est; перед сочетанием с box используем the.","full_translation_answer":"This is the smallest box.","full_translation_prompt":"Это самая маленькая коробка.","scene":"felt-boxes.webp"},
       {"id":"C03-1","mode":"forms","instruction":"Впиши пропущенную форму","material":"wide → ___ → the widest","russian":"широкий → шире → самый широкий","translation":"широкий → шире → самый широкий","answer":"wider","answers":["wider"],"accepted_alternatives":[],"correct_sentence":"wide → wider → the widest","correct_display":"wide → wider → the widest","rule_id":"C03","feedback_explanation":"Wide оканчивается на e. Для сравнительной формы добавляем r: wider.","scene":"three-bridges.webp"},
       {"id":"C04-1","mode":"forms","instruction":"Впиши пропущенную форму","material":"easy → ___ → the easiest","russian":"лёгкий → легче → самый лёгкий","translation":"лёгкий → легче → самый лёгкий","answer":"easier","answers":["easier"],"accepted_alternatives":[],"correct_sentence":"easy → easier → the easiest","correct_display":"easy → easier → the easiest","rule_id":"C04","feedback_explanation":"В easy перед y стоит согласная. Меняем y на i и добавляем -er: easier."},
-      {"id":"C05-1","mode":"forms","instruction":"Впиши пропущенную форму","material":"hot → ___ → the hottest","russian":"горячий → горячее → самый горячий","translation":"горячий → горячее → самый горячий","answer":"hotter","answers":["hotter"],"accepted_alternatives":[],"correct_sentence":"hot → hotter → the hottest","correct_display":"hot → hotter → the hottest","rule_id":"C05","feedback_explanation":"В hot одна гласная буква перед одной конечной согласной. Перед -er удваиваем t: hotter."},
+      {"id":"C05-1","mode":"forms","instruction":"Впиши пропущенную форму","material":"hot → ___ → the hottest","russian":"горячий → горячее → самый горячий","translation":"горячий → горячее → самый горячий","answer":"hotter","answers":["hotter"],"accepted_alternatives":[],"correct_sentence":"hot → hotter → the hottest","correct_display":"hot → hotter → the hottest","rule_id":"C05","feedback_explanation":"В hot после одной гласной стоит последняя согласная t. Перед -er удваиваем t: hotter."},
       {"id":"C07-1","mode":"forms","instruction":"Впиши пропущенную форму с артиклем the","material":"bad → worse → ___","russian":"плохой → хуже → худший","translation":"плохой → хуже → худший","answer":"the worst","answers":["the worst"],"accepted_alternatives":[],"correct_sentence":"bad → worse → the worst","correct_display":"bad → worse → the worst","rule_id":"C07","feedback_explanation":"У bad особая превосходная форма worst, «худший». В этой цепочке перед worst ставим the.","scene":"rain-to-storm.webp"},
       {"id":"C08-2","mode":"full","instruction":"Переведи предложение на английский","material":"Она такого же роста, как её сестра.","russian":"Она такого же роста, как её сестра.","translation":"","answer":"She is as tall as her sister.","answers":["She is as tall as her sister."],"accepted_alternatives":[],"correct_sentence":"She is as tall as her sister.","correct_display":"She is as tall as her sister.","rule_id":"C08","feedback_explanation":"As tall as означает «такого же роста, как». Между as и as ставим исходную форму tall.","full_translation_answer":"She is as tall as her sister.","full_translation_prompt":"Она такого же роста, как её сестра."}
     ]
@@ -932,7 +826,7 @@ window.GrammarCards = {
     "comparison-context-6": {"rule_id":"C04","feedback_explanation":"Сравниваем два задания по сложности. В easy перед y стоит согласная s, поэтому меняем y на i и добавляем -er: easier."},
     "comparison-context-7": {"rule_id":"C04","feedback_explanation":"Сравниваем её настроение сегодня и вчера. В happy меняем y после согласной p на i и добавляем -er: happier.","scene":"three-smiles.webp"},
     "comparison-context-22": {"rule_id":"C04","feedback_explanation":"Выделяем самое лёгкое задание в книге. В easy меняем y после согласной на i, добавляем -est и ставим the: the easiest."},
-    "comparison-2": {"rule_id":"C05","feedback_explanation":"Нужна форма «самый большой». В односложном big за одной гласной i стоит одна конечная согласная g. Перед -est удваиваем g: biggest.","scene":"three-apples.webp"},
+    "comparison-2": {"rule_id":"C05","feedback_explanation":"Нужна форма «самый большой». В односложном big за одной гласной i стоит последняя согласная g. Перед -est удваиваем g: biggest.","scene":"three-apples.webp"},
     "comparison-context-2": {"rule_id":"C05","feedback_explanation":"Сравниваем размеры двух сумок. В односложном big за одной гласной i стоит одна согласная g. Перед -er удваиваем g: bigger."},
     "comparison-context-18": {"rule_id":"C05","feedback_explanation":"Выделяем самую большую сумку в магазине. В big за одной гласной i стоит одна согласная g. Удваиваем g перед -est и ставим the: the biggest."},
     "comparison-5": {"rule_id":"C06","feedback_explanation":"Выделяем самое дорогое платье среди платьев в магазине. Перед длинным прилагательным expensive ставим the most."},

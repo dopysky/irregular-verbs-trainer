@@ -76,14 +76,14 @@
     `<img class="grammar-scene" src="${esc(src)}" alt="${esc(alt)}" loading="lazy" decoding="async">`;
   function renderFigure(figure){
     const captions=figure.captions;
-    return `<figure class="grammar-figure">${sceneImage(figure)}${captions.length
+    return `<figure class="grammar-figure"><div class="scene-frame">${sceneImage(figure)}</div>${captions.length
       ? `<figcaption class="scene-captions" style="--caption-count:${captions.length}">${captions.map(c=>`<div>${exampleText(c)}</div>`).join('')}</figcaption>`
       : ''}</figure>`;
   }
   function renderRule(card){
     const layout=card.id==='P16'?' dinner-rule':card.figures.length>1?' rule-with-gallery':'';
     const dinner=card.id==='P16'?'<div class="dinner-frames">'+window.GrammarCards.dinnerFeedback.map(renderFigure).join('')+'</div>':'';
-    return `<article class="rule-card${layout}" data-rule="${esc(card.id)}">
+    return `<article class="rule-card${layout}${card.figures.length?'':' no-rule-figures'}" data-rule="${esc(card.id)}">
       <h3>${esc(card.title)}</h3>
       <div class="rule-card-body">
         <div class="rule-figures">${card.figures.map(renderFigure).join('')}</div>${dinner}
@@ -186,10 +186,10 @@
     if(!q.options?.length)inputDispose=window.TrainingUI.bindReady(app.querySelectorAll('[data-answer-part]'),{button:app.querySelector('#complete-answer'),active:()=>session===s&&!s.answered,commit:values=>answer(q.fields?values:values[0])});
     app.querySelector('#answer')?.focus({preventScroll:true});
   }
-  function answer(value) {
+  function answer(value,skipped=false) {
     const s = session; if (!s || s.answered) return;
     const q = s.queue[s.index], ok = accepts(q, value);
-    if(window.PageState)s.draft=window.TrainingUI.captureDraft(app);s.response={ok,value};
+    if(window.PageState)s.draft=window.TrainingUI.captureDraft(app);s.response={ok,value,skipped};
     inputDispose?.();inputDispose=null;
     s.answered = true; if(ok) s.correct++;
     window.legacyTrainer.recordGrammarActivity?.();
@@ -202,13 +202,15 @@
   }
   function presentAnswer(value,ok){
     const s=session,q=s.queue[s.index];
+    const skipped=s.response?.skipped===true;
     hintDispose?.();hintDispose=null;
+    if(skipped){const form=app.querySelector('#answer-form');if(form)form.hidden=true;}
     app.querySelectorAll('#answer-form button, #answer-form input, [data-action="skip"], [data-word-hint]').forEach(el=>{
       el.disabled=true;
-      if(el.matches?.('input'))el.classList.add(ok?'correct':'wrong');
+      if(el.matches?.('input')&&!skipped)el.classList.add(ok?'correct':'wrong');
       if(el.dataset.answer!==undefined){
-        el.classList.toggle('is-correct',q.answers.some(a=>normalize(a)===normalize(el.dataset.answer)));
-        el.classList.toggle('is-wrong',!ok && el.dataset.answer===value);
+        el.classList.toggle('is-correct',!skipped&&q.answers.some(a=>normalize(a)===normalize(el.dataset.answer)));
+        el.classList.toggle('is-wrong',!skipped&&!ok && el.dataset.answer===value);
       }
     });
     const actions=app.querySelector('#question-actions');if(actions)actions.hidden=true;
@@ -218,7 +220,7 @@
       nextTimer = window.setTimeout(() => { if(session===s && s.answered) next(); }, 650);
     } else {
       const scene=q.source.feedback_image;
-      f.innerHTML=window.TrainingUI.reviewCard({material:q.correctSentence,translation:q.source.russian,explanation:explanation(q),audio:false,actions:false,detailsHTML:scene?`<div class="review-scene">${sceneImage(scene)}</div>`:''});
+      f.innerHTML=window.TrainingUI.reviewCard({material:q.correctSentence,translation:q.source.russian,explanation:skipped?'':explanation(q),audio:false,actions:false,neutral:skipped,detailsHTML:scene?`<div class="review-scene">${sceneImage(scene)}</div>`:''});
       actions.innerHTML=window.TrainingUI.reviewActions({audio:false,nextId:'topic-review-next'});actions.hidden=false;
       const advance=app.querySelector('#topic-review-next');
       advance.onclick=next;advance.focus({preventScroll:true});
@@ -242,6 +244,13 @@
   }
   function navigate(id) { navigateHash(id); route(); }
   function route() {
+    if(location.search==='?example=feedback'){
+      const t=findTopic('comparison');
+      const q=views(t).find(item=>item.id==='comparison-6');
+      history.replaceState(null,'',location.pathname+'#'+t.id);
+      session={topic:t,queue:[q],index:0,correct:0,answered:false};
+      return question();
+    }
     const id=location.hash.slice(1);
     if(id==='prepositions'){
       history.replaceState(null,'',location.pathname+location.search+'#'+defaultTopic.id);
@@ -267,7 +276,7 @@
     if(action==='topic' && t) {navigateHash(t.id);detail(t);}
     if(action==='lesson' && t) {detail(t,lessonId);app.querySelector(`#tab-${lessonId}`)?.focus({preventScroll:true});}
     if((action==='start'||action==='review') && t) start(t,action==='review');
-    if(action==='skip') answer('');
+    if(action==='skip') answer('',true);
     if(action==='next') next();
   }
   app.addEventListener('click',onAction);
