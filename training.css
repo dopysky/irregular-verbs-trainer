@@ -85,7 +85,7 @@ html[data-theme="dark"] .unified-site{--control-bg:#413254;--control-border:#856
 .unified-site .training-footer button.icon-btn,.unified-site #practice .training-footer button.icon-btn{width:40px!important;height:40px!important;min-width:40px!important;min-height:40px;padding:0!important;border-radius:50%!important}
 .unified-site .training-footer button.icon-btn svg{width:22px;height:22px}
 .unified-site .training-footer .exit-training,.unified-site #practice .training-footer .exit-training{background:transparent!important;border-color:transparent!important;color:var(--sub)!important;padding-left:0!important;padding-right:0!important}
-.unified-site .training-footer .exit-training:hover,.unified-site #practice .training-footer .exit-training:hover{color:var(--ink)!important;text-decoration:underline;background:transparent!important;border-color:transparent!important}
+.unified-site .training-footer .exit-training:hover,.unified-site #practice .training-footer .exit-training:hover{color:var(--ink)!important;text-decoration:none;background:transparent!important;border-color:transparent!important}
 .unified-site #dontknow,.unified-site #practice [data-action="skip"]{background:var(--answer-bad-bg)!important;border-color:var(--answer-bad-border)!important;color:var(--answer-bad-text)!important}
 .unified-site #dontknow:hover,.unified-site #practice [data-action="skip"]:hover{background:var(--answer-bad-bg)!important;border-color:var(--answer-bad-text)!important}
 .unified-site #complete-legacy-answer:disabled{opacity:.45}

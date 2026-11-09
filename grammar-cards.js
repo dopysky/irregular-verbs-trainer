@@ -8,7 +8,22 @@ window.GrammarCards = {
         "title": "IN - в каком месте находится предмет или человек",
         "rule": "In означает «в»: предмет или человек находится внутри чего-либо или на территории какого-либо места.",
         "note": "Inside подчёркивает положение внутри. Outside означает «снаружи».",
-        "figures": [],
+        "figures": [
+          {
+            "src": "assets/grammar/place/inside-outside.webp",
+            "alt": "Синий шар внутри коробки, коралловый — снаружи.",
+            "captions": [
+              [
+                "The blue ball is inside the box.",
+                "Синий шар внутри коробки."
+              ],
+              [
+                "The coral ball is outside the box.",
+                "Коралловый шар снаружи коробки."
+              ]
+            ]
+          }
+        ],
         "examples": [
           [
             "The ball is in the box.",
@@ -40,7 +55,18 @@ window.GrammarCards = {
         "id": "P02",
         "title": "ON: на поверхности",
         "rule": "On связывает предмет с поверхностью, на которой он находится.",
-        "figures": [],
+        "figures": [
+          {
+            "src": "assets/grammar/place/on-couch.webp",
+            "alt": "Жёлтая курочка сидит на синем диване.",
+            "captions": [
+              [
+                "The chick is on the sofa.",
+                "Курочка сидит на диване."
+              ]
+            ]
+          }
+        ],
         "examples": [
           ["The cups are on the shelf.","Чашки стоят на полке."],]
       },
@@ -86,6 +112,30 @@ window.GrammarCards = {
         "rule": "Эти предлоги показывают, как один предмет расположен по отношению к другому. Для каждого важно понимать, с чем мы его сравниваем.",
         "note": "Under — под предметом, below — ниже уровня или ориентира, above — выше, over — над чем-то или через верх.",
         "figures": [
+          {
+            "src": "assets/grammar/place/kitten-under.webp",
+            "alt": "Котёнок находится под большим колокольчиком.",
+            "captions": [
+              [
+                "The kitten is under the bell.",
+                "Котёнок под колокольчиком."
+              ]
+            ]
+          },
+          {
+            "src": "assets/grammar/place/cloud-above.webp",
+            "alt": "Пушистое облако над тремя чайниками.",
+            "captions": [
+              [
+                "The cloud is above the teapots.",
+                "Облако над чайниками."
+              ],
+              [
+                "The teapots are below the cloud.",
+                "Чайники ниже облака."
+              ]
+            ]
+          },
           {
             "src": "assets/grammar/place/horse-over-hurdle.webp",
             "alt": "Лошадь перепрыгивает через препятствие.",
@@ -157,7 +207,18 @@ window.GrammarCards = {
         "title": "BEHIND / IN FRONT OF / OPPOSITE - за, перед и напротив",
         "rule": "Behind - за или позади; in front of - перед; opposite - напротив.",
         "note": "Behind — сзади, in front of — спереди, opposite — напротив, например на другой стороне улицы.",
-        "figures": [],
+        "figures": [
+          {
+            "src": "assets/grammar/place/houses-opposite.webp",
+            "alt": "Два домика расположены напротив друг друга, за одним из них стоит машина.",
+            "captions": [
+              [
+                "The houses are opposite each other.",
+                "Домики напротив друг друга."
+              ]
+            ]
+          }
+        ],
         "examples": [
           [
             "The car is behind the house.",
@@ -218,7 +279,22 @@ window.GrammarCards = {
         "title": "IN / ON в транспорте",
         "rule": "Выбор зависит от привычного сочетания с видом транспорта, а не от того, пассажир человек или водитель.",
         "note": "Запоминай сочетания группами: in a car / in a taxi, on a bus / on a train / on a plane, on a bike / on a motorcycle.",
-        "figures": [],
+        "figures": [
+          {
+            "src": "assets/grammar/place/car-and-bus.webp",
+            "alt": "Девушка сидит в машине, мужчина едет в автобусе.",
+            "captions": [
+              [
+                "She is in a car.",
+                "Она в машине."
+              ],
+              [
+                "He is on a bus.",
+                "Он в автобусе."
+              ]
+            ]
+          }
+        ],
         "examples": [
           [
             "She is in a car.",
@@ -317,7 +393,13 @@ window.GrammarCards = {
         "title": "ON - дни, даты и части конкретного дня",
         "rule": "On используем с днями недели, датами, названными праздничными днями и частью конкретного дня.",
         "note": "On Friday night и on Sunday morning называют часть конкретного дня. В сочетании next week предлог не нужен.",
-        "figures": [],
+        "figures": [
+          {
+            "src": "assets/grammar/time/on-days.webp",
+            "alt": "Шесть сцен: вторник, 15 июня, день рождения, Рождество, воскресное утро и вечер пятницы.",
+            "captions": []
+          }
+        ],
         "examples": [
           ["on Sunday morning","в воскресенье утром"],
           [
@@ -347,7 +429,13 @@ window.GrammarCards = {
         "title": "AT - точное время и устойчивые выражения",
         "rule": "At используем с точным временем и в ряде устойчивых выражений. Не все они обозначают время на часах.",
         "note": "At the weekend чаще употребляют в британском английском, on the weekend — в американском. At Christmas охватывает рождественский период.",
-        "figures": [],
+        "figures": [
+          {
+            "src": "assets/grammar/time/at-time.webp",
+            "alt": "Плюшевая мастерская с часами и обозначениями точного времени, полудня, полуночи, обеда, выходных и Рождества.",
+            "captions": []
+          }
+        ],
         "examples": [
           [
             "at 7 o’clock",
@@ -383,7 +471,22 @@ window.GrammarCards = {
         "id": "P14",
         "title": "FOR / SINCE: сколько и с какого момента",
         "rule": "For задаёт длительность. Since указывает начальный момент периода.",
-        "figures": [],
+        "figures": [
+          {
+            "src": "assets/grammar/time/for-since.webp",
+            "alt": "В гостевом доме показаны две недели пребывания и фотография с датой 2020.",
+            "captions": [
+              [
+                "for two weeks",
+                "в течение двух недель"
+              ],
+              [
+                "since 2020",
+                "с 2020 года"
+              ]
+            ]
+          }
+        ],
         "examples": [
           ["since 2020","с 2020 года"],
           ["for two hours","в течение двух часов"],
@@ -397,7 +500,22 @@ window.GrammarCards = {
         "id": "P15",
         "title": "BY / UNTIL: результат к сроку и продолжение",
         "rule": "By задаёт крайний срок получения результата; until — момент, до которого продолжается действие или состояние.",
-        "figures": [],
+        "figures": [
+          {
+            "src": "assets/grammar/time/by-until.webp",
+            "alt": "Медвежонок отправляет письмо до завтрашнего срока, котёнок ждёт до шести.",
+            "captions": [
+              [
+                "Send the letter by tomorrow.",
+                "Отправь письмо не позднее завтра."
+              ],
+              [
+                "Wait here until six.",
+                "Подожди здесь до шести."
+              ]
+            ]
+          }
+        ],
         "examples": [
           ["Wait here until six.","Подожди здесь до шести."],
           [
@@ -641,11 +759,24 @@ window.GrammarCards = {
                 "плохой → хуже → худший"
               ]
             ]
+          },
+          {
+            "src": "assets/grammar/comparison/little-less-least.png",
+            "alt": "Три одинаковые чаши с уменьшающимся количеством воды.",
+            "captions": [["little → less → the least", "мало → меньше → меньше всего"]]
+          },
+          {
+            "src": "assets/grammar/comparison/much-more-most.png",
+            "alt": "Три одинаковых стакана с возрастающим количеством воды.",
+            "captions": [["much → more → the most", "много → больше → больше всего"]]
+          },
+          {
+            "src": "assets/grammar/comparison/many-more-most.png",
+            "alt": "В трёх корзинках становится больше яблок.",
+            "captions": [["many → more → the most", "много → больше → больше всего"]]
           }
         ],
-        "examples": [
-          ["much / many → more → the most","много → больше → больше всего"],
-          ["little → less → the least","мало → меньше → меньше всего"],]
+        "examples": []
       },
       {
         "id": "C08",

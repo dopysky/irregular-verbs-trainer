@@ -68,7 +68,7 @@
       pendingClick=click;
       root.setTimeout(()=>{
         if(pendingClick===click)pendingClick=null;
-        if(!click.hasResult)play('click');
+        // Нейтральный звук при нажатиях отключён; сигналы ответа остаются.
       },0);
     },true);
     return {
@@ -76,7 +76,7 @@
         if(pendingClick?.event.eventPhase)pendingClick.hasResult=true;
         play(ok?'correct':'wrong');
       },
-      click(){play('click');}
+      click(){}
     };
   }
   root.bindTrainingSound=bind;
