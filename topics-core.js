@@ -27,20 +27,12 @@
       material:full?(question.full_translation_prompt||question.russian):question.material,
       translation,answers,fields:full?undefined:question.fields,
       options:mode==='choice'?question.options:undefined,
-      correctSentence:full?(question.full_translation_answer||question.correct_sentence):question.correct_sentence};
+      correctSentence:full?(question.full_translation_answer||question.correct_display||question.correct_sentence)
+        :(question.correct_display||question.correct_sentence)};
   }
-  function explanation(view,value){
-    const q=view.source,text=normalize(Array.isArray(value)?value.join(' '):value);
-    if(view.mode==='full'&&/\b(is|are)\b/.test(normalize(view.correctSentence))&&!/\b(is|are)\b|\w'(s|re)\b/.test(text))
-      return 'В английском предложении нужна связка '+(/\bare\b/.test(normalize(view.correctSentence))?'are':'is')+': она соединяет предмет с описанием или указанием места. В русском настоящем времени эту связку обычно пропускают. '+q.explanation.replace(/\s*В полном предложении нужна связка.*$/s,'');
-    if(view.mode==='full'&&/\b(have|has) (lived|worked|known)\b/.test(normalize(view.correctSentence))&&!/\b(have|has)\b|\w'(ve|s)\b/.test(text))
-      return 'Состояние или действие началось раньше и продолжается сейчас. В этом образце нужен Present Perfect: have или has + третья форма глагола. '+q.explanation;
-    if(view.mode==='full'&&q.id==='comparison-9'){
-      if(!/\bthan\b/.test(text))return 'После better нужен than («чем»): он вводит того, с кем сравниваем. Well означает «хорошо», better — «лучше». После she в Present Simple используем sings. Than me — короткий вариант; в than I do слово do заменяет повторение sing.';
-      if(!/\bsings\b/.test(text))return 'После she в Present Simple к sing добавляем -s: sings. '+q.explanation;
-    }
-    if(view.mode==='full'&&/\bthan\b/.test(normalize(view.correctSentence))&&!/\bthan\b/.test(text))return 'При сравнении нужен than («чем»): он вводит того или то, с чем сравниваем. '+q.explanation;
-    return q.explanation;
+  function explanation(view){
+    const q=view.source;
+    return (view.mode==='full' && q.full_feedback_explanation) || q.feedback_explanation;
   }
   const api = { normalize, accepts, task, explanation };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;

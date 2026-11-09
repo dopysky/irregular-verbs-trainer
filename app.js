@@ -24,7 +24,8 @@ let selectedGroup=state.selectedGroup||state.selectedBlock||1, selectedFolder=st
 let theme=state.theme||'light';
 if(!LEARNING_GROUPS.some(g=>String(g.id)===String(selectedGroup)||LEARNING_GROUPS.indexOf(g)+1===Number(selectedGroup))) selectedGroup=1;
 let currentView='home';
-let session=null, soundOn=state.soundOn!==false, advanceTimer=null, legacyInputDispose=null, fbCtx=null;
+let session=null, soundOn=state.soundOn!==false, advanceTimer=null, legacyInputDispose=null;
+window.TrainingSound=window.bindTrainingSound(document,()=>soundOn);
 if(window.VocabularyImport&&window.VOCABULARY_READY){window.VocabularyImport.apply(state,verbs,window.VOCABULARY_READY);window.VerbVocabulary.apply(state,verbs);if(selectedFolder==='irregular')selectedFolder=window.VerbVocabulary.defaultFolder(state);save();}
 function save(){state.selectedGroup=selectedGroup;state.selectedFolder=selectedFolder;state.theme=theme;try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
 function normalize(x){return String(x||'').normalize('NFKC').trim().toLowerCase().replace(/[’‘`]/g,"'").replace(/\s+/g,' ').replace(/[.!?]+$/,'')}
@@ -133,7 +134,7 @@ function startMixed(kind='new',groupN=selectedGroup){
   session={items:shuffle(items),index:0,score:0,kind,group:kind==='errors'?null:groupN,answered:false,folder:false,returnTo:'home'};
   save();show('quiz');renderQ();
 }
-function renderQ(){legacyInputDispose?.();legacyInputDispose=null;stopPronunciation();setPracticeActions(false);const q=session.items[session.index],v=q.v;session.answered=false;document.getElementById('q-meta').innerHTML=`<div class="training-heading">${session.kind==='errors'?'Ошибки':session.kind==='review'?'Повторение':groupMeta(session.group).name}</div><div class="training-badges"><span class="badge">${session.index+1} / ${session.items.length}</span><span class="badge">${Math.round(st(v).level/3*100)}% у глагола</span></div>`;document.getElementById('q-bar').style.width=(session.index/session.items.length*100)+'%';document.getElementById('q-feedback').innerHTML='';document.getElementById('q-hint').textContent='';document.getElementById('q-word').textContent='';document.getElementById('q-ipa').textContent='';document.getElementById('q-ru').textContent='';document.getElementById('sound-btn').classList.add('hidden');let title='',body='';if(q.mode==='write'){title='Укажи 2-ю и 3-ю форму';document.getElementById('q-word').textContent=v.inf;document.getElementById('q-ipa').textContent='';document.getElementById('q-ru').textContent=v.ru;body=writeTask(v)}else if(q.mode==='letters'){title=`Собери ${q.letterForm==='past'?'2-ю':'3-ю'} форму из букв`;document.getElementById('q-word').textContent=v.inf;document.getElementById('q-ru').textContent=v.ru;body=letterTask(v,q.letterForm);document.getElementById('sound-btn').classList.remove('hidden')}else if(q.mode==='cloze'){title=`Вставь пропущенные буквы в ${q.letterForm==='past'?'2-ю':'3-ю'} форму`;document.getElementById('q-word').textContent=v.inf;document.getElementById('q-ru').textContent=v.ru;body=clozeTask(v,q.letterForm);document.getElementById('sound-btn').classList.remove('hidden')}else if(q.mode==='ruToEn'){title='Переведи на английский';document.getElementById('q-ru').innerHTML=`<div class="translation-word">${v.ru}</div>`;body=translationRuToEn(v)}else if(q.mode==='enToRu'){title='Переведи на русский';document.getElementById('q-word').textContent=v.inf;document.getElementById('q-ipa').textContent='';body=translationEnToRu(v);document.getElementById('sound-btn').classList.remove('hidden')}else{title='Послушай и выбери слово';body=listenTask(v);document.getElementById('sound-btn').classList.remove('hidden')}document.getElementById('q-mode').textContent=title;document.getElementById('q-body').innerHTML=body;bindLetters();bindOptions();bindInputs();const safeSound=['write','letters','cloze','enToRu','listen'].includes(q.mode);if(safeSound)document.getElementById('sound-btn').classList.remove('hidden');autoSpeakForQuestion(q);window.PageState?.activate('legacy');}
+function renderQ(playSpeech=true){legacyInputDispose?.();legacyInputDispose=null;stopPronunciation();setPracticeActions(false);const q=session.items[session.index],v=q.v;session.answered=false;document.getElementById('q-meta').innerHTML=`<div class="training-heading">${session.kind==='errors'?'Ошибки':session.kind==='review'?'Повторение':groupMeta(session.group).name}</div><div class="training-badges"><span class="badge">${session.index+1} / ${session.items.length}</span><span class="badge">${Math.round(st(v).level/3*100)}% у глагола</span></div>`;document.getElementById('q-bar').style.width=(session.index/session.items.length*100)+'%';document.getElementById('q-feedback').innerHTML='';document.getElementById('q-hint').textContent='';document.getElementById('q-word').textContent='';document.getElementById('q-ipa').textContent='';document.getElementById('q-ru').textContent='';document.getElementById('sound-btn').classList.add('hidden');let title='',body='';if(q.mode==='write'){title='Укажи 2-ю и 3-ю форму';document.getElementById('q-word').textContent=v.inf;document.getElementById('q-ipa').textContent='';document.getElementById('q-ru').textContent=v.ru;body=writeTask(v)}else if(q.mode==='letters'){title=`Собери ${q.letterForm==='past'?'2-ю':'3-ю'} форму из букв`;document.getElementById('q-word').textContent=v.inf;document.getElementById('q-ru').textContent=v.ru;body=letterTask(v,q.letterForm);document.getElementById('sound-btn').classList.remove('hidden')}else if(q.mode==='cloze'){title=`Вставь пропущенные буквы в ${q.letterForm==='past'?'2-ю':'3-ю'} форму`;document.getElementById('q-word').textContent=v.inf;document.getElementById('q-ru').textContent=v.ru;body=clozeTask(v,q.letterForm);document.getElementById('sound-btn').classList.remove('hidden')}else if(q.mode==='ruToEn'){title='Переведи на английский';document.getElementById('q-ru').innerHTML=`<div class="translation-word">${v.ru}</div>`;body=translationRuToEn(v)}else if(q.mode==='enToRu'){title='Переведи на русский';document.getElementById('q-word').textContent=v.inf;document.getElementById('q-ipa').textContent='';body=translationEnToRu(v);document.getElementById('sound-btn').classList.remove('hidden')}else{title='Послушай и выбери слово';body=listenTask(v);document.getElementById('sound-btn').classList.remove('hidden')}document.getElementById('q-mode').textContent=title;document.getElementById('q-body').innerHTML=body;bindLetters();bindOptions();bindInputs();const safeSound=['write','letters','cloze','enToRu','listen'].includes(q.mode);if(safeSound)document.getElementById('sound-btn').classList.remove('hidden');if(playSpeech)autoSpeakForQuestion(q);window.PageState?.activate('legacy');}
 function writeTask(v){return `<div class="input-grid"><label>V2<input id="ans-v2" autocomplete="off" spellcheck="false"></label><label>V3<input id="ans-v3" autocomplete="off" spellcheck="false"></label></div>`}
 function letterTask(v,form){
   const target=form==='past'?v.past:v.part,chars=target.split('/')[0].replace(/[^a-z]/gi,'').toLowerCase().split('');
@@ -211,10 +212,10 @@ function presentLegacyAnswer(q,ok,next,silent=false){
   if(!silent)playFeedbackSound(ok);
   if(!ok){showAnswerCard(q.v,!q.custom,next);window.PageState?.checkpoint();return;}
   document.getElementById('q-feedback').innerHTML='';window.TrainingUI.showCorrect(document.getElementById('q-body'));
-  advanceTimer=setTimeout(()=>{if(session===s&&s.answered)next();},650);window.PageState?.checkpoint();
+  advanceTimer=setTimeout(()=>{if(session===s&&s.answered)next(false);},650);window.PageState?.checkpoint();
 }
 function dontKnow(){if(session.answered)return;if(session.folder){checkFolderCurrent(true);return}checkCurrent(true)}
-function nextQ(){if(!session||!session.answered)return;session.index++;if(session.index>=session.items.length)finishSession();else renderQ()}
+function nextQ(playSpeech=true){if(!session||!session.answered)return;session.index++;if(session.index>=session.items.length)finishSession();else renderQ(playSpeech)}
 function giveHint(){
   if(!session||!session.items[session.index])return;
   const q=session.items[session.index],v=q.v;q.hintLevel=(q.hintLevel||0)+1;
@@ -251,22 +252,12 @@ function playLocalAudio(n,force=false){
     return true;
   }catch(e){return false}
 }
-function fallbackSpeak(text){if(!soundOn||!text||!('speechSynthesis' in window))return;try{window.speechSynthesis.cancel();window.speechSynthesis.resume?.();const u=new SpeechSynthesisUtterance(String(text));u.lang='en-US';u.rate=.95;u.pitch=1;u.volume=1;const v=speechVoice||pickSpeechVoice();if(v)u.voice=v;window.speechSynthesis.speak(u)}catch(e){}}
-function speak(text,force=false){if(!soundOn)return;if(!text)return;if(currentAudio){currentAudio.pause();currentAudio.currentTime=0;}currentAudioKey='';fallbackSpeak(text)}
+function fallbackSpeak(text){if(!text||!('speechSynthesis' in window))return;try{window.speechSynthesis.cancel();window.speechSynthesis.resume?.();const u=new SpeechSynthesisUtterance(String(text));u.lang='en-US';u.rate=.95;u.pitch=1;u.volume=1;const v=speechVoice||pickSpeechVoice();if(v)u.voice=v;window.speechSynthesis.speak(u)}catch(e){}}
+function speak(text,force=false){if((!soundOn&&!force)||!text)return;if(currentAudio){currentAudio.pause();currentAudio.currentTime=0;}currentAudioKey='';fallbackSpeak(text)}
 function autoSpeakCurrent(text){clearTimeout(speechTimer);if(!soundOn||!text)return;speechTimer=window.setTimeout(()=>speak(text,false),120)}
 function autoSpeakForQuestion(q){if(!soundOn||!q)return;const mode=q.mode;const english=q.v?.inf||q.v?.word;if(!english)return;const modes=['write','letters','cloze','enToRu','listen','enToRuWrite','customEnToRu','customEnToRuWrite','customListen'];if(modes.includes(mode))autoSpeakCurrent(english)}
-function playFeedbackSound(ok){
-  if(!soundOn)return;
-  try{
-    const C=window.AudioContext||window.webkitAudioContext;if(!C)return;
-    fbCtx=fbCtx||new C();const c=fbCtx;if(c.resume)c.resume();const now=c.currentTime;
-    const master=c.createGain();master.gain.setValueAtTime(.0001,now);master.gain.exponentialRampToValueAtTime(.32,now+.012);master.gain.exponentialRampToValueAtTime(.0001,now+(ok?.52:.3));master.connect(c.destination);
-    const tones=ok?[{f:784,t:0,d:.22},{f:1046.5,t:.07,d:.30},{f:1318.5,t:.14,d:.32}]:[{f:220,t:0,d:.13},{f:165,t:.08,d:.21}];
-    tones.forEach(({f,t,d})=>{const o=c.createOscillator(),g=c.createGain();o.type=ok?'sine':'triangle';o.frequency.setValueAtTime(f,now+t);g.gain.setValueAtTime(.0001,now+t);g.gain.exponentialRampToValueAtTime(ok?.72:.5,now+t+.012);g.gain.exponentialRampToValueAtTime(.0001,now+t+d);o.connect(g);g.connect(master);o.start(now+t);o.stop(now+t+d+.02)});
-
-  }catch(e){}
-}
-function finishSession(silent=false){
+function playFeedbackSound(ok){window.TrainingSound.result(ok);}
+function finishSession(){
   const total=session.items.length,score=session.score,folderId=session.folderId;
   const current=folderId?folderPercent(folderId):(session.group?groupPercent(session.group):0), before=session.startedPercent||0;
   const diff=current-before;
@@ -279,7 +270,6 @@ function finishSession(silent=false){
   document.getElementById('result-grid').innerHTML=`<div class="result-box result-main"><span>${session.folder?'Закреплено':'Правильно'}</span><b>${session.folder?uniqueDone:score}</b></div><div class="result-box"><span>Осталось</span><b>${retryCount}</b></div><div class="result-box"><span>Прогресс</span><b>${current}%</b></div><div class="result-box"><span>Изменение</span><b class="${diff>0?'result-up':''}">${diff>0?'+'+diff+'%':diff===0?'—':'0%'}</b></div>`;
   document.getElementById('result-again').textContent=retryCount?'Повторить сложные слова':'Продолжить';
   document.getElementById('result-home').textContent=session.folder?'В словарь':'К блокам';
-  if(!silent)playFeedbackSound(complete);
   show('result');
 }
 function visibleFolderWords(id){return window.VocabularyImport.visibleWords(state,id).map(record=>window.VerbVocabulary.resolve(record,verbs,window.VocabularyPronunciation)).filter(Boolean);}
@@ -353,7 +343,7 @@ function startFolderTraining(mix=false, folderId=selectedFolder, reviewWeak=fals
   session={items,index:0,score:0,kind:'folder',group:selectedGroup,answered:false,folder:true,mix:false,returnTo:'dictionary',folderId:selectedFolder,startedPercent:folderPercent(selectedFolder),initialCount:base.length,initialIds:base.map(v=>v.id||v.n),completedIds:new Set(),pending:base.length,completed:0,reviewed:0};
   save();show('quiz');renderQFolder();
 }
-function renderQFolder(){
+function renderQFolder(playSpeech=true){
   legacyInputDispose?.();legacyInputDispose=null;stopPronunciation();setPracticeActions(false);
   const q=session.items[session.index],v=q.v;
   session.answered=false;
@@ -386,7 +376,7 @@ function renderQFolder(){
     title='Какое слово ты слышишь?'; body=`<div class="listen-box"><div class="listen-icon">🔊</div><div class="option-list">${optionSet(v.word,customOptions(v,'word').slice(1))}</div></div>`; document.getElementById('sound-btn').classList.remove('hidden');
   }
   document.getElementById('q-mode').textContent=title; document.getElementById('q-body').innerHTML=body; bindOptions(); bindInputs();
-  autoSpeakForQuestion(q);window.PageState?.activate('legacy');
+  if(playSpeech)autoSpeakForQuestion(q);window.PageState?.activate('legacy');
 }
 function checkFolderCurrent(force=false){
   const s=session;if(!s||s.answered)return;
@@ -407,7 +397,7 @@ function checkFolderCurrent(force=false){
   if(!ok){q.retries=(q.retries||0)+1;const retry=makeFolderItem(v,s.folderId);retry.retries=q.retries;s.items.splice(Math.min(s.items.length,s.index+4+Math.floor(Math.random()*3)),0,retry);}
   presentLegacyAnswer(q,ok,nextFolderQ);
 }
-function nextFolderQ(){if(!session||!session.answered)return;session.index++;if(session.index>=session.items.length)finishSession();else renderQFolder()}
+function nextFolderQ(playSpeech=true){if(!session||!session.answered)return;session.index++;if(session.index>=session.items.length)finishSession();else renderQFolder(playSpeech)}
 
 function openModal(type,title,message,action,arg1,arg2){
   if((type==='editWord'||type==='move'||action==='deleteWord')&&!window.VocabularyImport.canManageWord(state,arg1))return;
@@ -468,7 +458,7 @@ const themeToggle=document.getElementById('theme-toggle');
 function renderThemeToggle(){const dark=theme==='dark';document.documentElement.dataset.theme=theme;themeToggle.setAttribute('aria-pressed',String(dark));themeToggle.title=dark?'Переключить на светлую тему':'Переключить на тёмную тему';themeToggle.classList.toggle('is-dark',dark);}
 themeToggle.onclick=()=>{theme=theme==='dark'?'light':'dark';save();renderThemeToggle();};
 renderThemeToggle();
-function renderSoundToggle(){soundToggle.setAttribute('aria-pressed',String(soundOn));soundToggle.title=soundOn?'Выключить звук':'Включить звук';soundToggle.classList.toggle('is-on',soundOn);}
+function renderSoundToggle(){soundToggle.setAttribute('aria-pressed',String(soundOn));soundToggle.title=soundOn?'Выключить звуковые эффекты':'Включить звуковые эффекты';soundToggle.setAttribute('aria-label',soundToggle.title);soundToggle.classList.toggle('is-on',soundOn);}
 soundToggle.onclick=()=>{soundOn=!soundOn;if(!soundOn)stopPronunciation();state.soundOn=soundOn;save();renderSoundToggle()};
 renderSoundToggle();
 nav('modal-cancel').onclick=closeModal;
@@ -479,8 +469,7 @@ if('serviceWorker' in navigator && location.protocol!=='file:'){window.addEventL
 nav('errors-btn').onclick=()=>{show('errors');window.scrollTo({top:0,behavior:'smooth'})};
 nav('errors-back').onclick=()=>{show('home');window.scrollTo({top:0,behavior:'smooth'})};
 document.querySelectorAll('.mini-row').forEach(r=>{const b=r.querySelector('button'),w=r.querySelector('b');if(b&&w)b.onclick=()=>speak(w.textContent,true)});
-document.addEventListener('keydown',e=>{const c=e.target;if(c&&c.matches&&c.matches('[data-folder-card]')&&(e.key==='Enter'||e.key===' ')){e.preventDefault();c.click()}});
-document.addEventListener('pointerdown',()=>{try{fbCtx=fbCtx||new (window.AudioContext||window.webkitAudioContext)();if(fbCtx.resume)fbCtx.resume()}catch(e){}},{once:true});
+document.addEventListener('keydown',e=>{const c=e.target;if(c&&c.matches&&c.matches('[data-folder-card]')&&(e.key==='Enter'||e.key===' ')){e.preventDefault();if(!e.repeat){window.TrainingSound.click();c.click()}}});
 let cardS=null;
 function cardWords(type,id){
   if(type==='group')return groupVerbs(selectedGroup).map(v=>({irr:true,v}));
@@ -501,7 +490,7 @@ function showAnswerCard(v,irr,next){
   document.getElementById('sound-btn').classList.add('hidden');autoSpeakCurrent(text);
 }
 function startCards(type,id){const items=cardWords(type,id);if(!items.length){show('dictionary');return}cardS={type,id,items,i:0,back:type==='group'?'learn':'dictionary'};show('cards');renderCard();window.scrollTo({top:0})}
-function renderCard(){
+function renderCard(playSpeech=true){
   stopPronunciation();
   const s=cardS;if(!s)return;const n=s.items.length;
   const box=document.getElementById('cards-body'),act=document.getElementById('cards-actions');act.classList.add('training-footer');const on=(id,f)=>{const e=document.getElementById(id);if(e)e.onclick=f},exit=()=>{show(s.back);window.scrollTo({top:0})};
@@ -510,13 +499,13 @@ function renderCard(){
   if(s.i>=n){
     box.innerHTML='<div class="card-done"><div class="result-mark">✓</div><h2>Все карточки просмотрены</h2><div class="muted">Теперь проверь себя в тренировке.</div></div>';
     act.innerHTML='<button class="exit-training" id="card-exit">Назад</button><div class="answer-controls"><button class="primary" id="card-test">Проверить себя</button></div>';
-    on('card-test',()=>s.type==='group'?startMixed('new',selectedGroup):startFolderTraining(false,s.id));on('card-exit',exit);playFeedbackSound(true);return;
+    on('card-test',()=>s.type==='group'?startMixed('new',selectedGroup):startFolderTraining(false,s.id));on('card-exit',exit);return;
   }
   const it=s.items[s.i],en=it.irr?window.CardSpeech.formsText(it.v):it.v.word;
   box.innerHTML=answerCardHtml(it.v,it.irr);
   act.innerHTML=`<button id="card-exit" class="exit-training">Закончить</button><div class="answer-controls">${s.i?'<button id="card-prev" class="small-action">← Назад</button>':''}<button class="icon-btn" id="card-sound" title="Прослушать" aria-label="Прослушать"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a8 8 0 0 1 0 11"/></svg></button><button class="primary" id="card-next" type="button">Продолжить</button></div>`;
   on('card-prev',()=>{s.i--;renderCard()});on('card-next',()=>{s.i++;renderCard()});on('card-sound',()=>speak(en,true));on('card-exit',exit);
-  autoSpeakCurrent(en);document.getElementById('card-next').focus({preventScroll:true});
+  if(playSpeech)autoSpeakCurrent(en);document.getElementById('card-next').focus({preventScroll:true});
 }
 nav('learn-cards').onclick=()=>startCards('group');
 function dayKey(d=new Date()){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
@@ -607,9 +596,9 @@ function restoreLegacyPage(data){
   if(data.view==='quiz'||data.view==='result'){
     const restored=decodeStudySession(data.session);if(!restored||data.view==='quiz'&&!restored.items[restored.index])return false;
     session=restored;
-    if(data.view==='result'){finishSession(true);return true;}
+    if(data.view==='result'){finishSession();return true;}
     const answered=!!restored.answered,response=restored.response;
-    show('quiz');if(session.folder)renderQFolder();else renderQ();
+    show('quiz');if(session.folder)renderQFolder(false);else renderQ(false);
     window.TrainingUI.restoreDraft(document.getElementById('q-body'),data.draft);
     bindOptions();
     const q=session.items[session.index];
@@ -624,7 +613,7 @@ function restoreLegacyPage(data){
     const custom=new Map(Object.keys(state.customFolders||{}).flatMap(visibleFolderWords).map(w=>[w.id,w]));
     const items=saved.items.map(it=>({irr:!!it.irr,v:it.irr?verbs.find(v=>v.n===it.id):custom.get(it.id)}));
     if(items.some(it=>!it.v))return false;
-    cardS={...saved,items};show('cards');renderCard();return true;
+    cardS={...saved,items};show('cards');renderCard(false);return true;
   }
   show(data.view);return true;
 }

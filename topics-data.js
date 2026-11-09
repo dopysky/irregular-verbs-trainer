@@ -12,166 +12,6 @@ const [prepositions, comparison] = [
       "I02976–I02982",
       "S003: B00735–B00738; E0522–E0537, E0546–E0553"
     ],
-    "lessons": [
-      {
-        "id": "time",
-        "label": "Время",
-        "title": "Время — когда?",
-        "cards": [
-          {
-            "term": "in",
-            "title": "Большой период",
-            "text": "Месяц, год, сезон, часть суток: in July, in 2026, in summer, in the morning. In ten minutes — через десять минут.",
-            "example": [
-              "I study in the evening.",
-              "Я занимаюсь вечером."
-            ]
-          },
-          {
-            "term": "on",
-            "title": "День или дата",
-            "text": "Дни недели и даты: on Monday, on 5 May, on my birthday, on Christmas Day. С указанием дня — on Monday morning.",
-            "example": [
-              "We meet on Friday morning.",
-              "Мы встречаемся в пятницу утром."
-            ]
-          },
-          {
-            "term": "at",
-            "title": "Точный момент",
-            "text": "Время на часах: at 7:00. Запомни: at noon, at midnight, at lunchtime, at night. At the weekend — британский вариант; on the weekend — американский.",
-            "example": [
-              "The film starts at midnight.",
-              "Фильм начинается в полночь."
-            ]
-          },
-          {
-            "term": "for / since",
-            "title": "Длительность / начальная точка",
-            "text": "For + как долго: for two hours. Since + с какого момента: since 2023. В примере have lived означает «живу с прошлого до сих пор».",
-            "example": [
-              "I have lived here for three years.",
-              "Я живу здесь три года."
-            ]
-          },
-          {
-            "term": "by / until",
-            "title": "Срок / продолжение",
-            "text": "By Friday — результат не позднее пятницы. Until Friday — действие или состояние продолжается до пятницы. Till означает то же, что until.",
-            "example": [
-              "Finish it by Friday. Stay until Friday.",
-              "Закончи к пятнице. Останься до пятницы."
-            ]
-          },
-          {
-            "term": "before / after / during",
-            "title": "До / после / во время",
-            "text": "Before lunch — перед обедом; after school — после школы; during the film — во время фильма. During + событие, for + длительность.",
-            "example": [
-              "Do not talk during the film.",
-              "Не разговаривай во время фильма."
-            ]
-          },
-          {
-            "term": "from … to",
-            "title": "Начало и конец",
-            "text": "From 9 to 5 — с девяти до пяти. Если в упражнении два пропуска, каждый предлог вводится в своё поле.",
-            "example": [
-              "I work from nine to five.",
-              "Я работаю с девяти до пяти."
-            ]
-          },
-          {
-            "term": "—",
-            "title": "Предлог не нужен",
-            "text": "Не ставим at, on, in перед last, next, this, every, yesterday, today, tomorrow. В заданиях без предлога вводи знак «—».",
-            "example": [
-              "See you next Monday.",
-              "Увидимся в следующий понедельник."
-            ]
-          }
-        ]
-      },
-      {
-        "id": "place",
-        "label": "Место",
-        "title": "Место — где?",
-        "cards": [
-          {
-            "term": "in",
-            "title": "Внутри пространства",
-            "text": "В сумке, комнате, городе или стране: in a bag, in a room, in London, in Italy. Русский предлог может отличаться: in the kitchen — на кухне.",
-            "example": [
-              "The keys are in my bag.",
-              "Ключи в моей сумке."
-            ]
-          },
-          {
-            "term": "on",
-            "title": "На поверхности",
-            "text": "On the table, on the floor, on the wall. Также запомни: on TV, on the internet, on the left/right.",
-            "example": [
-              "The picture is on the wall.",
-              "Картина на стене."
-            ]
-          },
-          {
-            "term": "at",
-            "title": "Точка или место деятельности",
-            "text": "At the entrance, at the bus stop, at home, at work. At school — в школе как месте учёбы; in the school — внутри здания. Выбор зависит от смысла.",
-            "example": [
-              "Meet me at the entrance.",
-              "Встреть меня у входа."
-            ]
-          },
-          {
-            "term": "under / below / above / over",
-            "title": "Под / ниже / выше / над",
-            "text": "Under the bed — под кроватью; below zero — ниже нуля; above the sofa — выше дивана; a bridge over the river — мост над рекой. Above и over в некоторых контекстах оба возможны.",
-            "example": [
-              "The cat is under the bed.",
-              "Кошка под кроватью."
-            ]
-          },
-          {
-            "term": "between / among",
-            "title": "Между / среди",
-            "text": "Between the bank and the café — между двумя ориентирами; among friends — среди друзей. Between может связывать и несколько отдельных объектов: дело не только в количестве.",
-            "example": [
-              "The shop is between the bank and the café.",
-              "Магазин между банком и кафе."
-            ]
-          },
-          {
-            "term": "behind / in front of / opposite",
-            "title": "Позади / перед / напротив",
-            "text": "Behind the house — позади дома; in front of the hotel — перед отелем; opposite the cinema — напротив кинотеатра.",
-            "example": [
-              "The car is behind the house.",
-              "Машина позади дома."
-            ]
-          },
-          {
-            "term": "next to / beside / near",
-            "title": "Рядом / поблизости",
-            "text": "Next to и beside — непосредственно рядом. Near — поблизости, не обязательно вплотную. Inside/outside — внутри/снаружи.",
-            "example": [
-              "The bank is next to the café.",
-              "Банк рядом с кафе."
-            ]
-          },
-          {
-            "term": "Сочетания",
-            "title": "Транспорт и привычные выражения",
-            "text": "In a car, in a taxi; on a bus, on a train, on a plane. Ещё: in bed, at the airport. Их лучше запоминать целиком.",
-            "example": [
-              "She is on the train.",
-              "Она в поезде."
-            ]
-          }
-        ]
-      }
-    ],
     "exercises": [
       {
         "id": "prepositions-1",
@@ -3271,194 +3111,6 @@ const [prepositions, comparison] = [
       "I03025",
       "I03026"
     ],
-    "lessons": [
-      {
-        "id": "adjectives",
-        "label": "Прилагательные",
-        "title": "Сравниваем предметы: какой?",
-        "columns": [
-          "Случай",
-          "Как образуем",
-          "Пример"
-        ],
-        "rows": [
-          [
-            "Один слог",
-            "Обычно добавляем -er",
-            "small → smaller",
-            "маленький → меньше"
-          ],
-          [
-            "На -e",
-            "Добавляем только -r",
-            "large → larger",
-            "большой → больше"
-          ],
-          [
-            "Согласная + y (два слога)",
-            "Меняем y на i, добавляем -er",
-            "angry → angrier",
-            "сердитый → сердитее"
-          ],
-          [
-            "Один слог: короткая гласная + одна согласная",
-            "Удваиваем последнюю согласную; добавляем -er",
-            "big → bigger",
-            "большой → больше"
-          ],
-          [
-            "Длинное прилагательное",
-            "Обычно more + исходная форма",
-            "beautiful → more beautiful",
-            "красивый → красивее"
-          ]
-        ],
-        "note": "Than — «чем»: сравниваем одно платье с другим. Не удваиваем w, x и y: new → newer. Правило y → i здесь относится к согласной + y, не ко всем словам на y. У некоторых двусложных слов возможны две формы: simpler / more simple. As … as — «такой же … как»; not as … as — «не такой … как».",
-        "example": [
-          "This skirt is longer than that one. This jacket is the most expensive.",
-          "Эта юбка длиннее той. Эта куртка — самая дорогая."
-        ],
-        "intro": "Сравнительная степень сопоставляет два предмета или показывает изменение. Превосходная выделяет самый выраженный признак в группе. Способ образования зависит от слова.",
-        "tableKind": "formation",
-        "sections": [
-          {
-            "title": "Сравнительная степень — сравниваем два предмета",
-            "rows": [
-              [
-                "Один слог",
-                "Обычно добавляем -er",
-                "small → smaller",
-                "маленький → меньше"
-              ],
-              [
-                "На -e",
-                "Добавляем только -r",
-                "large → larger",
-                "большой → больше"
-              ],
-              [
-                "Согласная + y (два слога)",
-                "Меняем y на i, добавляем -er",
-                "angry → angrier",
-                "сердитый → сердитее"
-              ],
-              [
-                "Один слог: одна гласная буква перед одной конечной согласной",
-                "Удваиваем последнюю согласную; добавляем -er",
-                "big → bigger",
-                "большой → больше"
-              ],
-              [
-                "Длинное прилагательное",
-                "Обычно more + исходная форма",
-                "beautiful → more beautiful",
-                "красивый → красивее"
-              ]
-            ]
-          },
-          {
-            "title": "Превосходная степень — самый в группе",
-            "rows": [
-              [
-                "Один слог",
-                "the + слово с -est",
-                "small → the smallest",
-                "маленький → самый маленький"
-              ],
-              [
-                "На -e",
-                "the + слово с -st",
-                "large → the largest",
-                "большой → самый большой"
-              ],
-              [
-                "Согласная + y (два слога)",
-                "y → i, затем -est; перед формой the",
-                "angry → the angriest",
-                "сердитый → самый сердитый"
-              ],
-              [
-                "Один слог: одна гласная буква перед одной конечной согласной",
-                "Удваиваем согласную, добавляем -est; перед формой the",
-                "big → the biggest",
-                "большой → самый большой"
-              ],
-              [
-                "Длинное прилагательное",
-                "the most + исходная форма",
-                "beautiful → the most beautiful",
-                "красивый → самый красивый"
-              ]
-            ]
-          }
-        ],
-        "extra": [
-          [
-            "Исключения",
-            "good → better → the best",
-            "bad → worse → the worst",
-            "хороший → лучше → лучший; плохой → хуже → худший"
-          ]
-        ]
-      },
-      {
-        "id": "adverbs",
-        "label": "Наречия",
-        "title": "Сравниваем действия: как?",
-        "columns": [
-          "Исходная форма",
-          "Более…",
-          "В группе — лучше всех"
-        ],
-        "rows": [
-          [
-            "fast",
-            "faster",
-            "(the) fastest",
-            "быстро → быстрее → быстрее всех"
-          ],
-          [
-            "hard",
-            "harder",
-            "(the) hardest",
-            "усердно → усерднее → усерднее всех"
-          ],
-          [
-            "carefully",
-            "more carefully",
-            "(the) most carefully",
-            "внимательно → внимательнее → внимательнее всех"
-          ],
-          [
-            "well",
-            "better",
-            "(the) best",
-            "хорошо → лучше → лучше всех"
-          ],
-          [
-            "badly",
-            "worse",
-            "(the) worst",
-            "плохо → хуже → хуже всех"
-          ]
-        ],
-        "patterns": [
-          [
-            "fast, hard",
-            "Добавь -er / -est"
-          ],
-          [
-            "Большинство наречий на -ly",
-            "Добавь more / most"
-          ]
-        ],
-        "note": "У наречия в превосходной степени the часто можно опустить: he runs (the) fastest. Исключение: early → earlier → earliest («рано → раньше → раньше всех»).",
-        "example": [
-          "She works more carefully than I do.",
-          "Она работает внимательнее меня."
-        ]
-      }
-    ],
     "exercises": [
       {
         "id": "comparison-1",
@@ -4686,7 +4338,30 @@ const [prepositions, comparison] = [
 // The mixed Paris/Monday exercise belongs to place and is counted only once.
 const originalTimeIds = new Set([1, 2, 3, 4, 9, 10, 13, 14, 15, 16].map(n => 'prepositions-' + n));
 const isTime = exercise => exercise.id.startsWith('prepositions-time-') || originalTimeIds.has(exercise.id);
-const [timeLesson, placeLesson] = prepositions.lessons;
+const { blocks, exercises, feedback, wordHints, dinnerFeedback } = window.GrammarCards;
+const figuresByRule = new Map(Object.values(blocks).flat().map(card => [card.id, card.figures]));
+figuresByRule.set('P16', [...figuresByRule.get('P16'), ...dinnerFeedback]);
+const perfectExplanation = {
+  'prepositions-14': 'Я всё ещё живу здесь, поэтому используем Present Perfect: have lived.',
+  'prepositions-time-21': 'Он всё ещё здесь работает, поэтому используем Present Perfect: has worked.',
+  'prepositions-time-22': 'Я всё ещё её знаю, поэтому используем Present Perfect: have known.'
+};
+function prepareExercises(block, existing) {
+  return [...existing, ...exercises[block]].map(exercise => {
+    const data = feedback[exercise.id] || exercise;
+    const figure = data.scene && figuresByRule.get(data.rule_id)?.find(image => image.src.endsWith('/' + data.scene));
+    const fullNote = perfectExplanation[exercise.id];
+    return {
+      ...exercise,
+      rule_id: data.rule_id,
+      correct_display: exercise.correct_display || exercise.correct_sentence,
+      feedback_explanation: data.feedback_explanation,
+      ...(fullNote ? { full_feedback_explanation: data.feedback_explanation + ' ' + fullNote } : {}),
+      ...(figure ? { feedback_image: { src: figure.src, alt: figure.alt } } : {}),
+      ...(wordHints[exercise.id] ? { word_hints: wordHints[exercise.id] } : {})
+    };
+  });
+}
 
 window.TRAINING_TOPICS = [
   {
@@ -4695,8 +4370,8 @@ window.TRAINING_TOPICS = [
     title: 'Предлоги места',
     description: 'Где лежат ключи? Что рядом, под или между?',
     words: ['in', 'under', 'between'],
-    lessons: [placeLesson],
-    exercises: prepositions.exercises.filter(exercise => !isTime(exercise))
+    cards: blocks.place,
+    exercises: prepareExercises('place', prepositions.exercises.filter(exercise => !isTime(exercise)))
   },
   {
     ...prepositions,
@@ -4704,9 +4379,9 @@ window.TRAINING_TOPICS = [
     title: 'Предлоги времени',
     description: 'Когда встречаемся? В какой день и в какое время?',
     words: ['at', 'on', 'during'],
-    lessons: [timeLesson],
-    exercises: prepositions.exercises.filter(isTime)
+    cards: blocks.time,
+    exercises: prepareExercises('time', prepositions.exercises.filter(isTime))
   },
-  { ...comparison, words: ['bigger', 'better', 'the best'] }
+  { ...comparison, words: ['bigger', 'better', 'the best'], cards: blocks.comparison, exercises: prepareExercises('comparison', comparison.exercises) }
 ];
 }

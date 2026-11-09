@@ -10,8 +10,8 @@
     exercises:topics.filter(topic=>topic.id.startsWith('prepositions-')).flatMap(topic=>topic.exercises)
   };
   const app = document.querySelector('#practice');
-  let page={kind:'home'},state = { results: {} }, session, nextTimer = null, inputDispose=null, selectedTopic = defaultTopic.id;
-  const cancelNext = () => { window.clearTimeout(nextTimer); nextTimer = null; inputDispose?.();inputDispose=null; };
+  let page={kind:'home'},state = { results: {} }, session, nextTimer = null, inputDispose=null, hintDispose=null, selectedTopic = defaultTopic.id;
+  const cancelNext = () => { window.clearTimeout(nextTimer); nextTimer = null; inputDispose?.();inputDispose=null;hintDispose?.();hintDispose=null; };
   const warn = () => { document.querySelector('#storage-warning').hidden = false; };
   try {
     const saved = JSON.parse(localStorage.getItem(KEY));
@@ -70,32 +70,34 @@
   function home() { session=null;cancelNext();window.legacyTrainer.open('home'); }
   function showEmptyErrors(t) { page={kind:'empty',topic:t.id};show(breadcrumb(t)+'<section class="exercise-panel"><h2>Ошибок пока нет</h2><p>После неверного ответа задание сохранится для повторения.</p>'+button('Начать тренировку','start:'+t.id,true)+'</section>'); }
   function verbOverview() { page={kind:'verbs'};selectedTopic='verbs';save();show('<div class="practice-breadcrumb">'+button('← К блокам','home')+'</div><section class="panel"><h2>Неправильные глаголы</h2><p class="muted">Выбери группу слов для изучения и тренировки.</p><div id="verb-blocks" class="block-grid"></div></section>');window.legacyTrainer.renderGroups?.(); }
-  function ruleTable(t, lesson, rows) {
-    return `<div class="rule-table-wrap"><table class="rule-table ${t.id === 'comparison' ? 'comparison-table' : ''}"><thead><tr>${lesson.columns.map(c=>`<th scope="col">${esc(c)}</th>`).join('')}</tr></thead><tbody>${rows.map(([word,meaning,example,ru])=>{
-      if(t.id==='comparison' && lesson.tableKind !== 'formation') {
-        const translations = ru.split(' → ');
-        return `<tr>${[word,meaning,example].map((v,i)=>`<td><strong lang="en">${esc(v)}</strong><small>${esc(translations[i]||'')}</small></td>`).join('')}</tr>`;
-      }
-      return `<tr><td><strong lang="en" class="preposition-word">${esc(word)}</strong></td><td>${esc(meaning)}</td><td><span lang="en">${esc(example)}</span><small>${esc(ru)}</small></td></tr>`;
-    }).join('')}</tbody></table></div>`;
+  const exampleText = ([english,translation]) =>
+    `<span lang="en">${esc(english)}</span><small>${esc(translation)}</small>`;
+  const sceneImage = ({src,alt}) =>
+    `<img class="grammar-scene" src="${esc(src)}" alt="${esc(alt)}" loading="lazy" decoding="async">`;
+  function renderFigure(figure){
+    const captions=figure.captions;
+    return `<figure class="grammar-figure">${sceneImage(figure)}${captions.length
+      ? `<figcaption class="scene-captions" style="--caption-count:${captions.length}">${captions.map(c=>`<div>${exampleText(c)}</div>`).join('')}</figcaption>`
+      : ''}</figure>`;
   }
-  function renderLesson(t,lesson) {
-    let content;
-    if(lesson.cards) {
-      content='<div class="grammar-grid">'+lesson.cards.map(card=>'<article class="grammar-card"><div class="grammar-term" lang="en">'+esc(card.term)+'</div><h4>'+esc(card.title)+'</h4><p>'+esc(card.text)+'</p><div class="grammar-example"><span lang="en">'+esc(card.example[0])+'</span><small>'+esc(card.example[1])+'</small></div></article>').join('')+'</div>';
-    } else {
-      content=(lesson.intro?'<p class="rule-note">'+esc(lesson.intro)+'</p>':'');
-      content+=lesson.sections?lesson.sections.map(part=>'<h4>'+esc(part.title)+'</h4>'+ruleTable(t,lesson,part.rows)).join(''):ruleTable(t,lesson,lesson.rows);
-      if(lesson.extra)content+='<h4>Исключения</h4>'+ruleTable(t,lesson,lesson.extra);
-      if(lesson.note)content+='<p class="rule-note">'+esc(lesson.note)+'</p>';
-      content+='<div class="grammar-example"><span lang="en">'+esc(lesson.example[0])+'</span><small>'+esc(lesson.example[1])+'</small></div>';
-    }
-    return '<section class="grammar-section"><h3>'+esc(lesson.title)+'</h3>'+content+'</section>';
+  function renderRule(card){
+    const layout=card.id==='P16'?' dinner-rule':card.figures.length>1?' rule-with-gallery':'';
+    const dinner=card.id==='P16'?'<div class="dinner-frames">'+window.GrammarCards.dinnerFeedback.map(renderFigure).join('')+'</div>':'';
+    return `<article class="rule-card${layout}" data-rule="${esc(card.id)}">
+      <h3>${esc(card.title)}</h3>
+      <div class="rule-card-body">
+        <div class="rule-figures">${card.figures.map(renderFigure).join('')}</div>${dinner}
+        <div class="rule-copy">
+          <p>${esc(card.rule)}</p>${card.note?`<p class="rule-card-note">${esc(card.note)}</p>`:''}
+          ${card.examples.length?`<ul class="rule-examples">${card.examples.map(ex=>`<li>${exampleText(ex)}</li>`).join('')}</ul>`:''}
+        </div>
+      </div>
+    </article>`;
   }
   function detail(t) {
     page={kind:'rules',topic:t.id};
     session=null;selectedTopic=t.id;save();
-    show(breadcrumb(t)+'<div class="practice-heading"><div><h2>'+esc(t.title)+'</h2></div>'+button('Начать практику','start:'+t.id,true)+'</div>'+t.lessons.map(lesson=>renderLesson(t,lesson)).join('')+'<div class="practice-actions">'+button('Перейти к практике →','start:'+t.id,true)+'</div>');
+    show(breadcrumb(t)+'<div class="practice-heading"><div><h2>Правила и примеры</h2><p class="muted">'+esc(t.title)+' · '+t.cards.length+' карточек</p></div>'+button('Начать практику','start:'+t.id,true)+'</div><div class="rule-list">'+t.cards.map(renderRule).join('')+'</div><div class="practice-actions">'+button('Перейти к практике →','start:'+t.id,true)+'</div>');
   }
   function start(t, review) {
     navigateHash(t.id);
@@ -109,12 +111,78 @@
     session = { topic:t, queue, index:0, correct:0, answered:false };
     question();
   }
+  function promptWithHints(q){
+    const hints=q.mode==='full' && q.source.word_hints;
+    if(!hints?.length)return esc(q.material);
+    const words=hints.map(([word],index)=>({word,index,start:q.material.indexOf(word)}))
+      .filter(part=>part.start>=0).sort((a,b)=>a.start-b.start);
+    let html='',end=0;
+    for(const {word,index,start} of words){
+      if(start<end)continue;
+      html+=esc(q.material.slice(end,start));
+      html+=`<button type="button" class="word-hint" data-word-hint="${index}" aria-expanded="false" aria-controls="word-hint-card">${esc(word)}</button>`;
+      end=start+word.length;
+    }
+    return html+esc(q.material.slice(end));
+  }
+  function bindWordHints(q,s){
+    const card=app.querySelector('#word-hint-card');
+    const prompt=app.querySelector('.question');
+    const closeButton=card.querySelector('button');
+    let openButton=null;
+    const close=({returnFocus=false}={})=>{
+      if(!openButton)return;
+      openButton.setAttribute('aria-expanded','false');
+      if(returnFocus)openButton.focus({preventScroll:true});
+      openButton=null;card.hidden=true;
+    };
+    const click=e=>{
+      const target=e.target.closest('[data-word-hint]');
+      if(target && prompt.contains(target)){
+        if(session!==s||s.answered)return;
+        if(target===openButton){close();return;}
+        close();
+        const [word,english,russian=word]=q.source.word_hints[Number(target.dataset.wordHint)];
+        card.querySelector('strong').textContent=english;
+        card.querySelector('span').textContent=russian;
+        target.setAttribute('aria-expanded','true');
+        openButton=target;card.hidden=false;s.wordHelp=true;
+        window.PageState?.checkpoint();
+      }else if(closeButton.contains(e.target)){
+        close({returnFocus:document.activeElement===closeButton});
+      }else if(!card.contains(e.target)){
+        close();
+      }
+    };
+    const key=e=>{
+      if(e.key==='Escape' && openButton){
+        e.preventDefault();
+        close({returnFocus:card.contains(document.activeElement)});
+      }
+    };
+    const keepCaret=e=>{
+      if(document.activeElement?.matches('#answer-form input')
+        && (e.target.closest('[data-word-hint]')||closeButton.contains(e.target)))e.preventDefault();
+    };
+    document.addEventListener('click',click);
+    document.addEventListener('keydown',key);
+    app.addEventListener('mousedown',keepCaret);
+    return ()=>{
+      close();
+      document.removeEventListener('click',click);
+      document.removeEventListener('keydown',key);
+      app.removeEventListener('mousedown',keepCaret);
+    };
+  }
   function question() {
     page={kind:'question'};
-    const s = session, q = s.queue[s.index]; s.answered = false;delete s.response;
+    const s = session, q = s.queue[s.index]; s.answered = false;delete s.response;s.wordHelp=false;
     const fields = q.fields || [q.mode==='full'?'Твой перевод':'Твой ответ'];
     const textInputs = fields.map((label,i)=>`<label class="answer-label" for="answer${i||''}">${esc(label)}</label><input id="answer${i||''}" data-answer-part class="answer-input" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Напиши на английском…" required>`).join('');
-    show(`${breadcrumb(s.topic)}<section class="exercise-panel"><div class="exercise-top"><span>${esc(s.topic.title)}</span><span>${s.index+1} / ${s.queue.length}</span></div><progress value="${s.index}" max="${s.queue.length}" aria-label="Прогресс тренировки"></progress><span class="practice-eyebrow">${esc(q.instruction)}</span><h2 class="question" lang="${q.mode==='full'?'ru':'en'}">${esc(q.material)}</h2>${q.translation?'<p class="question-translation">'+esc(q.translation)+'</p>':''}<form id="answer-form">${q.options?.length ? `<div class="practice-options">${q.options.map(o=>`<button type="button" data-answer="${esc(o)}" lang="en">${esc(o)}</button>`).join('')}</div>` : textInputs}</form><div id="feedback" aria-live="polite"></div><div class="training-footer"><button type="button" class="exit-training" data-action="home">Закончить тренировку</button><div id="question-actions" class="practice-actions answer-controls">${button('Не знаю','skip')}${!q.options?.length?'<button type="button" class="primary" id="complete-answer" disabled>Готово</button>':''}</div></div></section>`);
+    const hasHints=q.mode==='full' && q.source.word_hints?.length;
+    const hintArea=hasHints?'<div class="word-hint-slot"><div id="word-hint-card" class="word-hint-card" hidden><div aria-live="polite"><strong lang="en"></strong><span></span></div><button type="button" aria-label="Закрыть подсказку">×</button></div></div>':'';
+    show(`${breadcrumb(s.topic)}<section class="exercise-panel"><div class="exercise-top"><span>${esc(s.topic.title)}</span><span>${s.index+1} / ${s.queue.length}</span></div><progress value="${s.index}" max="${s.queue.length}" aria-label="Прогресс тренировки"></progress><span class="practice-eyebrow">${esc(q.instruction)}</span><h2 class="question${hasHints?' question-with-hints':''}" lang="${q.mode==='full'?'ru':'en'}">${promptWithHints(q)}</h2>${hintArea}${q.translation?'<p class="question-translation">'+esc(q.translation)+'</p>':''}<form id="answer-form">${q.options?.length ? `<div class="practice-options">${q.options.map(o=>`<button type="button" data-answer="${esc(o)}" lang="en">${esc(o)}</button>`).join('')}</div>` : textInputs}</form><div id="feedback" aria-live="polite"></div><div class="training-footer"><button type="button" class="exit-training" data-action="home">Закончить тренировку</button><div id="question-actions" class="practice-actions answer-controls">${button('Не знаю','skip')}${!q.options?.length?'<button type="button" class="primary" id="complete-answer" disabled>Готово</button>':''}</div></div></section>`);
+    if(hasHints)hintDispose=bindWordHints(q,s);
     if(!q.options?.length)inputDispose=window.TrainingUI.bindReady(app.querySelectorAll('[data-answer-part]'),{button:app.querySelector('#complete-answer'),active:()=>session===s&&!s.answered,commit:values=>answer(q.fields?values:values[0])});
     app.querySelector('#answer')?.focus({preventScroll:true});
   }
@@ -126,12 +194,16 @@
     s.answered = true; if(ok) s.correct++;
     window.legacyTrainer.recordGrammarActivity?.();
     const previous = state.results[q.id] || { attempts:0,correct:0 };
-    state.results[q.id] = { attempts:previous.attempts+1,correct:previous.correct+Number(ok),error:!ok,lastAnswer:Array.isArray(value)?value.join(' / '):value,updatedAt:new Date().toISOString() }; save();
+    state.results[q.id] = { ...previous,attempts:previous.attempts+1,correct:previous.correct+Number(ok),error:!ok,lastAnswer:Array.isArray(value)?value.join(' / '):value,updatedAt:new Date().toISOString() };
+    if(s.wordHelp)state.results[q.id].wordHelpAttempts=(previous.wordHelpAttempts||0)+1;
+    save();
+    window.TrainingSound?.result(ok);
     presentAnswer(value,ok);window.PageState?.checkpoint();
   }
   function presentAnswer(value,ok){
     const s=session,q=s.queue[s.index];
-    app.querySelectorAll('#answer-form button, #answer-form input, [data-action="skip"]').forEach(el=>{
+    hintDispose?.();hintDispose=null;
+    app.querySelectorAll('#answer-form button, #answer-form input, [data-action="skip"], [data-word-hint]').forEach(el=>{
       el.disabled=true;
       if(el.matches?.('input'))el.classList.add(ok?'correct':'wrong');
       if(el.dataset.answer!==undefined){
@@ -145,7 +217,8 @@
       f.innerHTML='';window.TrainingUI.showCorrect(app);
       nextTimer = window.setTimeout(() => { if(session===s && s.answered) next(); }, 650);
     } else {
-      f.innerHTML=window.TrainingUI.reviewCard({material:q.correctSentence,translation:q.source.russian,explanation:explanation(q,value),audio:false,actions:false});
+      const scene=q.source.feedback_image;
+      f.innerHTML=window.TrainingUI.reviewCard({material:q.correctSentence,translation:q.source.russian,explanation:explanation(q),audio:false,actions:false,detailsHTML:scene?`<div class="review-scene">${sceneImage(scene)}</div>`:''});
       actions.innerHTML=window.TrainingUI.reviewActions({audio:false,nextId:'topic-review-next'});actions.hidden=false;
       const advance=app.querySelector('#topic-review-next');
       advance.onclick=next;advance.focus({preventScroll:true});
@@ -217,7 +290,7 @@
   window.englishPractice = { navigate, renderDashboard, refreshGlobalStats };
   function captureTopicPage(){
     const data={page};
-    if(session){data.session={topic:session.topic.id,queue:session.queue.map(q=>q.id),index:session.index,correct:session.correct,answered:session.answered,response:session.response};if(page.kind==='question')data.draft=session.answered?session.draft:window.TrainingUI.captureDraft(app);}
+    if(session){data.session={topic:session.topic.id,queue:session.queue.map(q=>q.id),index:session.index,correct:session.correct,answered:session.answered,response:session.response,wordHelp:session.wordHelp};if(page.kind==='question')data.draft=session.answered?session.draft:window.TrainingUI.captureDraft(app);}
     return data;
   }
   function restoreTopicPage(data){
@@ -232,7 +305,7 @@
     session={topic:t,queue:saved.queue.map(id=>bank.get(id)),index:saved.index,correct:Number(saved.correct)||0,answered:!!saved.answered,response:saved.response};
     if(data.page.kind==='result'){summary();return true;}
     if(data.page.kind!=='question'||!session.queue[session.index])return false;
-    const response=saved.response;question();window.TrainingUI.restoreDraft(app,data.draft);
+    const response=saved.response;question();session.wordHelp=!!saved.wordHelp;window.TrainingUI.restoreDraft(app,data.draft);
     if(saved.answered){inputDispose?.();inputDispose=null;session.answered=true;session.response=response;session.draft=data.draft;presentAnswer(response?.value,response?.ok===true);}
     return true;
   }
