@@ -631,12 +631,7 @@ window.GrammarCards = {
             ]
           }
         ],
-        "examples": [
-          [
-            "long → longer → the longest",
-            "длинный → длиннее → самый длинный"
-          ]
-        ]
+        "examples": []
       },
       {
         "id": "C03",
@@ -654,16 +649,7 @@ window.GrammarCards = {
             ]
           }
         ],
-        "examples": [
-          [
-            "nice → nicer → the nicest",
-            "приятный → приятнее → самый приятный"
-          ],
-          [
-            "large → larger → the largest",
-            "большой → больше → самый большой"
-          ]
-        ]
+        "examples": []
       },
       {
         "id": "C04",
@@ -681,12 +667,7 @@ window.GrammarCards = {
             ]
           }
         ],
-        "examples": [
-          [
-            "angry → angrier → the angriest",
-            "сердитый → сердитее → самый сердитый"
-          ]
-        ]
+        "examples": []
       },
       {
         "id": "C05",
@@ -704,12 +685,7 @@ window.GrammarCards = {
             ]
           }
         ],
-        "examples": [
-          [
-            "hot → hotter → the hottest",
-            "горячий → горячее → самый горячий"
-          ]
-        ]
+        "examples": []
       },
       {
         "id": "C06",
@@ -727,12 +703,7 @@ window.GrammarCards = {
             ]
           }
         ],
-        "examples": [
-          [
-            "beautiful → more beautiful → the most beautiful",
-            "красивый → красивее → самый красивый"
-          ]
-        ]
+        "examples": []
       },
       {
         "id": "C07",
