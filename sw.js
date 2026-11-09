@@ -1,4 +1,4 @@
-const CACHE='english-practice-v52-reload-state';
+const CACHE='english-practice-v53-split-prepositions';
 const ASSETS=['./','./index.html','./style.css','./topics.html','./topics.css','./topics.js','./topics-core.js','./topics-data.js','./training-ui.js','./training.css','./vocabulary-data.js','./vocabulary-pronunciation.js','./vocabulary-import.js','./verb-vocabulary.js','./page-state.js','./app.js','./card-speech.js','./audio-data.js','./manifest.webmanifest','./icon-192.png','./icon-512.png','./icon-180.png'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==CACHE).map(x=>caches.delete(x)))).then(()=>self.clients.claim())));

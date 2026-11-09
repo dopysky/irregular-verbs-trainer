@@ -1,5 +1,6 @@
 /* Правила и готовые задания; источники сохранены в служебных полях. */
-window.TRAINING_TOPICS = [
+{
+const [prepositions, comparison] = [
   {
     "id": "prepositions",
     "title": "Предлоги места и времени",
@@ -4680,3 +4681,32 @@ window.TRAINING_TOPICS = [
     ]
   }
 ];
+
+// Original exercises predate the place/time IDs. Keep the IDs used by saved progress.
+// The mixed Paris/Monday exercise belongs to place and is counted only once.
+const originalTimeIds = new Set([1, 2, 3, 4, 9, 10, 13, 14, 15, 16].map(n => 'prepositions-' + n));
+const isTime = exercise => exercise.id.startsWith('prepositions-time-') || originalTimeIds.has(exercise.id);
+const [timeLesson, placeLesson] = prepositions.lessons;
+
+window.TRAINING_TOPICS = [
+  {
+    ...prepositions,
+    id: 'prepositions-place',
+    title: 'Предлоги места',
+    description: 'Где лежат ключи? Что рядом, под или между?',
+    words: ['in', 'under', 'between'],
+    lessons: [placeLesson],
+    exercises: prepositions.exercises.filter(exercise => !isTime(exercise))
+  },
+  {
+    ...prepositions,
+    id: 'prepositions-time',
+    title: 'Предлоги времени',
+    description: 'Когда встречаемся? В какой день и в какое время?',
+    words: ['at', 'on', 'during'],
+    lessons: [timeLesson],
+    exercises: prepositions.exercises.filter(isTime)
+  },
+  { ...comparison, words: ['bigger', 'better', 'the best'] }
+];
+}

@@ -2,13 +2,20 @@
   'use strict';
   const KEY = 'english-topic-trainer-v1';
   const topics = window.TRAINING_TOPICS;
+  const defaultTopic = topics[0];
+  const findTopic = id => topics.find(topic => topic.id === id);
+  const legacyPrepositions = {
+    id:'prepositions',
+    title:'Предлоги места и времени',
+    exercises:topics.filter(topic=>topic.id.startsWith('prepositions-')).flatMap(topic=>topic.exercises)
+  };
   const app = document.querySelector('#practice');
-  let page={kind:'home'},state = { results: {} }, session, nextTimer = null, inputDispose=null, selectedTopic = 'prepositions';
+  let page={kind:'home'},state = { results: {} }, session, nextTimer = null, inputDispose=null, selectedTopic = defaultTopic.id;
   const cancelNext = () => { window.clearTimeout(nextTimer); nextTimer = null; inputDispose?.();inputDispose=null; };
   const warn = () => { document.querySelector('#storage-warning').hidden = false; };
   try {
     const saved = JSON.parse(localStorage.getItem(KEY));
-    if (saved && ['prepositions','comparison','verbs'].includes(saved.selectedTopic)) selectedTopic=saved.selectedTopic;
+    if (saved && (saved.selectedTopic==='verbs' || findTopic(saved.selectedTopic))) selectedTopic=saved.selectedTopic;
     if (saved && saved.results && typeof saved.results === 'object' && !Array.isArray(saved.results)) {
       state={...saved,results:{...saved.results}};
     }
@@ -57,7 +64,7 @@
     action('study-btn',t?'Правила и примеры':'Посмотреть слова',()=>t?navigate(t.id):navigate('verbs'));
     action('errors-btn','Мои ошибки',()=>t?(errors(t).length?start(t,true):showEmptyErrors(t)):window.legacyTrainer.open('errors'));
     const blocks=document.getElementById('blocks');
-    if(blocks){blocks.innerHTML=[...topics.map(t=>({id:t.id,title:t.title,sub:t.description,words:t.id==='prepositions'?['in','on','at']:['bigger','better','the best'],percent:Math.round(completed(t)/t.exercises.length*100)})),{id:'verbs',title:'Неправильные глаголы',sub:'Три формы, перевод и произношение',words:['drink','drank','drunk'],percent:old.progress}].map((card,i)=>'<button type="button" class="group-card '+(selectedTopic===card.id?'selected ':'')+'" data-action="select:'+card.id+'"><div class="group-card-top"><div><div class="block-title">'+esc(card.title)+'</div><div class="block-meta">'+esc(card.sub)+'</div></div><span class="badge">'+card.percent+'%</span></div><div class="topic-word-art" aria-hidden="true">'+card.words.map(w=>'<span>'+esc(w)+'</span>').join('')+'</div><div class="progress"><div class="bar" style="width:'+card.percent+'%"></div></div></button>').join('');}
+    if(blocks){blocks.innerHTML=[...topics.map(t=>({id:t.id,title:t.title,sub:t.description,words:t.words,percent:Math.round(completed(t)/t.exercises.length*100)})),{id:'verbs',title:'Неправильные глаголы',sub:'Три формы, перевод и произношение',words:['drink','drank','drunk'],percent:old.progress}].map((card,i)=>'<button type="button" class="group-card '+(selectedTopic===card.id?'selected ':'')+'" data-action="select:'+card.id+'"><div class="group-card-top"><div><div class="block-title">'+esc(card.title)+'</div><div class="block-meta">'+esc(card.sub)+'</div></div><span class="badge">'+card.percent+'%</span></div><div class="topic-word-art" aria-hidden="true">'+card.words.map(w=>'<span>'+esc(w)+'</span>').join('')+'</div><div class="progress"><div class="bar" style="width:'+card.percent+'%"></div></div></button>').join('');}
     refreshGlobalStats();
   }
   function home() { session=null;cancelNext();window.legacyTrainer.open('home'); }
@@ -163,6 +170,10 @@
   function navigate(id) { navigateHash(id); route(); }
   function route() {
     const id=location.hash.slice(1);
+    if(id==='prepositions'){
+      history.replaceState(null,'',location.pathname+location.search+'#'+defaultTopic.id);
+      return detail(defaultTopic);
+    }
     const t=topics.find(t=>t.id===id);
     session=null;
     if(t) return detail(t);
@@ -176,7 +187,7 @@
   function onAction(e) {
     const b=e.target.closest('button'); if(!b || b.disabled) return;
     if(b.dataset.answer !== undefined) return answer(b.dataset.answer);
-    const [action,id,lessonId]=(b.dataset.action || '').split(':'); const t=topics.find(t=>t.id===id);
+    const [action,id,lessonId]=(b.dataset.action || '').split(':'); const t=id==='prepositions'?defaultTopic:findTopic(id);
     if(action==='select'){selectedTopic=id;save();renderDashboard();document.querySelector('.home-main')?.scrollIntoView({behavior:'smooth',block:'start'});return;}
     if(action==='home') navigate('all');
     if(action==='verbs'||action==='dictionary') navigate(action);
@@ -212,7 +223,8 @@
   function restoreTopicPage(data){
     if(!data?.page)return false;
     if(data.page.kind==='verbs'){verbOverview();return true;}
-    const t=topics.find(t=>t.id===(data.session?.topic||data.page.topic));if(!t)return false;
+    const id=data.session?.topic||data.page.topic;
+    const t=id==='prepositions'?(data.session?legacyPrepositions:defaultTopic):findTopic(id);if(!t)return false;
     if(data.page.kind==='rules'){detail(t);return true;}
     if(data.page.kind==='empty'){showEmptyErrors(t);return true;}
     const saved=data.session,bank=new Map(views(t).map(q=>[q.id,q]));
