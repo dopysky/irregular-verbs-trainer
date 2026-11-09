@@ -2,12 +2,17 @@
 (function(root){
   'use strict';
   const signals={
-    click:{volume:.10,length:.075,type:'sine',tones:[[520,0,.055]]},
-    correct:{volume:.32,length:.52,type:'sine',tones:[[784,0,.22],[1046.5,.07,.30],[1318.5,.14,.32]]},
-    wrong:{volume:.32,length:.30,type:'triangle',tones:[[220,0,.13],[165,.08,.21]]}
+    correct:{volume:.32,length:.52,type:'sine',tones:[[784,0,.22],[1046.5,.07,.30],[1318.5,.14,.32]]}
   };
   function bind(document,isEnabled){
     let context,pendingClick;
+    const effects={};
+    for(const [kind,src] of Object.entries({
+      click:'assets/sounds/neutral.mp3',
+      wrong:'assets/sounds/incorrect.mp3'
+    })){
+      try{const audio=new root.Audio(src);audio.preload='auto';effects[kind]=audio;}catch{}
+    }
     function unlock(){
       const Audio=root.AudioContext||root.webkitAudioContext;
       if(!Audio)return;
@@ -17,6 +22,16 @@
     }
     function play(kind){
       if(!isEnabled())return;
+      if(kind!=='correct'){
+        const audio=effects[kind];
+        if(!audio)return;
+        try{
+          audio.pause();
+          audio.currentTime=0;
+          audio.play()?.catch(()=>{});
+        }catch{}
+        return;
+      }
       try{
         const c=unlock();
         if(!c)return;
@@ -32,7 +47,7 @@
           oscillator.type=type;
           oscillator.frequency.setValueAtTime(frequency,start);
           gain.gain.setValueAtTime(.0001,start);
-          gain.gain.exponentialRampToValueAtTime(kind==='correct'?.72:.5,start+.012);
+          gain.gain.exponentialRampToValueAtTime(.72,start+.012);
           gain.gain.exponentialRampToValueAtTime(.0001,start+duration);
           oscillator.connect(gain);gain.connect(master);
           oscillator.onended=()=>{
