@@ -202,7 +202,7 @@ function checkCurrent(force=false){
   legacyInputDispose?.();legacyInputDispose=null;s.answered=true;setPracticeActions(true);
   markAttempt(v,ok,q.mode);
   if(!ok)s.items.splice(Math.min(s.items.length,s.index+3),0,makeItem(v,q.mode));else s.score++;
-  presentLegacyAnswer(q,ok,nextQ);
+  presentLegacyAnswer(q,ok,nextQ,force);
 }
 function presentLegacyAnswer(q,ok,next,silent=false){
   const s=session;s.answered=true;setPracticeActions(true);
@@ -395,7 +395,7 @@ function checkFolderCurrent(force=false){
   else{markAttempt(v,ok,q.mode);if(mastered(v))s.completedIds?.add(v.n);}
   save();
   if(!ok){q.retries=(q.retries||0)+1;const retry=makeFolderItem(v,s.folderId);retry.retries=q.retries;s.items.splice(Math.min(s.items.length,s.index+4+Math.floor(Math.random()*3)),0,retry);}
-  presentLegacyAnswer(q,ok,nextFolderQ);
+  presentLegacyAnswer(q,ok,nextFolderQ,force);
 }
 function nextFolderQ(playSpeech=true){if(!session||!session.answered)return;session.index++;if(session.index>=session.items.length)finishSession();else renderQFolder(playSpeech)}
 

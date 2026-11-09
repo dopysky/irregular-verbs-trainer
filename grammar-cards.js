@@ -724,12 +724,7 @@ window.GrammarCards = {
           {
             "src": "assets/grammar/comparison/much-more-most.png",
             "alt": "Три одинаковых стакана с возрастающим количеством воды.",
-            "captions": [["much → more → the most", "много → больше → больше всего"]]
-          },
-          {
-            "src": "assets/grammar/comparison/many-more-most.png",
-            "alt": "В трёх корзинках становится больше яблок.",
-            "captions": [["many → more → the most", "много → больше → больше всего"]]
+            "captions": [["much / many → more → the most", "много → больше → больше всего"]]
           }
         ],
         "examples": []

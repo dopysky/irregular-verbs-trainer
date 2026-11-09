@@ -197,7 +197,7 @@
     state.results[q.id] = { ...previous,attempts:previous.attempts+1,correct:previous.correct+Number(ok),error:!ok,lastAnswer:Array.isArray(value)?value.join(' / '):value,updatedAt:new Date().toISOString() };
     if(s.wordHelp)state.results[q.id].wordHelpAttempts=(previous.wordHelpAttempts||0)+1;
     save();
-    window.TrainingSound?.result(ok);
+    if(!skipped)window.TrainingSound?.result(ok);
     presentAnswer(value,ok);window.PageState?.checkpoint();
   }
   function presentAnswer(value,ok){
