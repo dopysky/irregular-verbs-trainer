@@ -541,7 +541,7 @@ function startReview(){
   session={items,index:0,score:0,kind:'review',group:null,answered:false,folder:false,returnTo:'home'};
   save();show('quiz');renderQ();
 }
-nav('review-btn').onclick=startReview;
+if(nav('review-btn'))nav('review-btn').onclick=startReview;
 if(nav('goal-edit'))nav('goal-edit').onclick=()=>{const g=[10,20,30,50],cur=state.dailyGoal||20;state.dailyGoal=g[(g.indexOf(cur)+1)%g.length];save();renderMotivation()};
 renderMotivation();
 

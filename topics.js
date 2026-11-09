@@ -286,7 +286,8 @@
   app.addEventListener('click',onAction);
   document.getElementById('blocks')?.addEventListener('click',onAction);
   document.querySelectorAll('[data-home]').forEach(b=>b.onclick=()=>navigate('all'));
-  document.getElementById('review-btn').onclick=()=>{const t=topics.find(t=>errors(t).length);if(t)start(t,true);else window.legacyTrainer.review();};
+  const reviewButton=document.getElementById('review-btn');
+  if(reviewButton)reviewButton.onclick=()=>{const t=topics.find(t=>errors(t).length);if(t)start(t,true);else window.legacyTrainer.review();};
   app.addEventListener('submit',e=>{
     e.preventDefault();
   });
