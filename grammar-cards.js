@@ -24,32 +24,7 @@ window.GrammarCards = {
             ]
           }
         ],
-        "examples": [
-          [
-            "The ball is in the box.",
-            "Мяч в коробке."
-          ],
-          [
-            "I am in the house.",
-            "Я в доме."
-          ],
-          [
-            "I live in London.",
-            "Я живу в Лондоне."
-          ],
-          [
-            "She lives in France.",
-            "Она живёт во Франции."
-          ],
-          [
-            "I am inside the house.",
-            "Я внутри дома."
-          ],
-          [
-            "He is outside the house.",
-            "Он снаружи дома."
-          ]
-        ]
+        "examples": []
       },
       {
         "id": "P02",
@@ -724,7 +699,12 @@ window.GrammarCards = {
           {
             "src": "assets/grammar/comparison/much-more-most.png",
             "alt": "Три одинаковых стакана с возрастающим количеством воды.",
-            "captions": [["much / many → more → the most", "много → больше → больше всего"]]
+            "captions": [["much → more → the most", "много → больше → больше всего"]]
+          },
+          {
+            "src": "assets/grammar/comparison/many-more-most.png",
+            "alt": "В трёх корзинках становится больше яблок.",
+            "captions": [["many → more → the most", "много → больше → больше всего"]]
           }
         ],
         "examples": []

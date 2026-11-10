@@ -202,7 +202,7 @@ function checkCurrent(force=false){
   legacyInputDispose?.();legacyInputDispose=null;s.answered=true;setPracticeActions(true);
   markAttempt(v,ok,q.mode);
   if(!ok)s.items.splice(Math.min(s.items.length,s.index+3),0,makeItem(v,q.mode));else s.score++;
-  presentLegacyAnswer(q,ok,nextQ,force);
+  presentLegacyAnswer(q,ok,nextQ);
 }
 function presentLegacyAnswer(q,ok,next,silent=false){
   const s=session;s.answered=true;setPracticeActions(true);
@@ -395,7 +395,7 @@ function checkFolderCurrent(force=false){
   else{markAttempt(v,ok,q.mode);if(mastered(v))s.completedIds?.add(v.n);}
   save();
   if(!ok){q.retries=(q.retries||0)+1;const retry=makeFolderItem(v,s.folderId);retry.retries=q.retries;s.items.splice(Math.min(s.items.length,s.index+4+Math.floor(Math.random()*3)),0,retry);}
-  presentLegacyAnswer(q,ok,nextFolderQ,force);
+  presentLegacyAnswer(q,ok,nextFolderQ);
 }
 function nextFolderQ(playSpeech=true){if(!session||!session.answered)return;session.index++;if(session.index>=session.items.length)finishSession();else renderQFolder(playSpeech)}
 
@@ -541,7 +541,7 @@ function startReview(){
   session={items,index:0,score:0,kind:'review',group:null,answered:false,folder:false,returnTo:'home'};
   save();show('quiz');renderQ();
 }
-if(nav('review-btn'))nav('review-btn').onclick=startReview;
+nav('review-btn').onclick=startReview;
 if(nav('goal-edit'))nav('goal-edit').onclick=()=>{const g=[10,20,30,50],cur=state.dailyGoal||20;state.dailyGoal=g[(g.indexOf(cur)+1)%g.length];save();renderMotivation()};
 renderMotivation();
 

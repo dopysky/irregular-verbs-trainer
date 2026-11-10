@@ -197,7 +197,7 @@
     state.results[q.id] = { ...previous,attempts:previous.attempts+1,correct:previous.correct+Number(ok),error:!ok,lastAnswer:Array.isArray(value)?value.join(' / '):value,updatedAt:new Date().toISOString() };
     if(s.wordHelp)state.results[q.id].wordHelpAttempts=(previous.wordHelpAttempts||0)+1;
     save();
-    if(!skipped)window.TrainingSound?.result(ok);
+    window.TrainingSound?.result(ok);
     presentAnswer(value,ok);window.PageState?.checkpoint();
   }
   function presentAnswer(value,ok){
@@ -286,8 +286,7 @@
   app.addEventListener('click',onAction);
   document.getElementById('blocks')?.addEventListener('click',onAction);
   document.querySelectorAll('[data-home]').forEach(b=>b.onclick=()=>navigate('all'));
-  const reviewButton=document.getElementById('review-btn');
-  if(reviewButton)reviewButton.onclick=()=>{const t=topics.find(t=>errors(t).length);if(t)start(t,true);else window.legacyTrainer.review();};
+  document.getElementById('review-btn').onclick=()=>{const t=topics.find(t=>errors(t).length);if(t)start(t,true);else window.legacyTrainer.review();};
   app.addEventListener('submit',e=>{
     e.preventDefault();
   });
