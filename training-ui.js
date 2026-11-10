@@ -3,7 +3,7 @@
   'use strict';
   const escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const icon=name=>'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(name==='key'?'<circle cx="8" cy="8" r="4"/><path d="m11 11 9 9m-3-3 3-3m-6 0 3-3"/>':'<path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a8 8 0 0 1 0 11"/>')+'</svg>';
-  function bindReady(elements,{button,read,commit,active=()=>true,keyboard=true}){
+  function bindReady(elements,{button,read,commit,active=()=>true,keyboard=true,keyboardLanguage='en'}){
     const inputs=[...elements],composing=new Set();let disposed=false,submitted=false;
     const values=read||(()=>inputs.map(e=>e.value.trim()));
     function valid(){const parts=values();return !disposed&&!submitted&&!composing.size&&active()&&parts.length>0&&parts.every(v=>String(v).trim());}
@@ -16,7 +16,7 @@
       }
     }
     button.addEventListener('click',submit);refresh();
-    const disposeKeyboard=keyboard?root.EnglishKeyboard?.attach(inputs,button):null;
+    const disposeKeyboard=keyboard?root.EnglishKeyboard?.attach(inputs,button,keyboardLanguage):null;
     const dispose=()=>{disposed=true;disposeKeyboard?.();for(const [input,event,handler]of bindings)input.removeEventListener(event,handler);button.removeEventListener('click',submit);};
     dispose.refresh=refresh;return dispose;
   }

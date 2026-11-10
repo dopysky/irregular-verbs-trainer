@@ -49,7 +49,9 @@ html[data-theme="dark"] body.unified-site{--ink:#f6effb;--sub:#b8abc6;--surface:
 #practice .practice-options button.is-correct{background:var(--answer-good-bg);border-color:var(--answer-good-border);color:var(--answer-good-text);opacity:1}
 #practice .practice-options button.is-wrong{background:var(--answer-bad-bg);border-color:var(--answer-bad-border);color:var(--answer-bad-text);opacity:1}
 .answer-label{display:block;font-size:14px;color:var(--sub);margin:12px 0 8px}
-.answer-input{width:100%;display:block;resize:vertical;min-height:54px;padding:15px 17px;font:inherit;border:1px solid #b5a7c9;border-radius:12px;color:var(--ink);background:var(--surface)}
+.answer-input{width:100%;display:block;resize:vertical;min-height:44px;padding:10px 12px;font:inherit;border:1px solid #b5a7c9;border-radius:12px;color:var(--ink);background:var(--surface)}
+#practice .answer-input:focus:not(:focus-visible){outline:none;box-shadow:none}
+#practice .answer-input:focus-visible{outline:2px dashed var(--accent,#7957ff);outline-offset:2px}
 .feedback-box{padding:18px;border-radius:14px;margin-top:24px;line-height:1.65;font-size:16px}
 .feedback-box.correct{background:var(--answer-good-bg);color:var(--answer-good-text)}
 .feedback-box.wrong{background:var(--answer-bad-bg);color:var(--ink)}

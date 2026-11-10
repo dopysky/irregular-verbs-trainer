@@ -1,0 +1,12 @@
+const assert=require('node:assert/strict'),fs=require('node:fs');
+const read=f=>fs.readFileSync(__dirname+'/'+f,'utf8');
+const topics=read('topics.js'),keys=read('keyboard.js'),css=read('keyboard.css'),sound=read('training-sound.js'),html=read('index.html'),sw=read('sw.js');
+assert(!topics.includes('<ul class="rule-examples">'));
+assert(topics.includes('card.note')&&topics.includes('figure.captions'));
+assert(!keys.includes('Системная клавиатура'));
+assert(keys.includes('KOKORA')&&keys.includes('⌫')&&keys.includes('↵'));
+assert(css.includes('user-select:none')&&css.includes('-webkit-user-select:none'));
+assert(sound.includes('assets/sounds/error-denied.mp3'));
+assert(html.includes('favicon-k.png')&&sw.includes('favicon-k.png'));
+assert(fs.existsSync(__dirname+'/assets/sounds/error-denied.mp3'));
+console.log('Rule examples, keyboard and assets match specification');

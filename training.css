@@ -109,3 +109,6 @@ html[data-theme="dark"] .unified-site #folders .folder-card:nth-child(even){back
 
 #practice .correct-material{font-size:19px}
 @media(max-width:650px){#practice .correct-material{font-size:18px}}
+#quiz .input-grid input:not(.correct):not(.wrong),#quiz .single-answer input:not(.correct):not(.wrong){min-height:44px;padding:10px 12px;border:1px solid #b5a7c9;box-shadow:none}
+#quiz .input-grid input:focus:not(:focus-visible),#quiz .single-answer input:focus:not(:focus-visible){outline:none}
+#quiz input:focus-visible{outline:2px dashed var(--accent,#7957ff);outline-offset:2px}

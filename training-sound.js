@@ -9,7 +9,7 @@
     const effects={};
     for(const [kind,src] of Object.entries({
       click:'assets/sounds/neutral.mp3',
-      wrong:'assets/sounds/incorrect.mp3'
+      wrong:'assets/sounds/error-denied.mp3'
     })){
       try{const audio=new root.Audio(src);audio.preload='auto';effects[kind]=audio;}catch{}
     }
