@@ -169,7 +169,7 @@
       }
     };
     const keepCaret=e=>{
-      if(document.activeElement?.matches('#answer-form input')
+      if(document.activeElement?.matches('#answer-form input, #answer-form textarea')
         && (e.target.closest('[data-word-hint]')||closeButton.contains(e.target)))e.preventDefault();
     };
     document.addEventListener('click',click);
@@ -186,7 +186,7 @@
     page={kind:'question'};
     const s = session, q = s.queue[s.index]; s.answered = false;delete s.response;s.wordHelp=false;
     const fields = q.fields || [q.mode==='full'?'Твой перевод':'Твой ответ'];
-    const textInputs = fields.map((label,i)=>`<label class="answer-label" for="answer${i||''}">${esc(label)}</label><input id="answer${i||''}" data-answer-part class="answer-input" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Напиши на английском…" required>`).join('');
+    const textInputs = fields.map((label,i)=>`<label class="answer-label" for="answer${i||''}">${esc(label)}</label>${q.mode==='full'?`<textarea id="answer${i||''}" rows="2" data-answer-part class="answer-input" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Напиши на английском…" required></textarea>`:`<input id="answer${i||''}" data-answer-part class="answer-input" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Напиши на английском…" required>`}`).join('');
     const hasHints=q.mode==='full' && q.source.word_hints?.length;
     const hintArea=hasHints?'<div class="word-hint-slot"><div id="word-hint-card" class="word-hint-card" hidden><div aria-live="polite"><strong lang="en"></strong><span></span></div><button type="button" aria-label="Закрыть подсказку">×</button></div></div>':'';
     show(`${breadcrumb(s.topic)}<section class="exercise-panel"><div class="exercise-top"><span>${esc(s.topic.title)}</span><span>${s.index+1} / ${s.queue.length}</span></div><progress value="${s.index}" max="${s.queue.length}" aria-label="Прогресс тренировки"></progress><span class="practice-eyebrow">${esc(q.instruction)}</span><h2 class="question${hasHints?' question-with-hints':''}" lang="${q.mode==='full'?'ru':'en'}">${promptWithHints(q)}</h2>${hintArea}${q.translation?'<p class="question-translation">'+esc(q.translation)+'</p>':''}<form id="answer-form">${q.options?.length ? `<div class="practice-options">${q.options.map(o=>`<button type="button" data-answer="${esc(o)}" lang="en">${esc(o)}</button>`).join('')}</div>` : textInputs}</form><div id="feedback" aria-live="polite"></div><div class="training-footer"><button type="button" class="exit-training" data-action="home">Закончить тренировку</button><div id="question-actions" class="practice-actions answer-controls">${button('Не знаю','skip')}${!q.options?.length?'<button type="button" class="primary" id="complete-answer" disabled>Готово</button>':''}</div></div></section>`);
@@ -215,9 +215,9 @@
     const skipped=s.response?.skipped===true;
     hintDispose?.();hintDispose=null;
     if(skipped){const form=app.querySelector('#answer-form');if(form)form.hidden=true;}
-    app.querySelectorAll('#answer-form button, #answer-form input, [data-action="skip"], [data-word-hint]').forEach(el=>{
+    app.querySelectorAll('#answer-form button, #answer-form input, #answer-form textarea, [data-action="skip"], [data-word-hint]').forEach(el=>{
       el.disabled=true;
-      if(el.matches?.('input')&&!skipped)el.classList.add(ok?'correct':'wrong');
+      if(el.matches?.('input, textarea')&&!skipped)el.classList.add(ok?'correct':'wrong');
       if(el.dataset.answer!==undefined){
         el.classList.toggle('is-correct',!skipped&&q.answers.some(a=>normalize(a)===normalize(el.dataset.answer)));
         el.classList.toggle('is-wrong',!skipped&&!ok && el.dataset.answer===value);

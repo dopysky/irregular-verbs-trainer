@@ -1,0 +1,10 @@
+const assert=require('node:assert/strict');
+const keyboard=require('./keyboard');
+assert.deepEqual(keyboard.edit('abcdef',2,4,'X'),{value:'abXef',position:3});
+assert.deepEqual(keyboard.erase('abcdef',2,4),{value:'abef',position:2});
+assert.deepEqual(keyboard.erase('a😀b',3,3),{value:'ab',position:1});
+assert.deepEqual(keyboard.erase('abc',0,0),{value:'abc',position:0});
+assert.equal(keyboard.layout(false)[0].join(''),'qwertyuiop');
+assert(keyboard.layout(true).flat().includes("'"));
+assert(keyboard.layout(true).flat().includes('!'));
+console.log('Keyboard editing and layouts OK');

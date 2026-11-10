@@ -106,3 +106,6 @@ html[data-theme="dark"] .unified-site{--control-bg:#413254;--control-border:#856
 .unified-site #folders .folder-card:nth-child(even){background:linear-gradient(145deg,#f0e8ff,#fff)!important}
 html[data-theme="dark"] .unified-site #folders .folder-card:nth-child(odd){background:linear-gradient(145deg,#34261d,#282033)!important}
 html[data-theme="dark"] .unified-site #folders .folder-card:nth-child(even){background:linear-gradient(145deg,#332744,#282033)!important}
+
+#practice .correct-material{font-size:19px}
+@media(max-width:650px){#practice .correct-material{font-size:18px}}

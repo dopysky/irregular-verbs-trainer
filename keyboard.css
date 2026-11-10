@@ -1,0 +1,19 @@
+.english-keyboard{position:fixed;z-index:1000;left:0;right:0;bottom:0;padding:8px max(8px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left));background:#f2eafa;box-shadow:0 -5px 24px #60369328;display:grid;gap:6px;max-height:55dvh;overflow-y:auto;touch-action:manipulation}
+.english-keyboard[hidden]{display:none}
+.english-keyboard-row{display:flex;justify-content:center;gap:5px;min-width:0}
+.english-keyboard .english-key{flex:1 1 0;min-width:0;min-height:42px;padding:3px;border:1px solid #fff;background:#f9f4ff;color:#322044;border-radius:11px;font-size:clamp(17px,5vw,25px);line-height:1.1;box-shadow:0 2px 4px #9065aa40}
+.english-keyboard .english-key-shift,.english-keyboard .english-key-backspace,.english-keyboard .english-key-symbols{flex:1.35 1 0;background:#dfccf5;color:#573288}
+.english-keyboard .english-key-shift[aria-pressed=true]{background:#aa81dc}
+.english-keyboard .english-key-space{flex:5 1 0;font-size:17px}
+.english-keyboard .english-key-submit{flex:1.4 1 0;background:#7847be;color:white;font-size:24px}
+.english-keyboard .english-keyboard-native{justify-self:end;padding:2px 7px;min-height:24px;font-size:12px;color:#5d4280;background:transparent;border:0;text-decoration:underline}
+.english-keyboard-open{padding-bottom:calc(var(--keyboard-height, 240px) + 12px)}
+.english-keyboard-open input,.english-keyboard-open textarea{scroll-margin-bottom:calc(var(--keyboard-height, 240px) + 16px)}
+.english-keyboard-open .ambient-bg,.english-keyboard-open .practice-breadcrumb{display:none}
+html[data-theme=dark] .english-keyboard{background:#1c0e2d;box-shadow:0 -5px 24px #0008}
+html[data-theme=dark] .english-keyboard .english-key{background:#39224f;color:#fff;border-color:#665079;box-shadow:none}
+html[data-theme=dark] .english-keyboard .english-key-shift,html[data-theme=dark] .english-keyboard .english-key-backspace,html[data-theme=dark] .english-keyboard .english-key-symbols{background:#594074;color:#e2c7ff}
+html[data-theme=dark] .english-keyboard .english-key-submit{background:#8153c6;color:white}
+html[data-theme=dark] .english-keyboard .english-keyboard-native{color:#e3cbff}
+.english-keyboard button:focus-visible{outline:3px solid #a573e6;outline-offset:2px}
+@media(max-height:500px){.english-keyboard{gap:2px}.english-keyboard-row{gap:3px}.english-keyboard .english-key{min-height:30px;font-size:16px}.english-keyboard .english-keyboard-native{min-height:18px}}

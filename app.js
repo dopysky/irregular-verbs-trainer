@@ -180,7 +180,7 @@ function addReadyButton(){
 function bindInputs(){
   const s=session,q=s.items[s.index],inputs=[...document.querySelectorAll('#q-body input:not([type="hidden"])')];
   if(!inputs.length)return;
-  legacyInputDispose=window.TrainingUI.bindReady(inputs,{button:addReadyButton(),active:()=>session===s&&!s.answered,commit:()=>s.folder?checkFolderCurrent():checkCurrent()});
+  legacyInputDispose=window.TrainingUI.bindReady(inputs,{button:addReadyButton(),keyboard:!['enToRuWrite','customEnToRuWrite'].includes(q.mode),active:()=>session===s&&!s.answered,commit:()=>s.folder?checkFolderCurrent():checkCurrent()});
 }
 function setPracticeActions(answered){
   for(const id of ['dontknow','hint-btn'])document.getElementById(id)?.classList.toggle('hidden',answered);
