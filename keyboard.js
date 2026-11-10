@@ -32,6 +32,8 @@
       if(shift&&action==='text'){shift=false;update();}
     }
     function add(line,label,action,text){const key=doc.createElement('button');key.type='button';key.textContent=label;key.className='english-key english-key-'+action;key.dataset.keyId=action==='text'?`text-${String(text).charCodeAt(0)}`:action;key.setAttribute('aria-label',action==='text'?label:text);if(action==='shift')key.setAttribute('aria-pressed',String(shift));if(action==='space'){const mark=doc.createElement('span');mark.textContent='KOKORA';mark.setAttribute('aria-hidden','true');key.appendChild(mark);}
+      if(action==='shift')key.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 2.5 12h4.5v8h10v-8h4.5L12 3Z"/></svg>';
+      if(action==='backspace')key.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4h12v16H9L2.5 12 9 4Z"/><path d="m12 9 5 6m0-6-5 6"/></svg>';
       let pressed=false;on(key,'pointerdown',e=>{e.preventDefault();pressed=true;perform(action,action==='text'?label:text);if(action==='backspace')hold=root.setTimeout(()=>{repeat=root.setInterval(()=>perform(action,text),70);},400);});
       function stop(){root.clearTimeout(hold);root.clearInterval(repeat);hold=repeat=null;}on(key,'pointerup',stop);on(key,'pointercancel',stop);on(key,'pointerleave',stop);on(key,'contextmenu',e=>e.preventDefault());
       on(key,'click',e=>{if(pressed){pressed=false;return;}perform(action,action==='text'?label:text);});line.appendChild(key);

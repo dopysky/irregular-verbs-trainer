@@ -33,7 +33,7 @@
   const labels = { choice:'Выбери ответ', input:'Впиши ответ', translation:'Переведи предложение', context:'Примени правило' };
   const taskCount = n => `${n} ${n%100>=11&&n%100<=14?'заданий':n%10===1?'задание':n%10>=2&&n%10<=4?'задания':'заданий'}`;
   const button = (text, action, primary = false) => `<button type="button" data-action="${action}" class="${primary ? 'primary' : ''}">${text}</button>`;
-  const breadcrumb = t => `<div class="practice-breadcrumb">${button('← К блокам','home')}<span aria-hidden="true">/</span><span>${esc(t.title)}</span></div>`;
+  const breadcrumb = t => `<div class="practice-breadcrumb">${button('К блокам','home')}<span aria-hidden="true">/</span><span>${esc(t.title)}</span></div>`;
   function selectNav() {}
   function show(html) {
     cancelNext();
@@ -78,9 +78,9 @@
     const t=reviewTopic(id)||reviewTopic('all'),all=views(t),ready=scheduler.due(all,state.reviewV1),future=all.map(q=>state.reviewV1[q.id]?.due).filter(n=>Number.isFinite(n)&&n>Date.now()).sort((a,b)=>a-b);
     page={kind:'review',topic:t.id};session=null;
     const nearest=future.length?`<p>Ближайшее повторение: ${esc(new Date(future[0]).toLocaleString('ru-RU'))}.</p>`:'';
-    show(`<div class="practice-breadcrumb">${button('← К блокам','home')}</div><section class="exercise-panel"><h2>Пора повторить</h2><p>${esc(t.title)} · ${taskCount(ready.length)} готово к повторению</p>${ready.length?button('Начать повторение','review-start:'+t.id,true):'<p>Пока нечего повторять.</p>'+nearest}<div class="practice-actions">${topics.map(x=>button(esc(x.title),'review-screen:'+x.id)).join('')}${button('Все темы','review-screen:all')}</div></section>`);
+    show(`<div class="practice-breadcrumb">${button('К блокам','home')}</div><section class="exercise-panel"><h2>Пора повторить</h2><p>${esc(t.title)} · ${taskCount(ready.length)} готово к повторению</p>${ready.length?button('Начать повторение','review-start:'+t.id,true):'<p>Пока нечего повторять.</p>'+nearest}<div class="practice-actions">${topics.map(x=>button(esc(x.title),'review-screen:'+x.id)).join('')}${button('Все темы','review-screen:all')}</div></section>`);
   }
-  function verbOverview() { page={kind:'verbs'};selectedTopic='verbs';save();show('<div class="practice-breadcrumb">'+button('← К блокам','home')+'</div><section class="panel"><h2>Неправильные глаголы</h2><p class="muted">Выбери группу слов для изучения и тренировки.</p><div id="verb-blocks" class="block-grid"></div></section>');window.legacyTrainer.renderGroups?.(); }
+  function verbOverview() { page={kind:'verbs'};selectedTopic='verbs';save();show('<div class="practice-breadcrumb">'+button('К блокам','home')+'</div><section class="panel"><h2>Неправильные глаголы</h2><p class="muted">Выбери группу слов для изучения и тренировки.</p><div id="verb-blocks" class="block-grid"></div></section>');window.legacyTrainer.renderGroups?.(); }
   const exampleText = ([english,translation]) =>
     `<span lang="en">${esc(english)}</span><small>${esc(translation)}</small>`;
   const sceneImage = ({src,alt}) =>
@@ -107,7 +107,7 @@
   function detail(t) {
     page={kind:'rules',topic:t.id};
     session=null;selectedTopic=t.id;save();
-    show(breadcrumb(t)+'<div class="practice-heading"><div><h2>Правила и примеры</h2><p class="muted">'+esc(t.title)+' · '+t.cards.length+' карточек</p></div>'+button('Начать практику','start:'+t.id,true)+'</div><div class="rule-list">'+t.cards.map(renderRule).join('')+'</div><div class="practice-actions">'+button('Перейти к практике →','start:'+t.id,true)+'</div>');
+    show(breadcrumb(t)+'<div class="practice-heading"><div><h2>Правила и примеры</h2><p class="muted">'+esc(t.title)+' · '+t.cards.length+' карточек</p></div>'+button('Начать практику','start:'+t.id,true)+'</div><div class="rule-list">'+t.cards.map(renderRule).join('')+'</div><div class="practice-actions">'+button('Перейти к практике','start:'+t.id,true)+'</div>');
   }
   function start(t, review) {
     navigateHash(t.id);
@@ -207,7 +207,7 @@
     if(!ok && s.queue.length-s.index-1>=3){const offset=4+Math.floor(Math.random()*3);s.queue.splice(Math.min(s.queue.length,s.index+offset),0,q);}
     if(s.wordHelp)state.results[q.id].wordHelpAttempts=(previous.wordHelpAttempts||0)+1;
     save();
-    window.TrainingSound?.result(ok);
+    if(!skipped)window.TrainingSound?.result(ok);
     presentAnswer(value,ok);window.PageState?.checkpoint();
   }
   function presentAnswer(value,ok){

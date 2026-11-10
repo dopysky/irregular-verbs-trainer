@@ -203,7 +203,7 @@ function checkCurrent(force=false){
   legacyInputDispose?.();legacyInputDispose=null;s.answered=true;setPracticeActions(true);
   markAttempt(v,ok,q.mode);
   if(!ok)s.items.splice(Math.min(s.items.length,s.index+3),0,makeItem(v,q.mode));else s.score++;
-  presentLegacyAnswer(q,ok,nextQ);
+  presentLegacyAnswer(q,ok,nextQ,force);
 }
 function presentLegacyAnswer(q,ok,next,silent=false){
   const s=session;s.answered=true;setPracticeActions(true);
@@ -211,7 +211,7 @@ function presentLegacyAnswer(q,ok,next,silent=false){
   document.querySelectorAll('#q-body input,.option,.letter,.built-letter').forEach(el=>{el.disabled=true;if(el.matches('input'))el.classList.add(ok?'correct':'wrong');});
   document.querySelectorAll('.option').forEach(btn=>{if(btn.dataset.correct==='1')btn.classList.add('correct');else if(btn.classList.contains('selected'))btn.classList.add('wrong');});
   if(!silent)playFeedbackSound(ok);
-  if(!ok){showAnswerCard(q.v,!q.custom,next);window.PageState?.checkpoint();return;}
+  if(!ok){showAnswerCard(q.v,!q.custom,next,silent);window.PageState?.checkpoint();return;}
   document.getElementById('q-feedback').innerHTML='';window.TrainingUI.showCorrect(document.getElementById('q-body'));
   advanceTimer=setTimeout(()=>{if(session===s&&s.answered)next(false);},650);window.PageState?.checkpoint();
 }
@@ -298,7 +298,7 @@ function renderDictionary(){
   const words=visibleFolderWords(title.id);
 
     const personal=words.some(v=>window.VocabularyImport.canManageWord(state,v.id));
-    document.getElementById('dict-list').innerHTML='<div class="learn-table-wrap"><table class="learn-table vocabulary-table'+(personal?' has-personal':'')+'"><thead><tr><th>Слово</th><th>Перевод</th><th><span class="sr-only">Действия</span></th></tr></thead><tbody>'+words.map(v=>'<tr><td>'+ipaCell(v.word,v.ipa||window.VocabularyPronunciation.get(v.word))+'</td><td class="learn-translation">'+htmlEscape(v.translation)+'</td><td><div class="word-actions"><button type="button" class="icon-btn listen-button" title="Прослушать" aria-label="Прослушать '+htmlEscape(v.word)+'" data-dict-speak="'+htmlEscape(v.word)+'">'+window.TrainingUI.icon('sound')+'</button>'+(window.VocabularyImport.canManageWord(state,v.id)?'<button class="icon-btn small-action" data-edit-word="'+v.id+'" title="Редактировать" aria-label="Редактировать">✎</button><button class="icon-btn small-action" data-manage-word="'+v.id+'" title="Переместить" aria-label="Переместить">↔</button><button class="icon-btn small-action" data-delete-word="'+v.id+'" title="Удалить" aria-label="Удалить">×</button>':'')+'</div></td></tr>').join('')+'</tbody></table></div>';
+    document.getElementById('dict-list').innerHTML='<div class="learn-table-wrap"><table class="learn-table vocabulary-table'+(personal?' has-personal':'')+'"><thead><tr><th>Слово</th><th>Перевод</th><th><span class="sr-only">Действия</span></th></tr></thead><tbody>'+words.map(v=>'<tr><td>'+ipaCell(v.word,v.ipa||window.VocabularyPronunciation.get(v.word))+'</td><td class="learn-translation">'+htmlEscape(v.translation)+'</td><td><div class="word-actions"><button type="button" class="icon-btn listen-button" title="Прослушать" aria-label="Прослушать '+htmlEscape(v.word)+'" data-dict-speak="'+htmlEscape(v.word)+'">'+window.TrainingUI.icon('sound')+'</button>'+(window.VocabularyImport.canManageWord(state,v.id)?'<button class="icon-btn small-action" data-edit-word="'+v.id+'" title="Редактировать" aria-label="Редактировать">✎</button><button class="icon-btn small-action" data-manage-word="'+v.id+'" title="Переместить" aria-label="Переместить"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="3" width="11" height="11" rx="2"/><rect x="10" y="10" width="11" height="11" rx="2"/></svg></button><button class="icon-btn small-action" data-delete-word="'+v.id+'" title="Удалить" aria-label="Удалить">×</button>':'')+'</div></td></tr>').join('')+'</tbody></table></div>';
   document.querySelectorAll('[data-dict-speak]').forEach(b=>b.onclick=()=>speak(b.dataset.dictVerb?window.CardSpeech.formsText(verbs.find(v=>v.n==b.dataset.dictVerb)):b.dataset.dictSpeak,true));
   document.querySelectorAll('[data-delete-word]').forEach(b=>b.onclick=()=>openModal('confirm','Удалить слово?','Слово будет удалено из этой папки.','deleteWord',b.dataset.deleteWord,title.id));
   document.querySelectorAll('[data-edit-word]').forEach(b=>b.onclick=()=>openModal('editWord','Редактировать слово',null,'editWord',b.dataset.editWord));
@@ -411,7 +411,7 @@ function checkFolderCurrent(force=false){
   if(q.custom){const key=v.id+'::'+q.mode;vocabularyReview()[key]=window.ReviewSchedule.record(vocabularyReview()[key],{now:Date.now(),ok,hint:!!q.hintLevel});}
   save();
   if(!ok && (!q.custom || s.items.length-s.index-1>=3)){q.retries=(q.retries||0)+1;const retry=makeFolderItem(v,s.folderId,q.custom?q.mode:undefined);retry.retries=q.retries;s.items.splice(Math.min(s.items.length,s.index+4+Math.floor(Math.random()*3)),0,retry);}
-  presentLegacyAnswer(q,ok,nextFolderQ);
+  presentLegacyAnswer(q,ok,nextFolderQ,force);
 }
 function nextFolderQ(playSpeech=true){if(!session||!session.answered)return;session.index++;if(session.index>=session.items.length)finishSession();else renderQFolder(playSpeech)}
 
@@ -492,7 +492,7 @@ function cardWords(type,id){
 }
 function formsBlock(v){const c=(w,i,l)=>`<div class="card-form"><small>${l}</small><b>${htmlEscape(w)}</b>${i?`<i>/${htmlEscape(i)}/</i>`:''}</div>`;return `<div class="card-forms">${c(v.inf,v.ipa,'V1')}${c(v.past,v.pastIpa||(v.past===v.inf?v.ipa:''),'V2')}${c(v.part,v.partIpa||(v.part===v.past?v.pastIpa:v.part===v.inf?v.ipa:''),'V3')}</div>`}
 function answerCardHtml(v,irr){const ru=irr?v.ru:v.translation,en=irr?v.inf:v.word,ipa=irr?'':v.ipa||window.VocabularyPronunciation.get(v.word);return `<div class="flashcard static"><div class="card-main">${htmlEscape(irr?ru:en)}</div>${irr?formsBlock(v):`<div class="card-sub">${htmlEscape(ru)}</div>${ipa?`<div class="learn-ipa">/${htmlEscape(ipa)}/</div>`:''}`}</div>`}
-function showAnswerCard(v,irr,next){
+function showAnswerCard(v,irr,next,silent=false){
   clearTimeout(advanceTimer);legacyInputDispose?.();legacyInputDispose=null;stopPronunciation();setPracticeActions(true);
   for(const id of ['q-word','q-ipa','q-ru','q-feedback','q-hint'])document.getElementById(id).innerHTML='';
   document.getElementById('q-mode').textContent='Запомни слово';
@@ -501,7 +501,7 @@ function showAnswerCard(v,irr,next){
   const text=irr?window.CardSpeech.formsText(v):v.word;
   document.getElementById('ac-sound').onclick=()=>speak(text,true);
   const advance=document.getElementById('ac-next');advance.onclick=()=>{stopPronunciation();next();};advance.focus({preventScroll:true});
-  document.getElementById('sound-btn').classList.add('hidden');autoSpeakCurrent(text);
+  document.getElementById('sound-btn').classList.add('hidden');if(!silent)autoSpeakCurrent(text);
 }
 function startCards(type,id){const items=cardWords(type,id);if(!items.length){show('dictionary');return}cardS={type,id,items,i:0,back:type==='group'?'learn':'dictionary'};show('cards');renderCard();window.scrollTo({top:0})}
 function renderCard(playSpeech=true){
@@ -517,7 +517,7 @@ function renderCard(playSpeech=true){
   }
   const it=s.items[s.i],en=it.irr?window.CardSpeech.formsText(it.v):it.v.word;
   box.innerHTML=answerCardHtml(it.v,it.irr);
-  act.innerHTML=`<button id="card-exit" class="exit-training">Закончить</button><div class="answer-controls">${s.i?'<button id="card-prev" class="small-action">← Назад</button>':''}<button class="icon-btn" id="card-sound" title="Прослушать" aria-label="Прослушать"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a8 8 0 0 1 0 11"/></svg></button><button class="primary" id="card-next" type="button">Продолжить</button></div>`;
+  act.innerHTML=`<button id="card-exit" class="exit-training">Закончить</button><div class="answer-controls">${s.i?'<button id="card-prev" class="small-action">Назад</button>':''}<button class="icon-btn" id="card-sound" title="Прослушать" aria-label="Прослушать"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a8 8 0 0 1 0 11"/></svg></button><button class="primary" id="card-next" type="button">Продолжить</button></div>`;
   on('card-prev',()=>{s.i--;renderCard()});on('card-next',()=>{s.i++;renderCard()});on('card-sound',()=>speak(en,true));on('card-exit',exit);
   if(playSpeech)autoSpeakCurrent(en);document.getElementById('card-next').focus({preventScroll:true});
 }

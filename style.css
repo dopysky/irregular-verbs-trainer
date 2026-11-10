@@ -1510,3 +1510,10 @@ html[data-theme="dark"] .sdot.today i{box-shadow:0 0 0 2px #2b2634,0 0 0 4px #90
 .dictionary-review { flex: 1 1 220px; padding: 14px; border: 1px solid var(--border, #e2dcf0); border-radius: 16px; }
 .dictionary-review p { margin: 8px 0; }
 @media (max-width: 600px) { .dictionary-tools { flex-direction: column; } .dictionary-training, .dictionary-review { flex-basis: auto; } }
+
+@font-face{font-family:'UnboundedMobile';src:url('assets/fonts/Unbounded.ttf?v=54.17') format('truetype');font-style:normal;font-weight:200 900;font-display:swap}
+@media (max-width: 700px){
+  .unified-site :is(h1,h2:not(.question),h3,h4,.header-section-title,.block-title,.training-heading,.mode-title){font-family:'UnboundedMobile',Arial,Helvetica,sans-serif!important;letter-spacing:-.02em!important;line-height:1.15}
+  #practice :is(h2:not(.question),h3,h4){font-family:'UnboundedMobile',Arial,Helvetica,sans-serif!important}
+}
+.scroll-top{width:auto!important;min-width:54px;height:27px!important;padding:0 8px!important;border-radius:14px!important;font-size:12px!important}

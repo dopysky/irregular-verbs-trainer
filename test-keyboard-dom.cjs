@@ -13,6 +13,7 @@ global.window={document:doc,navigator:{vibrate:n=>vibrations.push(n)},matchMedia
 const {attach}=require('./keyboard');const field=new Element('input'),submit=new Element('button');submit.disabled=false;let submits=0;submit.click=()=>submits++;
 const dispose=attach([field],submit);assert.equal(field.getAttribute('inputmode'),'none');const panel=doc.body.children[0];assert.equal(panel.hidden,false);field.focus();
 let row=panel.children[0];row.children[0].fire('pointerdown');row.children[0].fire('pointerup');row.children[0].fire('click');assert.equal(field.value,'q');assert.deepEqual(vibrations,[8]);
+assert.match(panel.children[2].children[0].innerHTML||'',/<svg/);assert.match(panel.children[2].children.at(-1).innerHTML||'',/<svg/);
 let menuPrevented=false;row.children[0].fire('contextmenu',{preventDefault(){menuPrevented=true;}});assert(menuPrevented);
 field.value='abcd';field.setSelectionRange(1,3);row.children[1].fire('click');assert.equal(field.value,'awd');
 field.value='abcd';field.setSelectionRange(4,4);const backspace=panel.children[2].children.at(-1);backspace.fire('pointerdown');timeoutFn();intervalFn();assert.equal(field.value,'ab');assert.deepEqual(vibrations,[8,8,8,8]);backspace.fire('pointerup');assert.equal(intervalFn,null);
