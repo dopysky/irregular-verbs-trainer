@@ -4347,7 +4347,9 @@ const perfectExplanation = {
   'prepositions-time-22': 'Я всё ещё её знаю, поэтому используем Present Perfect: have known.'
 };
 function prepareExercises(block, existing) {
-  return [...existing, ...exercises[block]].map(exercise => {
+  const sections = {place:'Предлоги места',time:'Предлоги времени',comparison:'Степени сравнения'};
+  const added = (window.NEW_EXERCISES || []).filter(exercise => block === 'comparison' ? exercise.block === sections[block] : exercise.section === sections[block]);
+  return [...existing, ...exercises[block], ...added].map(exercise => {
     const data = feedback[exercise.id] || exercise;
     const figure = data.scene && figuresByRule.get(data.rule_id)?.find(image => image.src.endsWith('/' + data.scene));
     const fullNote = perfectExplanation[exercise.id];

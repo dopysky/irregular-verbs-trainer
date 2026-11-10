@@ -21,6 +21,10 @@
     }
   } catch { warn(); }
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify({...state,selectedTopic})); } catch { warn(); } };
+  const scheduler=window.ReviewSchedule;
+  if(!state.reviewV1 || typeof state.reviewV1!=='object' || Array.isArray(state.reviewV1)){
+    state.reviewV1=scheduler.migrate(state.results);save();
+  }
   const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const { normalize, accepts, task, explanation } = window.TrainingAnswers;
   const views=t=>t.exercises.flatMap(q=>(q.available_modes||[q.mode]).map(mode=>task(q,mode)));
@@ -62,13 +66,20 @@
     const action=(id,text,fn)=>{const b=document.getElementById(id);if(b){b.textContent=text;b.onclick=fn;}};
     action('continue-btn','Начать тренировку',()=>t?start(t,false):window.legacyTrainer.start());
     action('study-btn',t?'Правила и примеры':'Посмотреть слова',()=>t?navigate(t.id):navigate('verbs'));
-    action('errors-btn','Мои ошибки',()=>t?(errors(t).length?start(t,true):showEmptyErrors(t)):window.legacyTrainer.open('errors'));
+    action('errors-btn','Пора повторить',()=>showReview(t?.id||'all'));
     const blocks=document.getElementById('blocks');
     if(blocks){blocks.innerHTML=[...topics.map(t=>({id:t.id,title:t.title,sub:t.description,words:t.words,percent:Math.round(completed(t)/t.exercises.length*100)})),{id:'verbs',title:'Неправильные глаголы',sub:'Три формы, перевод и произношение',words:['drink','drank','drunk'],percent:old.progress}].map((card,i)=>'<button type="button" class="group-card '+(selectedTopic===card.id?'selected ':'')+'" data-action="select:'+card.id+'"><div class="group-card-top"><div><div class="block-title">'+esc(card.title)+'</div><div class="block-meta">'+esc(card.sub)+'</div></div><span class="badge">'+card.percent+'%</span></div><div class="topic-word-art" aria-hidden="true">'+card.words.map(w=>'<span>'+esc(w)+'</span>').join('')+'</div><div class="progress"><div class="bar" style="width:'+card.percent+'%"></div></div></button>').join('');}
     refreshGlobalStats();
   }
   function home() { session=null;cancelNext();window.legacyTrainer.open('home'); }
   function showEmptyErrors(t) { page={kind:'empty',topic:t.id};show(breadcrumb(t)+'<section class="exercise-panel"><h2>Ошибок пока нет</h2><p>После неверного ответа задание сохранится для повторения.</p>'+button('Начать тренировку','start:'+t.id,true)+'</section>'); }
+  function reviewTopic(id){return id==='all'?{id:'all',title:'Все темы',exercises:topics.flatMap(t=>t.exercises)}:findTopic(id);}
+  function showReview(id='all'){
+    const t=reviewTopic(id)||reviewTopic('all'),all=views(t),ready=scheduler.due(all,state.reviewV1),future=all.map(q=>state.reviewV1[q.id]?.due).filter(n=>Number.isFinite(n)&&n>Date.now()).sort((a,b)=>a-b);
+    page={kind:'review',topic:t.id};session=null;
+    const nearest=future.length?`<p>Ближайшее повторение: ${esc(new Date(future[0]).toLocaleString('ru-RU'))}.</p>`:'';
+    show(`<div class="practice-breadcrumb">${button('← К блокам','home')}</div><section class="exercise-panel"><h2>Пора повторить</h2><p>${esc(t.title)} · ${taskCount(ready.length)} готово к повторению</p>${ready.length?button('Начать повторение','review-start:'+t.id,true):'<p>Пока нечего повторять.</p>'+nearest}<div class="practice-actions">${topics.map(x=>button(esc(x.title),'review-screen:'+x.id)).join('')}${button('Все темы','review-screen:all')}</div></section>`);
+  }
   function verbOverview() { page={kind:'verbs'};selectedTopic='verbs';save();show('<div class="practice-breadcrumb">'+button('← К блокам','home')+'</div><section class="panel"><h2>Неправильные глаголы</h2><p class="muted">Выбери группу слов для изучения и тренировки.</p><div id="verb-blocks" class="block-grid"></div></section>');window.legacyTrainer.renderGroups?.(); }
   const exampleText = ([english,translation]) =>
     `<span lang="en">${esc(english)}</span><small>${esc(translation)}</small>`;
@@ -103,11 +114,8 @@
     navigateHash(t.id);
     selectNav(t.id);
     const shuffle=pool=>{for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}return pool;};
-    const all=views(t),full=shuffle(all.filter(v=>v.mode==='full'&&v.source.mode!=='full')).slice(0,4);
-    const used=new Set(full.map(v=>v.source.id));
-    const base=shuffle(all.filter(v=>v.mode===v.source.mode&&!used.has(v.source.id)));
-    const queue=review?shuffle(errors(t)).slice(0,18):shuffle([...full,...base.slice(0,18-full.length)]);
-    if (!queue.length) return detail(t);
+    const all=views(t),queue=scheduler.select(all,state.reviewV1,Date.now(),review);
+    if (!queue.length) return review?showReview(t.id):detail(t);
     session = { topic:t, queue, index:0, correct:0, answered:false };
     question();
   }
@@ -195,6 +203,8 @@
     window.legacyTrainer.recordGrammarActivity?.();
     const previous = state.results[q.id] || { attempts:0,correct:0 };
     state.results[q.id] = { ...previous,attempts:previous.attempts+1,correct:previous.correct+Number(ok),error:!ok,lastAnswer:Array.isArray(value)?value.join(' / '):value,updatedAt:new Date().toISOString() };
+    state.reviewV1[q.id]=scheduler.record(state.reviewV1[q.id],{now:Date.now(),ok,hint:s.wordHelp});
+    if(!ok && s.queue.length-s.index-1>=3){const offset=4+Math.floor(Math.random()*3);s.queue.splice(Math.min(s.queue.length,s.index+offset),0,q);}
     if(s.wordHelp)state.results[q.id].wordHelpAttempts=(previous.wordHelpAttempts||0)+1;
     save();
     window.TrainingSound?.result(ok);
@@ -221,7 +231,7 @@
     } else {
       const scene=q.source.feedback_image;
       const singleBlank=q.mode!=='full'&&!q.fields&&(q.material.match(/_{2,}/g)||[]).length===1&&q.answers?.[0];
-      const material=singleBlank?`Правильный ответ: ${q.answers[0]}`:q.correctSentence;
+      const material=q.correctSentence;
       const russian=q.source.russian;
       const translation=russian&&!(singleBlank&&q.translation)&&normalize(russian)!==normalize(q.translation)&&normalize(russian)!==normalize(q.material)?russian:'';
       f.innerHTML=window.TrainingUI.reviewCard({material,translation,explanation:skipped?'':explanation(q),audio:false,actions:false,neutral:skipped,detailsHTML:scene?`<div class="review-scene">${sceneImage(scene)}</div>`:''});
@@ -240,7 +250,7 @@
   function summary(){
     page={kind:'result'};
     const s=session;
-    show(`${breadcrumb(s.topic)}<section class="exercise-panel result-summary"><span class="result-check" aria-hidden="true">✓</span><h2>Практика завершена</h2><p class="result-score">${s.correct}<span> / ${s.queue.length}</span></p><p>верных ответов</p><p class="result-errors">К повторению: ${errors(s.topic).length}</p><div class="practice-actions">${errors(s.topic).length?button('Повторить ошибки',`review:${s.topic.id}`,true):button('Ещё раз',`start:${s.topic.id}`,true)}${button('К блокам','home')}</div></section>`);
+    show(`${breadcrumb(s.topic)}<section class="exercise-panel result-summary"><span class="result-check" aria-hidden="true">✓</span><h2>Практика завершена</h2><p class="result-score">${s.correct}<span> / ${s.queue.length}</span></p><p>верных ответов</p><div class="practice-actions">${button('Пора повторить',`review-screen:${s.topic.id}`,true)}${button('К блокам','home')}</div></section>`);
   }
   function navigateHash(id) {
     const hash = id==='all'?'':`#${id}`;
@@ -275,6 +285,8 @@
     if(b.dataset.answer !== undefined) return answer(b.dataset.answer);
     const [action,id,lessonId]=(b.dataset.action || '').split(':'); const t=id==='prepositions'?defaultTopic:findTopic(id);
     if(action==='select'){selectedTopic=id;save();renderDashboard();document.querySelector('.home-main')?.scrollIntoView({behavior:'smooth',block:'start'});return;}
+    if(action==='review-screen')return showReview(id);
+    if(action==='review-start'){const topic=reviewTopic(id);if(topic)return start(topic,true);}
     if(action==='home') navigate('all');
     if(action==='verbs'||action==='dictionary') navigate(action);
     if(action==='topic' && t) {navigateHash(t.id);detail(t);}
@@ -286,7 +298,8 @@
   app.addEventListener('click',onAction);
   document.getElementById('blocks')?.addEventListener('click',onAction);
   document.querySelectorAll('[data-home]').forEach(b=>b.onclick=()=>navigate('all'));
-  document.getElementById('review-btn').onclick=()=>{const t=topics.find(t=>errors(t).length);if(t)start(t,true);else window.legacyTrainer.review();};
+  const reviewButton=document.getElementById('review-btn');
+  if(reviewButton)reviewButton.onclick=()=>{const t=topics.find(t=>errors(t).length);if(t)start(t,true);else window.legacyTrainer.review();};
   app.addEventListener('submit',e=>{
     e.preventDefault();
   });
@@ -310,7 +323,8 @@
     if(!data?.page)return false;
     if(data.page.kind==='verbs'){verbOverview();return true;}
     const id=data.session?.topic||data.page.topic;
-    const t=id==='prepositions'?(data.session?legacyPrepositions:defaultTopic):findTopic(id);if(!t)return false;
+    const t=id==='prepositions'?(data.session?legacyPrepositions:defaultTopic):reviewTopic(id);if(!t)return false;
+    if(data.page.kind==='review'){showReview(id);return true;}
     if(data.page.kind==='rules'){detail(t);return true;}
     if(data.page.kind==='empty'){showEmptyErrors(t);return true;}
     const saved=data.session,bank=new Map(views(t).map(q=>[q.id,q]));

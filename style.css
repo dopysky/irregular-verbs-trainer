@@ -1505,3 +1505,8 @@ html[data-theme="dark"] .sdot.today i{box-shadow:0 0 0 2px #2b2634,0 0 0 4px #90
 .flashcard.static{cursor:default;animation:none;min-height:0;margin:16px 0}
 .flashcard.static:hover{background:inherit}
 .card-sub{font-size:24px;color:#657892}
+.dictionary-tools { display: flex; align-items: stretch; gap: 14px; flex-wrap: wrap; }
+.dictionary-training { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; flex: 1 1 240px; }
+.dictionary-review { flex: 1 1 220px; padding: 14px; border: 1px solid var(--border, #e2dcf0); border-radius: 16px; }
+.dictionary-review p { margin: 8px 0; }
+@media (max-width: 600px) { .dictionary-tools { flex-direction: column; } .dictionary-training, .dictionary-review { flex-basis: auto; } }
