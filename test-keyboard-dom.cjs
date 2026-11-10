@@ -5,14 +5,14 @@ class Element {
   appendChild(x){this.children.push(x);x.parent=this;return x;} replaceChildren(){this.children=[];} remove(){this.removed=true;}
   addEventListener(k,f){(this.events[k]??=[]).push(f);} removeEventListener(k,f){this.events[k]=(this.events[k]||[]).filter(x=>x!==f);}
   dispatchEvent(e){e.target=this;for(const f of this.events[e.type]||[])f(e);return true;}
-  fire(type,extra={}){this.dispatchEvent({type,preventDefault(){},...extra});} focus(){this.fire('focus');} scrollIntoView(){} setSelectionRange(a,b){this.selectionStart=a;this.selectionEnd=b;} contains(x){return this===x||this.children.some(c=>c.contains(x));}
+  fire(type,extra={}){this.dispatchEvent({type,preventDefault(){},...extra});} focus(){doc.activeElement=this;this.fire('focus');} scrollIntoView(){} setSelectionRange(a,b){this.selectionStart=a;this.selectionEnd=b;} contains(x){return this===x||this.children.some(c=>c.contains(x));}
 }
 const doc=new Element('document');doc.body=new Element('body');doc.documentElement=new Element('html');doc.createElement=t=>new Element(t);
 let timeoutFn,intervalFn;const vibrations=[];
 global.window={document:doc,navigator:{vibrate:n=>vibrations.push(n)},matchMedia:()=>({matches:true}),Event:class{constructor(type){this.type=type;}},setTimeout:f=>(timeoutFn=f,1),clearTimeout:()=>{},setInterval:f=>(intervalFn=f,2),clearInterval:()=>{intervalFn=null;},addEventListener(){},removeEventListener(){}};
 const {attach}=require('./keyboard');const field=new Element('input'),submit=new Element('button');submit.disabled=false;let submits=0;submit.click=()=>submits++;
-const dispose=attach([field],submit);assert.equal(field.getAttribute('inputmode'),'none');const panel=doc.body.children[0];assert.equal(panel.hidden,false);field.focus();
-let row=panel.children[0];row.children[0].fire('pointerdown');row.children[0].fire('pointerup');row.children[0].fire('click');assert.equal(field.value,'q');assert.deepEqual(vibrations,[8]);
+const dispose=attach([field],submit);assert.equal(field.getAttribute('inputmode'),'none');const panel=doc.body.children[0];assert.equal(panel.hidden,false);
+let row=panel.children[0];row.children[0].fire('pointerdown');assert.equal(doc.activeElement,field);row.children[0].fire('pointerup');row.children[0].fire('click');assert.equal(field.value,'q');assert.deepEqual(vibrations,[8]);
 assert.match(panel.children[2].children[0].innerHTML||'',/<svg/);assert.match(panel.children[2].children.at(-1).innerHTML||'',/<svg/);
 let menuPrevented=false;row.children[0].fire('contextmenu',{preventDefault(){menuPrevented=true;}});assert(menuPrevented);
 field.value='abcd';field.setSelectionRange(1,3);row.children[1].fire('click');assert.equal(field.value,'awd');

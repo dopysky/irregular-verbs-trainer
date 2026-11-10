@@ -1,10 +1,10 @@
 .english-keyboard{position:fixed;z-index:1000;left:0;right:0;bottom:0;padding:8px max(8px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left));background:#f2eafa;box-shadow:0 -5px 24px #60369328;display:grid;gap:6px;max-height:55dvh;overflow-y:auto;touch-action:manipulation}
 .english-keyboard[hidden]{display:none}
 .english-keyboard-row{display:flex;justify-content:center;gap:5px;min-width:0}
-.english-keyboard .english-key{flex:1 1 0;min-width:0;min-height:42px;padding:3px;border:1px solid #fff;background:#f9f4ff;color:#322044;border-radius:11px;font-size:clamp(17px,5vw,25px);line-height:1.1;box-shadow:0 2px 4px #9065aa40}
+.english-keyboard .english-key{flex:1 1 0;min-width:0;min-height:42px;padding:3px;border:1px solid #fff;background:#f9f4ff;color:#322044;border-radius:11px;font-size:clamp(17px,5vw,25px);font-weight:400;line-height:1.1;box-shadow:0 2px 4px #9065aa40}
 .english-keyboard .english-key-shift,.english-keyboard .english-key-backspace,.english-keyboard .english-key-symbols{flex:1.35 1 0;background:#dfccf5;color:#573288}
 .english-keyboard .english-key-shift,.english-keyboard .english-key-backspace,.english-keyboard .english-key-symbols{display:flex;align-items:center;justify-content:center}
-.english-keyboard .english-key-shift svg,.english-keyboard .english-key-backspace svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linejoin:round;stroke-linecap:round;pointer-events:none}
+.english-keyboard .english-key-shift svg,.english-keyboard .english-key-backspace svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linejoin:round;stroke-linecap:round;pointer-events:none}
 .english-keyboard .english-key-symbols{font-size:17px;text-align:center}
 .english-keyboard .english-key-shift[aria-pressed=true]{background:#aa81dc}
 .english-keyboard .english-key-space{flex:5 1 0;font-size:17px;position:relative}
