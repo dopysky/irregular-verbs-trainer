@@ -25,6 +25,7 @@
       const bottom=doc.createElement('div');bottom.className='english-keyboard-row';add(bottom,symbols?'ABC':'123','symbols','Буквы и символы');add(bottom,'Space','space','Пробел');add(bottom,'✓','submit','Готово');panel.appendChild(bottom);if(active)panel.querySelector?.(`[data-key-id="${active}"]`)?.focus();fit();
     }
     function perform(action,text){if(!target||target.disabled||!target.isConnected)return;
+      try{root.navigator?.vibrate?.(8);}catch{}
       if(action==='shift'){shift=!shift;update();return;}if(action==='symbols'){symbols=!symbols;shift=false;update();return;}if(action==='submit'){if(!ready.disabled)ready.click();return;}
       const start=target.selectionStart??target.value.length,end=target.selectionEnd??start;
       const result=action==='backspace'?erase(target.value,start,end):edit(target.value,start,end,action==='space'?' ':text);
