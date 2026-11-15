@@ -2,6 +2,13 @@
 (function(root){
   'use strict';
   const escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  function hintWords(text,hints=[]){
+    const value=String(text??'');
+    const words=hints.map(([word],index)=>({word,index,start:value.indexOf(word)})).filter(part=>part.start>=0).sort((a,b)=>a.start-b.start);
+    let html='',end=0;
+    for(const {word,index,start} of words){if(start<end)continue;html+=escape(value.slice(end,start));html+=`<button type="button" class="word-hint" data-word-hint="${index}" aria-expanded="false" aria-controls="word-hint-card">${escape(word)}</button>`;end=start+word.length;}
+    return html+escape(value.slice(end));
+  }
   const icon=name=>'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(name==='key'?'<circle cx="8" cy="8" r="4"/><path d="m11 11 9 9m-3-3 3-3m-6 0 3-3"/>':'<path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a8 8 0 0 1 0 11"/>')+'</svg>';
   function bindReady(elements,{button,read,commit,active=()=>true,keyboard=true,keyboardLanguage='en'}){
     const inputs=[...elements],composing=new Set();let disposed=false,submitted=false;
@@ -11,9 +18,11 @@
     function submit(event){event?.preventDefault();if(event?.isComposing||!valid())return;submitted=true;refresh();commit(values());}
     const bindings=[];
     for(const input of inputs){
-      for(const [event,handler]of [['input',refresh],['compositionstart',()=>{composing.add(input);refresh();}],['compositionend',()=>{composing.delete(input);refresh();}],['keydown',event=>{if(event.key==='Enter' && (input.tagName!=='TEXTAREA'||event.ctrlKey||event.metaKey))submit(event);}]] ){
+      const resize=()=>{if(input.tagName==='TEXTAREA'&&input.style&&Number.isFinite(input.scrollHeight)){input.style.height='auto';input.style.height=(input.scrollHeight+2)+'px';}};
+      for(const [event,handler]of [['input',()=>{resize();refresh();}],['compositionstart',()=>{composing.add(input);refresh();}],['compositionend',()=>{composing.delete(input);resize();refresh();}],['keydown',event=>{if(event.key==='Enter'&&!event.isComposing&&!composing.has(input))submit(event);}]] ){
         input.addEventListener(event,handler);bindings.push([input,event,handler]);
       }
+      resize();
     }
     button.addEventListener('click',submit);refresh();
     const disposeKeyboard=keyboard?root.EnglishKeyboard?.attach(inputs,button,keyboardLanguage):null;
@@ -54,6 +63,6 @@
     const focus=[...container.querySelectorAll('input[id], textarea[id]')].find(e=>e.id===draft.activeId);if(focus){focus.focus({preventScroll:true});const field=draft.inputs.find(e=>e.id===focus.id);if(field?.start!=null)try{focus.setSelectionRange(field.start,field.end);}catch{}}
   }
   function removeTile(selected,id){return selected.filter(tileId=>tileId!==id);}
-  const api={escape,icon,bindReady,showCorrect,reviewActions,reviewCard,captureDraft,restoreDraft,removeTile};
+  const api={escape,hintWords,icon,bindReady,showCorrect,reviewActions,reviewCard,captureDraft,restoreDraft,removeTile};
   if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.TrainingUI=api;
 })(typeof window!=='undefined'?window:globalThis);

@@ -4346,6 +4346,23 @@ const perfectExplanation = {
   'prepositions-time-21': 'Он всё ещё здесь работает, поэтому используем Present Perfect: has worked.',
   'prepositions-time-22': 'Я всё ещё её знаю, поэтому используем Present Perfect: have known.'
 };
+// Equivalent ways to identify the same item in full-sentence translations.
+const extraFullAnswers = {
+  'comparison-5': ['This dress is the most expensive in the shop'],
+  'comparison-context-17': ['This room is the smallest in the hotel'],
+  'comparison-context-18': ['This bag is the biggest in the shop','This bag is the biggest in the store'],
+  'comparison-context-19': ['This skirt is the longest in the wardrobe'],
+  'comparison-context-20': ['This chair is the cheapest in the shop'],
+  'comparison-context-21': ['This road is the widest in the area'],
+  'comparison-context-22': ['This task is the easiest in the book'],
+  'comparison-context-23': ['This film is the most interesting of the year'],
+  'comparison-context-24': ['This coat is the most expensive in the shop'],
+  'comparison-context-25': ['This book is the best I have'],
+  'comparison-context-26': ['This day is the worst of the week'],
+  'C01-2': ['This tree is the tallest in the garden'],
+  'C02-2': ['This box is the smallest'],
+  'new-comparison-08': ['This apple is the biggest']
+};
 function prepareExercises(block, existing) {
   const sections = {place:'Предлоги места',time:'Предлоги времени',comparison:'Степени сравнения'};
   const added = (window.NEW_EXERCISES || []).filter(exercise => block === 'comparison' ? exercise.block === sections[block] : exercise.section === sections[block]);
@@ -4355,6 +4372,7 @@ function prepareExercises(block, existing) {
     const fullNote = perfectExplanation[exercise.id];
     return {
       ...exercise,
+      ...(extraFullAnswers[exercise.id] ? { full_translation_accepted_answers: [...(exercise.full_translation_accepted_answers || exercise.accepted_alternatives || []), ...extraFullAnswers[exercise.id]] } : {}),
       rule_id: data.rule_id,
       correct_display: exercise.correct_display || exercise.correct_sentence,
       feedback_explanation: data.feedback_explanation,

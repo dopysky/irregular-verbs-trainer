@@ -27,7 +27,7 @@ let currentView='home';
 let session=null, soundOn=state.soundOn!==false, advanceTimer=null, legacyInputDispose=null;
 window.TrainingSound=window.bindTrainingSound(document,()=>soundOn);
 if(window.VocabularyImport&&window.VOCABULARY_READY){window.VocabularyImport.apply(state,verbs,window.VOCABULARY_READY);window.VerbVocabulary.apply(state,verbs);if(selectedFolder==='irregular')selectedFolder=window.VerbVocabulary.defaultFolder(state);save();}
-function save(){state.selectedGroup=selectedGroup;state.selectedFolder=selectedFolder;state.theme=theme;try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){const warning=document.getElementById('storage-warning');if(warning)warning.hidden=false;}}
+function save(){state.selectedGroup=selectedGroup;state.selectedFolder=selectedFolder;state.theme=theme;try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){const warning=document.getElementById('storage-warning');if(warning&&e?.code!=='CONFLICT')warning.hidden=false;}}
 function normalize(x){return String(x||'').normalize('NFKC').trim().toLowerCase().replace(/[’‘`]/g,"'").replace(/\s+/g,' ').replace(/[.!?]+$/,'')}
 function pluralizeRu(n,one,two,five){const x=Math.abs(Number(n))%100,y=x%10;if(x>=11&&x<=14)return five;if(y===1)return one;if(y>=2&&y<=4)return two;return five}
 function countLabel(n){return `${n} ${pluralizeRu(n,'слово','слова','слов')}`}
@@ -90,7 +90,7 @@ function show(id){
   ['home','learn','quiz','result','dictionary','errors','cards','practice'].forEach(x=>document.getElementById(x)?.classList.toggle('hidden',x!==id));
   const body=document.body, header=document.querySelector('header'), actions=document.querySelector('.header-actions');
   body.classList.toggle('home-page',id==='home');
-  if(id==='home'){document.querySelector('.home-heading')?.appendChild(actions);}else if(header&&actions)header.appendChild(actions);
+  if(header&&actions)header.appendChild(actions);
 
   if(id==='home')renderHome();if(id==='learn')renderLearn();if(id==='dictionary')renderDictionary();if(id==='errors')renderErrors();
   window.dispatchEvent(new CustomEvent('trainer-view',{detail:id}));

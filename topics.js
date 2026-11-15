@@ -12,7 +12,7 @@
   const app = document.querySelector('#practice');
   let page={kind:'home'},state = { results: {} }, session, nextTimer = null, inputDispose=null, hintDispose=null, selectedTopic = defaultTopic.id;
   const cancelNext = () => { window.clearTimeout(nextTimer); nextTimer = null; inputDispose?.();inputDispose=null;hintDispose?.();hintDispose=null; };
-  const warn = () => { document.querySelector('#storage-warning').hidden = false; };
+  const warn = error => { if(error?.code!=='CONFLICT')document.querySelector('#storage-warning').hidden = false; };
   try {
     const saved = JSON.parse(localStorage.getItem(KEY));
     if (saved && (saved.selectedTopic==='verbs' || findTopic(saved.selectedTopic))) selectedTopic=saved.selectedTopic;
@@ -20,7 +20,7 @@
       state={...saved,results:{...saved.results}};
     }
   } catch { warn(); }
-  const save = () => { try { localStorage.setItem(KEY, JSON.stringify({...state,selectedTopic})); } catch { warn(); } };
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify({...state,selectedTopic})); } catch (error) { warn(error); } };
   const scheduler=window.ReviewSchedule;
   if(!state.reviewV1 || typeof state.reviewV1!=='object' || Array.isArray(state.reviewV1)){
     state.reviewV1=scheduler.migrate(state.results);save();
@@ -120,21 +120,11 @@
   }
   function promptWithHints(q){
     const hints=q.mode==='full' && q.source.word_hints;
-    if(!hints?.length)return esc(q.material);
-    const words=hints.map(([word],index)=>({word,index,start:q.material.indexOf(word)}))
-      .filter(part=>part.start>=0).sort((a,b)=>a.start-b.start);
-    let html='',end=0;
-    for(const {word,index,start} of words){
-      if(start<end)continue;
-      html+=esc(q.material.slice(end,start));
-      html+=`<button type="button" class="word-hint" data-word-hint="${index}" aria-expanded="false" aria-controls="word-hint-card">${esc(word)}</button>`;
-      end=start+word.length;
-    }
-    return html+esc(q.material.slice(end));
+    return window.TrainingUI.hintWords(q.material,hints||[]);
   }
   function bindWordHints(q,s){
     const card=app.querySelector('#word-hint-card');
-    const prompt=app.querySelector('.question');
+    const prompt=app.querySelector(q.mode==='full'?'.question':'.question-translation');
     const closeButton=card.querySelector('button');
     let openButton=null;
     const close=({returnFocus=false}={})=>{
@@ -186,9 +176,9 @@
     const s = session, q = s.queue[s.index]; s.answered = false;delete s.response;s.wordHelp=false;
     const fields = q.fields || [q.mode==='full'?'Твой перевод':'Твой ответ'];
     const textInputs = fields.map((label,i)=>`<label class="answer-label" for="answer${i||''}">${esc(label)}</label>${q.mode==='full'?`<textarea id="answer${i||''}" rows="1" data-answer-part class="answer-input" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Напиши на английском…" required></textarea>`:`<input id="answer${i||''}" data-answer-part class="answer-input" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Напиши на английском…" required>`}`).join('');
-    const hasHints=q.mode==='full' && q.source.word_hints?.length;
+    const hasHints=(q.mode==='full'||(['gap','choice'].includes(q.mode)&&q.translation)) && q.source.word_hints?.length;
     const hintArea=hasHints?'<div class="word-hint-slot"><div id="word-hint-card" class="word-hint-card" hidden><div aria-live="polite"><strong lang="en"></strong><span></span></div><button type="button" aria-label="Закрыть подсказку">×</button></div></div>':'';
-    show(`${breadcrumb(s.topic)}<section class="exercise-panel"><div class="exercise-top"><span>${esc(s.topic.title)}</span><span>${s.index+1} / ${s.queue.length}</span></div><progress value="${s.index}" max="${s.queue.length}" aria-label="Прогресс тренировки"></progress><span class="practice-eyebrow">${esc(q.instruction)}</span><h2 class="question${hasHints?' question-with-hints':''}" lang="${q.mode==='full'?'ru':'en'}">${promptWithHints(q)}</h2>${hintArea}${q.translation?'<p class="question-translation">'+esc(q.translation)+'</p>':''}<form id="answer-form">${q.options?.length ? `<div class="practice-options">${q.options.map(o=>`<button type="button" data-answer="${esc(o)}" lang="en">${esc(o)}</button>`).join('')}</div>` : textInputs}</form><div id="feedback" aria-live="polite"></div><div class="training-footer"><button type="button" class="exit-training" data-action="home">Закончить тренировку</button><div id="question-actions" class="practice-actions answer-controls">${button('Не знаю','skip')}${!q.options?.length?'<button type="button" class="primary" id="complete-answer" disabled>Готово</button>':''}</div></div></section>`);
+    show(`${breadcrumb(s.topic)}<section class="exercise-panel"><div class="exercise-top"><span>${esc(s.topic.title)}</span><span>${s.index+1} / ${s.queue.length}</span></div><progress value="${s.index}" max="${s.queue.length}" aria-label="Прогресс тренировки"></progress><span class="practice-eyebrow">${esc(q.instruction)}</span><h2 class="question${q.mode==='full'&&hasHints?' question-with-hints':''}" lang="${q.mode==='full'?'ru':'en'}">${promptWithHints(q)}</h2>${q.mode==='full'?hintArea:''}${q.translation?'<p class="question-translation">'+(hasHints?window.TrainingUI.hintWords(q.translation,q.source.word_hints):esc(q.translation))+'</p>':''}${q.mode!=='full'?hintArea:''}<form id="answer-form">${q.options?.length ? `<div class="practice-options">${q.options.map(o=>`<button type="button" data-answer="${esc(o)}" lang="en">${esc(o)}</button>`).join('')}</div>` : textInputs}</form><div id="feedback" aria-live="polite"></div><div class="training-footer"><button type="button" class="exit-training" data-action="home">Закончить тренировку</button><div id="question-actions" class="practice-actions answer-controls">${button('Не знаю','skip')}${!q.options?.length?'<button type="button" class="primary" id="complete-answer" disabled>Готово</button>':''}</div></div></section>`);
     if(hasHints)hintDispose=bindWordHints(q,s);
     if(!q.options?.length)inputDispose=window.TrainingUI.bindReady(app.querySelectorAll('[data-answer-part]'),{button:app.querySelector('#complete-answer'),active:()=>session===s&&!s.answered,commit:values=>answer(q.fields?values:values[0])});
     app.querySelector('#answer')?.focus({preventScroll:true});
