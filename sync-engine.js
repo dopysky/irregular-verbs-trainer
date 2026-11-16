@@ -49,28 +49,34 @@
       if(local)return remember(section,local.data);
       writeLocal(section,{data:null,revision:0,dirty:false});return remember(section,null);
     }
-    function set(section,data){validate(data);if(!known.has(section))throw new Error('load account before writing');const item=readLocal(section);if(!item)throw new Error('load account before writing');const combined=merge(views.get(section),data,item.data);validate(combined);writeLocal(section,{data:combined,revision:item.revision,dirty:true});remember(section,data);}
+    function set(section,data){validate(data);if(!known.has(section))throw new Error('load account before writing');const item=readLocal(section);if(!item)throw new Error('load account before writing');const combined=merge(views.get(section),data,item.data);validate(combined);const next={...item,data:combined,dirty:true};if(!item.dirty)next.base=item.data;writeLocal(section,next);remember(section,data);}
     async function flush(section){
       if(inflight.has(section))return inflight.get(section);
       const task=(async()=>{
-        const snapshot=readLocal(section);if(!snapshot||!snapshot.dirty)return;
-        let saved;
-        try{saved=await remote.write(userId,section,snapshot.data,snapshot.revision);}
-        catch(error){
-          if(error?.code!=='CONFLICT')throw error;
-          // Another tab may already have submitted and acknowledged the shared queue.
-          const current=await remote.read(userId,section);
+        for(let attempt=0;attempt<3;attempt++){
+          const snapshot=readLocal(section);if(!snapshot||!snapshot.dirty)return;
+          let saved;
+          try{saved=await remote.write(userId,section,snapshot.data,snapshot.revision);}
+          catch(error){
+            if(error?.code!=='CONFLICT')throw error;
+            const current=await remote.read(userId,section),latest=readLocal(section);
+            if(current&&latest&&latest.revision===current.revision&&latest.revision>snapshot.revision)return;
+            const hasBase=latest&&Object.prototype.hasOwnProperty.call(latest,'base');
+            if(!current||!latest||(!hasBase&&latest.revision!==0))throw error;
+            const combined=merge(hasBase?latest.base:null,latest.data,current.data);
+            validate(combined);
+            writeLocal(section,{data:combined,revision:current.revision,dirty:true,base:current.data});
+            continue;
+          }
+          if(!saved||saved.revision!==snapshot.revision+1)throw new Error('invalid acknowledgement');
           const latest=readLocal(section);
-          if(current&&latest&&latest.revision===current.revision&&latest.revision>snapshot.revision)return;
-          throw error;
+          if(!latest)throw new Error('local progress changed during sync');
+          if(latest.revision>=saved.revision)return;
+          if(latest.revision!==snapshot.revision)throw new Error('local progress changed during sync');
+          writeLocal(section,{...latest,revision:saved.revision,dirty:!equal(latest.data,snapshot.data),base:snapshot.data});
+          known.set(section,store.getItem(key(section)));return;
         }
-        if(!saved||saved.revision!==snapshot.revision+1)throw new Error('invalid acknowledgement');
-        const latest=readLocal(section);
-        if(!latest)throw new Error('local progress changed during sync');
-        if(latest.revision>=saved.revision)return;
-        if(latest.revision!==snapshot.revision)throw new Error('local progress changed during sync');
-        writeLocal(section,{...latest,revision:saved.revision,dirty:!equal(latest.data,snapshot.data)});
-        known.set(section,store.getItem(key(section)));
+        throw Object.assign(new Error('progress changed during sync'),{code:'CONFLICT'});
       })();
       inflight.set(section,task);try{return await task;}finally{inflight.delete(section);}
     }
