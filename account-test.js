@@ -26,7 +26,7 @@
   }
   client.auth.onAuthStateChange((event,session)=>{
     if(event==='PASSWORD_RECOVERY'){
-      recoveryMode=true;gate.hidden=false;document.body.classList.add('account-locked');document.getElementById('account-bar').hidden=true;document.getElementById('account-form').hidden=true;document.getElementById('account-recovery').hidden=false;show('Придумайте новый пароль.');
+      recoveryMode=true;gate.hidden=false;document.body.classList.add('account-locked');document.body.classList.remove('account-checking');document.getElementById('account-bar').hidden=true;document.getElementById('account-form').hidden=true;document.getElementById('account-recovery').hidden=false;show('Придумайте новый пароль.');
     }else if(started&&(!session?.user||session.user.id!==window.KokoraAccountId))setTimeout(()=>location.reload(),0);
   });
   function show(text){(recoveryMode?document.getElementById('account-recovery-message'):message).textContent=text;}
@@ -55,19 +55,19 @@
   function report(state){status.textContent=({pending:'Сохранение…',offline:'Нет связи: изменения сохранены на устройстве',conflict:'Прогресс изменён на другом устройстве. Локальные данные сохранены; синхронизация остановлена.','local-conflict':'Прогресс изменён в другой вкладке. Последние действия здесь не сохранены; продолжайте в другой вкладке.'})[state]||'';}
   async function start(){
     try{
-      if(linkError)return;
+      if(linkError){document.body.classList.remove('account-checking');return;}
       const {data,error}=await client.auth.getUser();
       if(recoveryMode)return;
-      if(error||!data.user)return;
+      if(error||!data.user){document.body.classList.remove('account-checking');if(error)show('Не удалось проверить вход. Проверьте подключение.');return;}
       const id=data.user.id;
       const remote=window.KokoraCloudProgress.createCloudProgress(client);
       const engine=window.KokoraSync.createSyncEngine({store:localStorage,remote,userId:id});
       const bridge=await window.KokoraAccountStorage.createAccountStorage(engine,{onStatus:report});
       window.KokoraActiveStorage=bridge;window.KokoraAccountId=id;
       const legacy=bridge.get('legacy');if(legacy)document.documentElement.dataset.theme=JSON.parse(legacy).theme==='dark'?'dark':'light';
-      await loadScripts();if(recoveryMode)return;started=true;gate.hidden=true;document.body.classList.remove('account-locked');document.getElementById('account-bar').hidden=false;bridge.retry();
+      await loadScripts();if(recoveryMode)return;started=true;gate.hidden=true;document.body.classList.remove('account-locked');document.body.classList.remove('account-checking');document.getElementById('account-bar').hidden=false;bridge.retry();
       window.addEventListener('online',()=>bridge.retry());
-    }catch(error){show('Не удалось загрузить прогресс. Проверьте подключение и обновите страницу.');}
+    }catch(error){document.body.classList.remove('account-checking');show('Не удалось загрузить прогресс. Проверьте подключение и обновите страницу.');}
   }
   start();
 })();

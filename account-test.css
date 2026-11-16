@@ -1,6 +1,7 @@
 .account-locked>.wrap,.account-locked>.ambient-bg,.account-locked>#scroll-top,.account-locked>#modal-backdrop{display:none!important}
 .account-gate{min-height:100dvh;display:grid;place-items:center;padding:28px 18px;background:radial-gradient(circle at 10% 12%,#eee0ff 0,transparent 40%),linear-gradient(135deg,#f8f1fb,#fff7ef)}
 .account-gate[hidden],.account-gate [hidden]{display:none!important}
+.account-loading{display:none;color:#7040b7;font-weight:700}.account-checking .account-loading{display:block}.account-checking .account-card{display:none}
 .account-card{width:min(100%,440px);padding:clamp(26px,7vw,42px);border:1px solid #eadff1;border-radius:28px;background:#fffcff;box-shadow:0 22px 60px #6041851c;color:#292137}
 .account-brand{font-family:Unbounded,sans-serif;font-size:21px;font-weight:800;letter-spacing:-1px;color:#8052ca;margin-bottom:28px}.account-brand span{color:#ef8dbd}
 .account-card h1{margin:0 0 9px;font-size:clamp(25px,6vw,32px);line-height:1.2;color:#292137}.account-description{margin:0 0 24px;color:#706779;line-height:1.45}

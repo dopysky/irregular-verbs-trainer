@@ -10,6 +10,21 @@
     if(object(a)&&object(b)){const keys=Object.keys(a);return keys.length===Object.keys(b).length&&keys.every(key=>Object.prototype.hasOwnProperty.call(b,key)&&equal(a[key],b[key]));}
     return false;
   }
+  function mergeTimed(base,local,current,kind){
+    if(!object(local)||!object(current)||(base!==absent&&!object(base)))return null;
+    const previous=object(base)?base:{},time=record=>kind==='results'?Date.parse(record.updatedAt):record.lastAt;
+    const localTime=time(local),currentTime=time(current);
+    if(!Number.isFinite(localTime)||!Number.isFinite(currentTime))return null;
+    const newer=localTime>=currentTime?local:current,older=newer===local?current:local;
+    const result={...older,...newer},counts=kind==='results'?['attempts','correct','wordHelpAttempts']:['attempts'];
+    for(const name of counts){
+      if(!(name in previous)&&!(name in local)&&!(name in current))continue;
+      const before=previous[name]??0,a=local[name]??0,b=current[name]??0;
+      if(![before,a,b].every(Number.isSafeInteger)||before<0||a<before||b<before)return null;
+      result[name]=before+(a-before)+(b-before);
+    }
+    return result;
+  }
   function merge(base,local,current,path=[]){
     if(equal(local,base))return current;
     if(equal(current,base))return local;
@@ -18,7 +33,11 @@
       if(start>=0&&local>=start&&current>=start)return start+(local-start)+(current-start);
     }
     if(path.length===2&&path[0]==='v'&&base===absent&&object(local)&&equal(local,current)&&local.level===0&&local.streak===0&&local.wrong===0&&local.attempts===0&&local.due===0&&local.today===0&&object(local.skill)&&Object.keys(local.skill).length===0)return local;
-    if(path.length===2&&['results','reviewV1','v','customStats','vocabularyReviewV1'].includes(path[0]))throw Object.assign(new Error('conflict at '+path.join('.')),{code:'CONFLICT'});
+    if(path.length===2&&['results','reviewV1','vocabularyReviewV1'].includes(path[0])){
+      const combined=mergeTimed(base,local,current,path[0]==='results'?'results':'review');if(combined)return combined;
+      throw Object.assign(new Error('conflict at '+path.join('.')),{code:'CONFLICT'});
+    }
+    if(path.length===2&&['v','customStats'].includes(path[0]))throw Object.assign(new Error('conflict at '+path.join('.')),{code:'CONFLICT'});
     if(equal(local,current)&&!object(local))return local;
     if(object(local)&&object(current)&&(object(base)||base===null||base===absent)){
       const old=object(base)?base:{},out={};

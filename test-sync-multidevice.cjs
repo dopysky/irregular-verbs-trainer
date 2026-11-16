@@ -25,6 +25,15 @@ function store(){const data=new Map();return {getItem:k=>data.get(k)??null,setIt
   newerPhone.set('grammar',{results:{...start.results,fourth:{attempts:1}}});
   const restarted=createSyncEngine({store:newerPhoneStore,remote,userId:'existing'});await restarted.load('grammar');await restarted.flush('grammar');
   assert.equal(saved.data.results.third.attempts,1);assert.equal(saved.data.results.fourth.attempts,1);
+  // Two devices answering the same question preserve both attempts and the latest result.
+  saved={revision:1,data:{results:{q:{attempts:1,correct:1,error:false,updatedAt:'2026-01-01T00:00:00.000Z'}},reviewV1:{q:{attempts:1,lastAt:10,due:20}}}};
+  const first=createSyncEngine({store:store(),remote,userId:'timed'}),second=createSyncEngine({store:store(),remote,userId:'timed'});
+  await first.load('grammar');await second.load('grammar');
+  first.set('grammar',{results:{q:{attempts:2,correct:2,error:false,updatedAt:'2026-01-02T00:00:00.000Z'}},reviewV1:{q:{attempts:2,lastAt:20,due:30}}});
+  second.set('grammar',{results:{q:{attempts:2,correct:1,error:true,updatedAt:'2026-01-03T00:00:00.000Z'}},reviewV1:{q:{attempts:2,lastAt:30,due:40}}});
+  await first.flush('grammar');await second.flush('grammar');
+  assert.equal(saved.data.results.q.attempts,3);assert.equal(saved.data.results.q.correct,2);assert.equal(saved.data.results.q.error,true);
+  assert.equal(saved.data.reviewV1.q.attempts,3);assert.equal(saved.data.reviewV1.q.lastAt,30);
   // Older pending queues did not keep their common starting point. Never overwrite either copy.
   const oldStore=store(),oldKey='kokora-sync-v1:old:grammar';
   oldStore.setItem(oldKey,JSON.stringify({data:{results:{local:{attempts:1}}},revision:1,dirty:true}));
