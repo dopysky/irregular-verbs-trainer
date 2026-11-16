@@ -1,0 +1,14 @@
+.account-entry {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: 15px;
+  background: #8052ca;
+  color: #fff;
+  font-weight: 700;
+  text-decoration: none;
+}
+.account-entry:hover { background: #6e42b6; }
+.account-entry:focus-visible { outline: 3px solid #af88e9; outline-offset: 3px; }
