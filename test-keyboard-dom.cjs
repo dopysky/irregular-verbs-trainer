@@ -20,6 +20,14 @@ field.value='abcd';field.setSelectionRange(4,4);const backspace=panel.children[2
 window.navigator.vibrate=()=>{throw Error('unsupported')};row.children[1].fire('click');assert.equal(field.value,'abw');delete window.navigator.vibrate;row.children[1].fire('click');assert.equal(field.value,'abww');
 let bottom=panel.children.at(-1);bottom.children.at(-1).fire('click');assert.equal(submits,1);
 assert.equal(bottom.children[1].children[0].textContent,'KOKORA');assert.equal(bottom.children[2].textContent,'↵');
+const space=bottom.children[1];field.value='hello world';field.setSelectionRange(11,11);
+space.fire('pointerdown',{pointerId:1,clientX:100});timeoutFn();space.fire('pointermove',{pointerId:1,clientX:64});
+assert.equal(field.value,'hello world');assert.equal(field.selectionStart,8);
+space.fire('pointerup',{pointerId:1,clientX:64});space.fire('click');assert.equal(field.value,'hello world');
+space.fire('pointerdown',{pointerId:2,clientX:100});space.fire('pointerup',{pointerId:2,clientX:100});space.fire('click');assert.equal(field.value,'hello wo rld');
+space.fire('pointerdown',{pointerId:3,clientX:100});timeoutFn();space.fire('pointermove',{pointerId:3,clientX:-500});assert.equal(field.selectionStart,0);
+space.fire('pointermove',{pointerId:3,clientX:500});assert.equal(field.selectionStart,field.value.length);space.fire('pointercancel',{pointerId:3});assert.equal(field.value,'hello wo rld');
+space.fire('click',{detail:0});assert.equal(field.value,'hello wo rld ');
 doc.fire('focusin',{target:doc.body});assert.equal(panel.hidden,false);dispose();assert.equal(field.getAttribute('inputmode'),null);assert(panel.removed);
 const russian=new Element('input'),disposeRussian=attach([russian],submit,'ru'),russianPanel=doc.body.children.at(-1);
 assert.equal(russianPanel.attrs['aria-label'],'Русская клавиатура');russianPanel.children[0].children[0].fire('click');assert.equal(russian.value,'й');russian.fire('keydown',{isTrusted:true,key:'Escape'});assert.equal(russianPanel.hidden,true);assert.equal(russian.getAttribute('inputmode'),'text');disposeRussian();
