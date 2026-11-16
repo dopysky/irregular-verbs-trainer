@@ -7,7 +7,8 @@ const context={document:{body:{classList:{add:x=>classes.add(x),remove:x=>classe
 (async()=>{
   vm.runInNewContext(fs.readFileSync(__dirname+'/account-test.js','utf8'),context);
   assert(classes.has('account-checking'),'login form stays hidden while checking the session');
-  finish({data:{user:null},error:null});await new Promise(r=>setImmediate(r));
+  finish({data:{user:null},error:{name:'AuthSessionMissingError',message:'Auth session missing!'}});await new Promise(r=>setImmediate(r));
   assert(!classes.has('account-checking'),'login form appears after confirming there is no session');
+  assert.equal(elements['account-message'].textContent||'','','a signed-out user must not see a connection error');
   console.log('Login form waits for the session check.');
 })().catch(error=>{console.error(error);process.exitCode=1;});

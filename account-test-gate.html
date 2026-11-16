@@ -1,0 +1,32 @@
+<div id="account-gate" class="account-gate">
+  <p class="account-loading" role="status">Загрузка…</p>
+  <main class="account-card" aria-labelledby="account-title">
+    <div class="account-brand">kokora<span>.</span></div>
+    <h1 id="account-title">С возвращением!</h1>
+    <p id="account-description" class="account-description">Войди, чтобы продолжить занятия на любом устройстве.</p>
+    <button id="account-google" class="account-google" type="button" disabled><span class="google-mark" aria-hidden="true">G</span> Войти через Google</button>
+    <p id="account-google-note" class="account-google-note">Вход через Google пока настраивается</p>
+    <div class="account-divider"><span>или по почте</span></div>
+    <form id="account-form" novalidate>
+      <div id="account-name-group" hidden><label for="account-name">Имя (необязательно)</label><input id="account-name" type="text" autocomplete="name" maxlength="80"></div>
+      <label for="account-email">Почта</label>
+      <input id="account-email" type="email" autocomplete="email" placeholder="name@example.com" required>
+      <div id="account-password-group"><label for="account-password">Пароль</label>
+      <input id="account-password" type="password" autocomplete="current-password" required></div>
+      <p id="account-message" class="account-message" role="status" aria-live="polite"></p>
+      <button id="account-submit" class="account-primary" type="submit">Войти</button>
+      <button id="account-reset" class="account-link" type="button">Забыли пароль?</button>
+    </form>
+    <form id="account-recovery" hidden>
+      <label for="account-new-password">Новый пароль</label>
+      <input id="account-new-password" type="password" minlength="6" autocomplete="new-password" required>
+      <p id="account-recovery-message" class="account-message" role="status" aria-live="polite"></p>
+      <button class="account-primary" type="submit">Сохранить пароль</button>
+    </form>
+    <div id="account-switch-row" class="account-switch"><span id="account-switch-label">Ещё нет аккаунта?</span> <button id="account-switch" class="account-link" type="button">Создать аккаунт</button></div>
+    <div class="account-switch"><a class="account-link" href="./">На главную</a></div>
+    <div class="account-switch"><a class="account-link" href="./privacy.html">Конфиденциальность</a></div>
+    <p class="account-test-note">Тестовая версия</p>
+  </main>
+</div>
+<div id="account-bar" hidden><span id="account-status" role="status"></span><button id="account-recover-cloud" type="button" hidden>Восстановить из аккаунта</button><details class="account-profile"><summary aria-label="Профиль"><span id="profile-avatar" class="profile-avatar"></span><span id="account-identity">Аккаунт</span></summary><div class="profile-panel"><strong>Профиль</strong><p id="profile-email"></p><p>Прогресс сохраняется в аккаунте и доступен на других устройствах.</p><form id="profile-form"><label for="profile-name">Имя</label><input id="profile-name" maxlength="80" autocomplete="name"><label for="profile-photo">Фото</label><input id="profile-photo" type="file" accept="image/*"><button type="submit">Сохранить профиль</button></form><button id="profile-remove-photo" type="button">Убрать загруженное фото</button><p id="profile-message" role="status"></p><button id="account-logout" type="button">Выйти</button><button id="profile-delete" type="button">Удалить аккаунт</button></div></details></div>

@@ -16,15 +16,16 @@
       running.add(section);
       try {
         do {await engine.flush(section);} while(engine.pending?.(section));
-        errors.delete(section);
-      } catch(error) {errors.set(section,error?.code==='CONFLICT'?'conflict':'offline');}
+        if(errors.get(section)!=='local-conflict')errors.delete(section);
+      } catch(error) {if(errors.get(section)!=='local-conflict')errors.set(section,error?.code==='CONFLICT'?'conflict':'offline');}
       finally {running.delete(section);report();}
     }
     function queue(section){report();schedule(()=>sync(section));}
     return {
       get(section){if(!sections.includes(section))throw new Error('invalid section');return data[section]===null?null:JSON.stringify(data[section]);},
       set(section,raw){if(!sections.includes(section))throw new Error('invalid section');const value=JSON.parse(raw);try{engine.set(section,value);}catch(error){if(error?.code==='CONFLICT'){errors.set(section,'local-conflict');report();}throw error;}data[section]=value;queue(section);},
-      retry(){for(const section of sections)if(engine.pending?.(section))queue(section);report();}
+      retry(){for(const section of sections)if(engine.pending?.(section))queue(section);report();},
+      async recoverFromCloud(){for(const section of sections)if(['conflict','local-conflict'].includes(errors.get(section))){await engine.recoverFromCloud(section);errors.delete(section);}report();}
     };
   }
   if(typeof module!=='undefined'&&module.exports)module.exports={createAccountStorage};else root.KokoraAccountStorage={createAccountStorage};

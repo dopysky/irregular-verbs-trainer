@@ -8,7 +8,7 @@
     function password(value){if(typeof value!=='string'||!value)throw new Error('Введите пароль');return value;}
     async function invoke(call){const result=await call;if(result.error)throw result.error;return result.data;}
     return {
-      signUp:(address,secret)=>invoke(client.auth.signUp({email:email(address),password:password(secret),options:{emailRedirectTo:url.href}})),
+      signUp:(address,secret,name='')=>invoke(client.auth.signUp({email:email(address),password:password(secret),options:{emailRedirectTo:url.href,data:{display_name:String(name).trim().slice(0,80)}}})),
       signIn:(address,secret)=>invoke(client.auth.signInWithPassword({email:email(address),password:password(secret)})),
       resetPassword:address=>invoke(client.auth.resetPasswordForEmail(email(address),{redirectTo:url.href})),
       updatePassword:secret=>invoke(client.auth.updateUser({password:password(secret)})),

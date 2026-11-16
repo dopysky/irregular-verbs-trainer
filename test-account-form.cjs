@@ -1,0 +1,27 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
+const ids=['account-gate','account-bar','account-message','account-email','account-password','account-status','account-form','account-submit','account-switch','account-reset','account-title','account-description','account-password-group','account-name-group','account-name','account-switch-label','account-google','account-google-note','account-recovery','account-recovery-message','account-new-password','account-logout'];
+const elements=Object.fromEntries(ids.map(id=>[id,{id,value:'',textContent:'',hidden:false,disabled:false,required:false,handlers:{},focus(){this.focused=true;},addEventListener(type,fn){this.handlers[type]=fn;},get validity(){return {valid:this.value.includes('@')};}}]));
+const calls=[];let authEvent,resetError=null;
+const auth={getUser:async()=>({data:{user:null},error:null}),onAuthStateChange:callback=>{authEvent=callback;},signUp:async arg=>{calls.push(['signup',arg]);return {data:{session:null},error:null};},resetPasswordForEmail:async address=>{calls.push(['reset',address]);return {data:{},error:resetError};},updateUser:async()=>({data:{},error:null}),signOut:async()=>({data:{},error:null})};
+const session=require('./account-session');
+elements['account-google'].disabled=true;
+const context={document:{body:{classList:{add(){},remove(){}}},getElementById:id=>elements[id]},window:{supabase:{createClient:()=>({auth})},KokoraAccount:session},location:{origin:'http://127.0.0.1:4178',pathname:'/account-test.html',reload(){}},fetch:async()=>({ok:true,json:async()=>({external:{google:true}})}),setTimeout,URL,URLSearchParams};
+const click=id=>elements[id].handlers.click();
+const submit=()=>elements['account-form'].handlers.submit({preventDefault(){}});
+(async()=>{
+  vm.runInNewContext(fs.readFileSync(__dirname+'/account-test.js','utf8'),context);
+  await new Promise(r=>setImmediate(r));assert.equal(elements['account-google'].disabled,false,'Google button is enabled after provider configuration');
+  click('account-switch');assert.equal(elements['account-title'].textContent,'Создать аккаунт');
+  submit();assert.equal(elements['account-message'].textContent,'Укажите почту.');assert.equal(calls.length,0);
+  elements['account-email'].value='test@example.invalid';submit();assert.equal(elements['account-message'].textContent,'Придумайте пароль.');assert.equal(calls.length,0);
+  elements['account-name'].value='Алина';elements['account-password'].value='abcdef';submit();await new Promise(r=>setImmediate(r));
+  assert.equal(calls[0][0],'signup');assert.equal(calls[0][1].options.data.display_name,'Алина');assert.match(elements['account-message'].textContent,/если.*ещё не зарегистрирована/i);assert.match(elements['account-message'].textContent,/Google/);
+  click('account-switch');click('account-reset');assert.equal(elements['account-password-group'].hidden,true);
+  submit();await new Promise(r=>setImmediate(r));assert.equal(calls[1][0],'reset');assert.match(elements['account-message'].textContent,/письмо со ссылкой отправлено/);
+  resetError={status:429,message:'For security purposes, you can only request this after 17 seconds.'};submit();await new Promise(r=>setImmediate(r));assert.match(elements['account-message'].textContent,/17/);assert.doesNotMatch(elements['account-message'].textContent,/подключение/);
+  elements['account-gate'].hidden=true;elements['account-bar'].hidden=false;
+  authEvent('PASSWORD_RECOVERY',{});assert.equal(elements['account-gate'].hidden,false,'recovery must open even when the account page is already loaded');assert.equal(elements['account-bar'].hidden,true);assert.equal(elements['account-recovery'].hidden,false);assert.match(elements['account-recovery-message'].textContent,/новый пароль/);
+  elements['account-new-password'].value='abcdef';elements['account-recovery'].handlers.submit({preventDefault(){}});await new Promise(r=>setImmediate(r));
+  assert.equal(elements['account-recovery'].hidden,true);assert.match(elements['account-message'].textContent,/Пароль изменён/);
+  console.log('Registration and recovery forms switch modes, validate and call the intended action.');
+})().catch(error=>{console.error(error);process.exitCode=1;});

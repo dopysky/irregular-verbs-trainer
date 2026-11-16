@@ -68,7 +68,7 @@
       if(local)return remember(section,local.data);
       writeLocal(section,{data:null,revision:0,dirty:false});return remember(section,null);
     }
-    function set(section,data){validate(data);if(!known.has(section))throw new Error('load account before writing');const item=readLocal(section);if(!item)throw new Error('load account before writing');const combined=merge(views.get(section),data,item.data);validate(combined);const next={...item,data:combined,dirty:true};if(!item.dirty)next.base=item.data;writeLocal(section,next);remember(section,data);}
+    function set(section,data){validate(data);if(!known.has(section))throw new Error('load account before writing');const item=readLocal(section);if(!item)throw new Error('load account before writing');let combined;try{combined=merge(views.get(section),data,item.data);}catch(error){if(error?.code==='CONFLICT')store.setItem(key(section)+':backup:'+Date.now()+':'+Math.random().toString(36).slice(2),JSON.stringify({data,revision:item.revision,dirty:true}));throw error;}validate(combined);const next={...item,data:combined,dirty:true};if(!item.dirty)next.base=item.data;writeLocal(section,next);remember(section,data);}
     async function flush(section){
       if(inflight.has(section))return inflight.get(section);
       const task=(async()=>{
@@ -99,7 +99,15 @@
       })();
       inflight.set(section,task);try{return await task;}finally{inflight.delete(section);}
     }
-    return {load,set,flush,pending:section=>Boolean(readLocal(section)?.dirty)};
+    async function recoverFromCloud(section){
+      const original=store.getItem(key(section)),local=readLocal(section);if(!local)throw new Error('Не найден локальный прогресс');
+      const current=await remote.read(userId,section);if(!current||!Number.isSafeInteger(current.revision)||current.revision<1)throw new Error('Не удалось загрузить прогресс аккаунта');validate(current.data);
+      if(store.getItem(key(section))!==original)throw new Error('Прогресс изменился во время восстановления');
+      const backupKey=key(section)+':backup:'+Date.now()+':'+Math.random().toString(36).slice(2);
+      store.setItem(backupKey,original);
+      writeLocal(section,{data:current.data,revision:current.revision,dirty:false});remember(section,current.data);
+    }
+    return {load,set,flush,recoverFromCloud,pending:section=>Boolean(readLocal(section)?.dirty)};
   }
   if(typeof module!=='undefined'&&module.exports)module.exports={createSyncEngine};else root.KokoraSync={createSyncEngine};
 })(typeof window==='undefined'?globalThis:window);

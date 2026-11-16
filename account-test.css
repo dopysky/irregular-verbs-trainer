@@ -11,5 +11,13 @@
 .account-card .account-google{border:1px solid #ded5e5;background:#fff;color:#3c3148}.account-card .account-google:disabled{cursor:not-allowed;opacity:.65}.google-mark{display:inline-grid;place-items:center;width:23px;height:23px;margin-right:8px;border-radius:50%;color:#4285f4;font-family:Arial,sans-serif;font-weight:800;background:#f7f7f7}.account-google-note,.account-test-note{margin:8px 0 0;font-size:12px;color:#796f83;text-align:center}
 .account-divider{display:flex;align-items:center;gap:12px;margin:22px 0;color:#8a8092;font-size:13px}.account-divider:before,.account-divider:after{content:'';height:1px;background:#e9e2ed;flex:1}
 .account-card .account-link{border:0;background:transparent;padding:4px;color:#7040b7;font-weight:700}.account-card #account-reset{justify-self:end;font-size:14px}.account-message{min-height:0;margin:0;color:#ac315b;font-size:14px;line-height:1.4}.account-message:not(:empty){margin:3px 0 5px}.account-switch{margin-top:22px;text-align:center;color:#706779;font-size:14px}.account-test-note{margin-top:22px}
-#account-bar{position:relative;z-index:2;display:flex;justify-content:flex-end;align-items:center;gap:12px;padding:10px 20px}#account-bar[hidden]{display:none}
-#account-bar #account-logout{background:#8052ca;border-color:#8052ca;color:#fff;font-weight:700}#account-bar #account-logout:hover{background:#6e42b6}
+#account-bar{position:relative;z-index:2;display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;gap:8px 12px;padding:10px 20px}#account-bar[hidden]{display:none}
+#account-identity{max-width:calc(100% - 92px);overflow-wrap:anywhere;text-align:right;font-size:14px;line-height:1.3;color:var(--muted,#706779)}
+#account-status:not(:empty){flex-basis:100%;order:1;text-align:right;font-size:14px}
+#account-bar #account-logout{min-height:40px;padding:8px 14px;font-size:14px;line-height:1.2;background:#8052ca;border-color:#8052ca;color:#fff;font-weight:700}#account-bar #account-logout:hover{background:#6e42b6}
+
+.account-recovering .wrap{pointer-events:none;opacity:.65} #account-status{color:#8052ca} #account-recover-cloud[hidden]{display:none}
+
+.account-profile{position:relative}.account-profile summary{display:flex;align-items:center;gap:8px;cursor:pointer;list-style:none}.account-profile summary::-webkit-details-marker{display:none}.profile-avatar{display:grid;place-items:center;width:34px;height:34px;overflow:hidden;border-radius:50%;background:#8052ca;color:#fff;font-weight:700}.profile-avatar img{width:100%;height:100%;object-fit:cover}.profile-panel{position:absolute;z-index:10;right:0;top:44px;width:min(310px,calc(100vw - 32px));box-sizing:border-box;padding:18px;border:1px solid #e2d8ec;border-radius:16px;background:var(--panel,#fff);box-shadow:0 8px 35px #38204a33}.profile-panel p{font-size:13px;overflow-wrap:anywhere}.profile-panel form{display:grid;gap:7px}.profile-panel input{width:100%;box-sizing:border-box}.profile-panel button{min-height:34px;padding:5px 10px;font-size:13px}.profile-panel #profile-delete{color:#a43757}.account-profile[open] #account-identity{max-width:160px}
+
+.account-recovering #account-bar{pointer-events:none}

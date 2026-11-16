@@ -1,6 +1,6 @@
 const assert=require('node:assert/strict');
 const {createSyncEngine}=require('./sync-engine');
-function store(){const data=new Map();return {getItem:k=>data.get(k)??null,setItem:(k,v)=>data.set(k,v)};}
+function store(){const data=new Map();return {data,getItem:k=>data.get(k)??null,setItem:(k,v)=>data.set(k,v)};}
 (async()=>{
   let saved=null;
   const remote={read:async()=>saved,write:async(_user,_section,data,revision)=>{
@@ -42,6 +42,19 @@ function store(){const data=new Map();return {getItem:k=>data.get(k)??null,setIt
   await assert.rejects(()=>old.flush('grammar'),{code:'CONFLICT'});
   assert.equal(JSON.parse(oldStore.getItem(oldKey)).data.results.local.attempts,1);
   assert.equal(saved.data.results.remote.attempts,1);
+  assert.equal(typeof old.recoverFromCloud,'function');await old.recoverFromCloud('grammar');
+  assert.equal(old.pending('grammar'),false);assert.equal((await old.load('grammar')).results.remote.attempts,1);
+  const backup=[...oldStore.data.entries()].find(([key])=>key.startsWith(oldKey+':backup:'));
+  assert.equal(JSON.parse(backup[1]).data.results.local.attempts,1,'phone-only progress must remain backed up');
+  old.set('grammar',{results:{remote:{attempts:2}}});await old.flush('grammar');
+  assert.equal(saved.data.results.remote.attempts,2,'new changes after recovery must sync to the cloud');
+  assert.equal(JSON.parse(backup[1]).data.results.local.attempts,1,'recovery backup remains intact');
+  // A tab conflict must back up its unsaved view and allow recovery even when the stored version is clean.
+  saved={revision:1,data:{v:{word:{attempts:1}}}};const shared=store(),a=createSyncEngine({store:shared,remote,userId:'tabs'}),b=createSyncEngine({store:shared,remote,userId:'tabs'});
+  await a.load('legacy');await b.load('legacy');a.set('legacy',{v:{word:{attempts:2}}});await a.flush('legacy');
+  assert.throws(()=>b.set('legacy',{v:{word:{attempts:3}}}),{code:'CONFLICT'});
+  assert([...shared.data.entries()].some(([k,v])=>k.includes(':backup:')&&JSON.parse(v).data?.v?.word?.attempts===3),'unsaved tab data must be backed up');
+  await b.recoverFromCloud('legacy');assert.equal((await b.load('legacy')).v.word.attempts,2);
   // Simultaneous edits of the same answer cannot safely be combined as independent answers.
   saved=null;const left=createSyncEngine({store:store(),remote,userId:'same'}),right=createSyncEngine({store:store(),remote,userId:'same'});
   await left.load('grammar');await right.load('grammar');left.set('grammar',{results:{q:{attempts:1}}});right.set('grammar',{results:{q:{attempts:1}}});
