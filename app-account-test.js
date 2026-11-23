@@ -205,13 +205,13 @@ function checkCurrent(force=false){
   if(!ok)s.items.splice(Math.min(s.items.length,s.index+3),0,makeItem(v,q.mode));else s.score++;
   presentLegacyAnswer(q,ok,nextQ,force);
 }
-function presentLegacyAnswer(q,ok,next,silent=false){
+function presentLegacyAnswer(q,ok,next,silent=false,suppressSpeech=false){
   const s=session;s.answered=true;setPracticeActions(true);
   const counter=document.querySelector('#q-meta .training-badges .badge');if(counter)counter.textContent=(s.index+1)+' / '+s.items.length;
   document.querySelectorAll('#q-body input,.option,.letter,.built-letter').forEach(el=>{el.disabled=true;if(el.matches('input'))el.classList.add(ok?'correct':'wrong');});
   document.querySelectorAll('.option').forEach(btn=>{if(btn.dataset.correct==='1')btn.classList.add('correct');else if(btn.classList.contains('selected'))btn.classList.add('wrong');});
   stopPronunciation();if(!silent)playFeedbackSound(ok);
-  if(!ok){showAnswerCard(q.v,!q.custom,next,silent);window.PageState?.checkpoint();return;}
+  if(!ok){showAnswerCard(q.v,!q.custom,next,suppressSpeech,silent?120:800);window.PageState?.checkpoint();return;}
   document.getElementById('q-feedback').innerHTML='';window.TrainingUI.showCorrect(document.getElementById('q-body'));
   advanceTimer=setTimeout(()=>{if(session===s&&s.answered)next(true);},650);window.PageState?.checkpoint();
 }
@@ -551,7 +551,7 @@ function cardWords(type,id){
 }
 function formsBlock(v){const c=(w,i,l)=>`<div class="card-form"><small>${l}</small><b>${htmlEscape(w)}</b>${i?`<i>/${htmlEscape(i)}/</i>`:''}</div>`;return `<div class="card-forms">${c(v.inf,v.ipa,'V1')}${c(v.past,v.pastIpa||(v.past===v.inf?v.ipa:''),'V2')}${c(v.part,v.partIpa||(v.part===v.past?v.pastIpa:v.part===v.inf?v.ipa:''),'V3')}</div>`}
 function answerCardHtml(v,irr){const ru=irr?v.ru:v.translation,en=irr?v.inf:v.word,ipa=irr?'':v.ipa||window.VocabularyPronunciation.get(v.word);return `<div class="flashcard static"><div class="card-main">${htmlEscape(irr?ru:en)}</div>${irr?formsBlock(v):`<div class="card-sub">${htmlEscape(ru)}</div>${ipa?`<div class="learn-ipa">/${htmlEscape(ipa)}/</div>`:''}`}</div>`}
-function showAnswerCard(v,irr,next,silent=false){
+function showAnswerCard(v,irr,next,suppressSpeech=false,delay=800){
   clearTimeout(advanceTimer);legacyInputDispose?.();legacyInputDispose=null;stopPronunciation();setPracticeActions(true);
   for(const id of ['q-word','q-ipa','q-ru','q-feedback','q-hint'])document.getElementById(id).innerHTML='';
   document.getElementById('q-mode').textContent='Запомни слово';
@@ -560,7 +560,7 @@ function showAnswerCard(v,irr,next,silent=false){
   const text=irr?window.CardSpeech.formsText(v):v.word;
   document.getElementById('ac-sound').onclick=()=>speak(text,true);
   const advance=document.getElementById('ac-next');advance.onclick=()=>{stopPronunciation();next();};advance.focus({preventScroll:true});
-  document.getElementById('sound-btn').classList.add('hidden');if(!silent)autoSpeakCurrent(text,800);
+  document.getElementById('sound-btn').classList.add('hidden');if(!suppressSpeech)autoSpeakCurrent(text,delay);
 }
 function startCards(type,id){const items=cardWords(type,id);if(!items.length){show('dictionary');return}cardS={type,id,items,i:0,back:type==='group'?'learn':'dictionary'};show('cards');renderCard();window.scrollTo({top:0})}
 function renderCard(playSpeech=true){
@@ -679,7 +679,7 @@ function restoreLegacyPage(data){
     if(q.mode==='letters')for(const id of data.draft?.selectedLetters||[]){const b=[...document.querySelectorAll('.letters .letter')].find(b=>b.dataset.i===id);if(b&&!b.disabled)b.onclick();}
     document.getElementById('q-hint').textContent=data.hint||'';
     stopPronunciation();
-    if(answered){session.response=response;q.savedDraft=data.draft;session.answered=true;presentLegacyAnswer(q,response?.ok===true,session.folder?nextFolderQ:nextQ,true);}
+    if(answered){session.response=response;q.savedDraft=data.draft;session.answered=true;presentLegacyAnswer(q,response?.ok===true,session.folder?nextFolderQ:nextQ,true,true);}
     return true;
   }
   if(data.view==='cards'){
