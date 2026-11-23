@@ -11,5 +11,5 @@ for(const [name,folder] of [['checkCurrent',false],['checkFolderCurrent',true]])
   }
 }
 const topics=fs.readFileSync(__dirname+'/topics.js','utf8');assert.match(topics,/if\s*\(!skipped\)\s*window\.TrainingSound\?\.result\(ok\)/);
-const card=source('showAnswerCard');assert.match(card,/if\s*\(!silent\)\s*autoSpeakCurrent\(text\)/);
+const card=source('showAnswerCard');assert.match(card,/if\s*\(!silent\)\s*autoSpeakCurrent\(text,800\)/);
 console.log('Skip is silent in grammar, verb and vocabulary practice');

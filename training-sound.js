@@ -5,7 +5,7 @@
     correct:{volume:.32,length:.52,type:'sine',tones:[[784,0,.22],[1046.5,.07,.30],[1318.5,.14,.32]]}
   };
   function bind(document,isEnabled){
-    let context,pendingClick;
+    let context,pendingClick,stopEffect;
     const effects={};
     for(const [kind,src] of Object.entries({
       click:'assets/sounds/neutral.mp3',
@@ -17,7 +17,7 @@
       const Audio=root.AudioContext||root.webkitAudioContext;
       if(!Audio)return;
       context ||= new Audio();
-      if(context.state==='suspended')context.resume()?.catch(()=>{});
+      if(context.state==='suspended'||context.state==='interrupted')context.resume()?.catch(()=>{});
       return context;
     }
     function play(kind){
@@ -26,9 +26,12 @@
         const audio=effects[kind];
         if(!audio)return;
         try{
+          root.clearTimeout(stopEffect);
           audio.pause();
           audio.currentTime=0;
           audio.play()?.catch(()=>{});
+          // The error clip contains almost three seconds of trailing silence.
+          if(kind==='wrong')stopEffect=root.setTimeout(()=>audio.pause(),650);
         }catch{}
         return;
       }
@@ -58,6 +61,7 @@
         }
       }catch{}
     }
+    document.addEventListener('keydown',event=>{if(event.isTrusted&&isEnabled())try{unlock();}catch{}},true);
     document.addEventListener('click',event=>{
       if(!event.isTrusted)return;
       const button=event.target.closest?.('button, [role="button"], summary');
