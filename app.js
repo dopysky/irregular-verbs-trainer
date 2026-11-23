@@ -289,16 +289,16 @@ function renderDictionary(){
   const selectedMastered=selectedWords.filter(v=>customStat(v.id).level>=3).length;
   document.getElementById('dict-title').textContent=title.name;
   document.getElementById('dict-progress').innerHTML=`<div class="dict-progress-line"><span>Прогресс</span><b>${selectedProgress}%</b></div><div class="progress"><div class="bar ${selectedProgress>=100?'good':''}" style="width:${selectedProgress}%"></div></div><div class="muted">Закреплено: ${selectedMastered} из ${selectedWords.length}</div>`;
-  const vocabBank=vocabularyBank(title.id),ready=window.ReviewSchedule.due(vocabBank,vocabularyReview()),readyWords=new Set(ready.map(q=>q.v.id)).size;
-  const future=vocabBank.map(q=>vocabularyReview()[q.id]?.due).filter(n=>Number.isFinite(n)&&n>Date.now()).sort((a,b)=>a-b);
-  document.getElementById('dict-tools').innerHTML=`<div class="dictionary-training"><button class="primary" id="cards-folder">Карточки</button><button id="train-folder">Тренировать папку</button>${title.system||title.managed?'':'<button id="add-to-current">+ Добавить слово</button>'}</div><div class="dictionary-review"><strong>Пора повторить</strong><p>${readyWords?`Слов к повторению: ${readyWords}`:'Пока нечего повторять'+(future.length?'. Ближайшее: '+htmlEscape(new Date(future[0]).toLocaleString('ru-RU')):'')}</p><button id="review-folder" ${readyWords?'':'disabled'}>Повторить</button></div>`;
-  document.getElementById('train-folder').onclick=()=>startFolderTraining(false,title.id);document.getElementById('cards-folder').onclick=()=>startCards('folder',title.id);
+  const step=Number(state.wordStudyV1?.step)||0;
+  const readyWords=selectedWords.filter(w=>{const x=state.customStats?.[w.id];return x?.level>=3&&x.attempts>0&&(!Number.isFinite(x.nextReviewStep)||x.nextReviewStep<=step)}).length;
+  document.getElementById('dict-tools').innerHTML=`<div class="dictionary-training"><button class="primary" id="train-folder">Продолжить обучение</button>${title.system||title.managed?'':'<button id="add-to-current">+ Добавить слово</button>'}</div><div class="dictionary-review"><strong>Пора повторить</strong><p>${readyWords?`Слов к повторению: ${readyWords}`:'Пока нечего повторять'}</p><button id="review-folder" ${readyWords?'':'disabled'}>Повторить</button></div>`;
+  document.getElementById('train-folder').onclick=()=>startFolderTraining(false,title.id);
   document.getElementById('review-folder').onclick=()=>startVocabularyReview(title.id);
   if(!title.system&&!title.managed)document.getElementById('add-to-current').onclick=()=>openModal('word');
   const words=visibleFolderWords(title.id);
 
     const personal=words.some(v=>window.VocabularyImport.canManageWord(state,v.id));
-    document.getElementById('dict-list').innerHTML='<div class="learn-table-wrap"><table class="learn-table vocabulary-table'+(personal?' has-personal':'')+'"><thead><tr><th>Слово</th><th>Перевод</th><th><span class="sr-only">Действия</span></th></tr></thead><tbody>'+words.map(v=>'<tr><td>'+ipaCell(v.word,v.ipa||window.VocabularyPronunciation.get(v.word))+'</td><td class="learn-translation">'+htmlEscape(v.translation)+'</td><td><div class="word-actions"><button type="button" class="icon-btn listen-button" title="Прослушать" aria-label="Прослушать '+htmlEscape(v.word)+'" data-dict-speak="'+htmlEscape(v.word)+'">'+window.TrainingUI.icon('sound')+'</button>'+(window.VocabularyImport.canManageWord(state,v.id)?'<button class="icon-btn small-action" data-edit-word="'+v.id+'" title="Редактировать" aria-label="Редактировать">✎</button><button class="icon-btn small-action" data-manage-word="'+v.id+'" title="Переместить" aria-label="Переместить"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="3" width="11" height="11" rx="2"/><rect x="10" y="10" width="11" height="11" rx="2"/></svg></button><button class="icon-btn small-action" data-delete-word="'+v.id+'" title="Удалить" aria-label="Удалить">×</button>':'')+'</div></td></tr>').join('')+'</tbody></table></div>';
+    document.getElementById('dict-list').innerHTML='<div class="learn-table-wrap"><table class="learn-table vocabulary-table'+(personal?' has-personal':'')+'"><thead><tr><th>Слово</th><th>Перевод</th><th><span class="sr-only">Действия</span></th></tr></thead><tbody>'+words.map(v=>'<tr><td>'+ipaCell(v.word,v.ipa||window.VocabularyPronunciation.get(v.word))+'<small class="muted">'+wordStudyStatus(customStat(v.id))+'</small>'+'</td><td class="learn-translation">'+htmlEscape(v.translation)+'</td><td><div class="word-actions"><button type="button" class="icon-btn listen-button" title="Прослушать" aria-label="Прослушать '+htmlEscape(v.word)+'" data-dict-speak="'+htmlEscape(v.word)+'">'+window.TrainingUI.icon('sound')+'</button>'+(window.VocabularyImport.canManageWord(state,v.id)?'<button class="icon-btn small-action" data-edit-word="'+v.id+'" title="Редактировать" aria-label="Редактировать">✎</button><button class="icon-btn small-action" data-manage-word="'+v.id+'" title="Переместить" aria-label="Переместить"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="3" width="11" height="11" rx="2"/><rect x="10" y="10" width="11" height="11" rx="2"/></svg></button><button class="icon-btn small-action" data-delete-word="'+v.id+'" title="Удалить" aria-label="Удалить">×</button>':'')+'</div></td></tr>').join('')+'</tbody></table></div>';
   document.querySelectorAll('[data-dict-speak]').forEach(b=>b.onclick=()=>speak(b.dataset.dictVerb?window.CardSpeech.formsText(verbs.find(v=>v.n==b.dataset.dictVerb)):b.dataset.dictSpeak,true));
   document.querySelectorAll('[data-delete-word]').forEach(b=>b.onclick=()=>openModal('confirm','Удалить слово?','Слово будет удалено из этой папки.','deleteWord',b.dataset.deleteWord,title.id));
   document.querySelectorAll('[data-edit-word]').forEach(b=>b.onclick=()=>openModal('editWord','Редактировать слово',null,'editWord',b.dataset.editWord));
@@ -313,6 +313,20 @@ function renderErrors(){
   document.getElementById('train-all-errors').onclick=()=>startMixed('errors',selectedGroup);
 }
 function customStat(id){state.customStats=state.customStats||{};return state.customStats[id]||(state.customStats[id]={level:0,wrong:0})}
+function wordStudyStatus(s){
+  const level=Number(s?.level)||0;
+  return level>=3?'Выучено':level>=2?'Закреплено':level>=1||s?.introduced?'Знакомое':'Новое';
+}
+function planWordBatch(words,stats,step){
+  const level=w=>Number(stats[w.id]?.level)||0;
+  const first=words.findIndex(w=>level(w)<3);
+  const start=first<0?words.length:Math.floor(first/10)*10;
+  const current=words.slice(start,start+10).filter(w=>level(w)<3);
+  const review=words.filter((w,i)=>i<start&&level(w)>=3&&(Number(stats[w.id]?.attempts)||0)>0&&(!Number.isFinite(stats[w.id]?.nextReviewStep)||stats[w.id].nextReviewStep<=step));
+  if(first<0&&!review.length)return words.filter(w=>level(w)>=3).sort((a,b)=>(stats[a.id].nextReviewStep||0)-(stats[b.id].nextReviewStep||0)).slice(0,10);
+  const reserve=review.length?Math.min(2,review.length):0;
+  return [...review.slice(0,reserve),...current.slice(0,10-reserve)];
+}
 function makeCustomItem(v,mode){return {v,mode,custom:true,hintLevel:0,letterForm:Math.random()<.5?'word':'cloze'}}
 function acceptsWordMeaning(v,value){const candidates=v.verbNumber?String(v.translation).split(/[,;]\s*/):[v.translation];return normalize(value)===normalize(v.translation)||candidates.some(meaning=>normalize(value)===normalize(meaning));}
 function customOptions(v,kind){const custom=state.customFolders||{};const folderWords=visibleFolderWords(selectedFolder).filter(x=>x.id!==v.id&&(kind!=='word'||normalize(x.translation)!==normalize(v.translation)));const source=kind==='word'?v.word:v.translation;const same=folderWords.map(x=>kind==='word'?x.word:x.translation);const irregular=shuffle(verbs).map(x=>kind==='word'?x.inf:x.ru);const pool=[];for(const x of shuffle(same.concat(irregular))){if(normalize(x)!==normalize(source)&&!pool.some(y=>normalize(y)===normalize(x)))pool.push(x);if(pool.length>=3)break}return [source,...pool]}
@@ -339,8 +353,40 @@ function buildFolderItems(base,folderId){
   }
   return rounds.flat();
 }
+function saveWordSession(){
+  if(!session?.wordStudy)return;
+  state.wordStudyV1=state.wordStudyV1||{step:0,sessions:{}};
+  state.wordStudyV1.sessions=state.wordStudyV1.sessions||{};
+  state.wordStudyV1.sessions[session.folderId]=encodeStudySession(session);
+  save();
+}
 function startFolderTraining(mix=false, folderId=selectedFolder, reviewWeak=false){
   selectedFolder=folderId||selectedFolder||'irregular';
+  if(selectedFolder!=='irregular'){
+    const store=state.wordStudyV1||(state.wordStudyV1={step:0,sessions:{}});
+    store.sessions=store.sessions||{};
+    const restored=decodeStudySession(store.sessions[selectedFolder]);
+    if(restored?.wordStudy&&restored.items[restored.index]){
+      const answered=!!restored.answered,response=restored.response;
+      session=restored;show('quiz');renderQFolder(false);
+      if(answered&&session.items[session.index].mode!=='studyWord'){
+        session.answered=true;session.response=response;presentLegacyAnswer(session.items[session.index],response?.ok===true,nextFolderQ,true,true);
+      }
+      return;
+    }
+    const words=visibleFolderWords(selectedFolder),stats=state.customStats||{};
+    let base=planWordBatch(words,stats,Number(store.step)||0);
+    if(reviewWeak)base=words.filter(w=>{const x=stats[w.id];return x?.level>=3&&x.attempts>0&&(!Number.isFinite(x.nextReviewStep)||x.nextReviewStep<=(Number(store.step)||0))}).slice(0,10);
+    if(!base.length){renderDictionary();return;}
+    const modes=folderModes(selectedFolder),items=[];
+    base.forEach((v,i)=>{
+      if(!stats[v.id]?.introduced&&!(Number(stats[v.id]?.level)>0))items.push(makeFolderItem(v,selectedFolder,'studyWord'));
+      items.push(makeFolderItem(v,selectedFolder,modes[i%modes.length]));
+    });
+    for(let round=1;round<3;round++)base.forEach((v,i)=>items.push(makeFolderItem(v,selectedFolder,modes[(i+round)%modes.length])));
+    session={items,index:0,score:0,kind:'folder',wordStudy:true,group:selectedGroup,answered:false,folder:true,returnTo:'dictionary',folderId:selectedFolder,startedPercent:folderPercent(selectedFolder),initialCount:base.length,initialIds:base.map(v=>v.id),completedIds:new Set()};
+    saveWordSession();show('quiz');renderQFolder();return;
+  }
   const custom=state.customFolders||{};
   let base=selectedFolder==='irregular'?shuffle(verbs).slice(0,15):shuffle(visibleFolderWords(selectedFolder));
   if(reviewWeak){base=selectedFolder==='irregular'?shuffle(verbs.filter(v=>st(v).level<3)).slice(0,15):shuffle(visibleFolderWords(selectedFolder).filter(w=>customStat(w.id).level<3));}
@@ -352,6 +398,7 @@ function startFolderTraining(mix=false, folderId=selectedFolder, reviewWeak=fals
   save();show('quiz');renderQFolder();
 }
 function startVocabularyReview(folderId){
+  if(folderId!=='irregular'){startFolderTraining(false,folderId,true);return;}
   selectedFolder=folderId;const planned=window.ReviewSchedule.select(vocabularyBank(folderId),vocabularyReview(),Date.now(),true);
   if(!planned.length){renderDictionary();return;}
   const items=planned.map(q=>makeFolderItem(q.v,folderId,q.mode)),ids=new Set(planned.map(q=>q.v.id));
@@ -368,6 +415,16 @@ function renderQFolder(playSpeech=true){
   document.getElementById('q-feedback').innerHTML=''; document.getElementById('q-hint').textContent='';
   document.getElementById('q-word').textContent=''; document.getElementById('q-ipa').textContent=''; document.getElementById('q-ru').textContent='';
   document.getElementById('sound-btn').classList.add('hidden');
+  if(q.mode==='studyWord'){
+    document.getElementById('q-mode').textContent='Запомни слово';
+    document.getElementById('q-body').innerHTML=answerCardHtml(v,false);
+    setPracticeActions(true);
+    const controls=document.getElementById('review-controls');controls.innerHTML=window.TrainingUI.reviewActions({soundId:'ac-sound',nextId:'ac-next'});controls.hidden=false;
+    document.getElementById('ac-sound').onclick=()=>speak(v.word,true);
+    document.getElementById('ac-next').onclick=()=>{customStat(v.id).introduced=true;session.index++;saveWordSession();renderQFolder();};
+    if(playSpeech)autoSpeakCurrent(v.word);
+    window.PageState?.activate('legacy');positionMobileQuestion();return;
+  }
   let title='',body='';
   if(q.mode==='ruToEn'){
     title='Переведи на английский'; document.getElementById('q-ru').innerHTML=`<div class="translation-word">${htmlEscape(v.ru)}</div>`; body=translationRuToEnWord(v);
@@ -408,12 +465,14 @@ function checkFolderCurrent(force=false){
   if(ok)s.score++;
   if(q.custom){const cs=customStat(v.id);cs.attempts=(cs.attempts||0)+1;logActivity();if(ok){cs.level=Math.min(3,(cs.level||0)+1);cs.streak=(cs.streak||0)+1}else{cs.wrong=(cs.wrong||0)+1;cs.level=0;cs.streak=0}if(cs.level>=3)s.completedIds?.add(v.id);}
   else{markAttempt(v,ok,q.mode);if(mastered(v))s.completedIds?.add(v.n);}
-  if(q.custom){const key=v.id+'::'+q.mode;vocabularyReview()[key]=window.ReviewSchedule.record(vocabularyReview()[key],{now:Date.now(),ok,hint:!!q.hintLevel});}
+  if(q.custom&&s.wordStudy){const store=state.wordStudyV1||(state.wordStudyV1={step:0,sessions:{}});store.step=(Number(store.step)||0)+1;const cs=customStat(v.id);cs.nextReviewStep=store.step+(ok&&cs.level>=3?15:3);}
+  else if(q.custom){const key=v.id+'::'+q.mode;vocabularyReview()[key]=window.ReviewSchedule.record(vocabularyReview()[key],{now:Date.now(),ok,hint:!!q.hintLevel});}
   save();
-  if(!ok && (!q.custom || s.items.length-s.index-1>=3)){q.retries=(q.retries||0)+1;const retry=makeFolderItem(v,s.folderId,q.custom?q.mode:undefined);retry.retries=q.retries;s.items.splice(Math.min(s.items.length,s.index+4+Math.floor(Math.random()*3)),0,retry);}
+  if(!ok && (s.wordStudy || !q.custom || s.items.length-s.index-1>=3)){q.retries=(q.retries||0)+1;const retry=makeFolderItem(v,s.folderId,q.custom?q.mode:undefined);retry.retries=q.retries;s.items.splice(Math.min(s.items.length,s.index+4+Math.floor(Math.random()*3)),0,retry);}
+  if(s.wordStudy)saveWordSession();
   presentLegacyAnswer(q,ok,nextFolderQ,force);
 }
-function nextFolderQ(playSpeech=true){if(!session||!session.answered)return;session.index++;if(session.index>=session.items.length)finishSession();else renderQFolder(playSpeech)}
+function nextFolderQ(playSpeech=true){if(!session||!session.answered)return;session.index++;session.answered=false;if(session.wordStudy){if(session.index>=session.items.length){delete state.wordStudyV1.sessions[session.folderId];save();}else saveWordSession();}if(session.index>=session.items.length)finishSession();else renderQFolder(playSpeech)}
 
 function openModal(type,title,message,action,arg1,arg2){
   if((type==='editWord'||type==='move'||action==='deleteWord')&&!window.VocabularyImport.canManageWord(state,arg1))return;
@@ -459,7 +518,7 @@ nav('hint-btn').onclick=giveHint;
 nav('sound-btn').onclick=()=>speak(session.items[session.index].v.word||session.items[session.index].v.inf,true);
 nav('add-folder').onclick=addFolder;
 nav('add-word').onclick=addWord;
-nav('result-again').onclick=()=>{if(session&&session.folder)startFolderTraining(false,session.folderId,true);else if(session&&session.kind==='review')startReview();else startMixed('new')};
+nav('result-again').onclick=()=>{if(session&&session.folder)startFolderTraining(false,session.folderId,!session.wordStudy);else if(session&&session.kind==='review')startReview();else startMixed('new')};
 nav('result-home').onclick=()=>{if(session&&session.folder){show('dictionary');window.scrollTo({top:0,behavior:'smooth'});}else{show('home');window.scrollTo({top:0,behavior:'smooth'});}};
 nav('finish-training').onclick=()=>{if(session){session.answered=true;const target=session.folder?'dictionary':'home';show(target);window.scrollTo({top:0,behavior:'smooth'});}};
 nav('scroll-top').onclick=()=>window.scrollTo({top:0,behavior:'smooth'});
@@ -589,7 +648,7 @@ function encodeStudySession(s){
 function decodeStudySession(saved){
   if(!saved||!Array.isArray(saved.items)||!saved.items.length||saved.items.length>20000||!Number.isInteger(saved.index)||saved.index<0||saved.index>saved.items.length)return null;
   const custom=new Map(Object.keys(state.customFolders||{}).flatMap(visibleFolderWords).map(w=>[w.id,w]));
-  const modes=new Set(['write','letters','cloze','ruToEn','enToRu','listen','ruToEnWrite','enToRuWrite','customRuToEn','customEnToRu','customRuToEnWrite','customEnToRuWrite','customListen']);
+  const modes=new Set(['write','letters','cloze','ruToEn','enToRu','listen','ruToEnWrite','enToRuWrite','customRuToEn','customEnToRu','customRuToEnWrite','customEnToRuWrite','customListen','studyWord']);
   const items=saved.items.map(q=>({...q,v:q.custom?custom.get(q.v?.id):verbs.find(v=>v.n===q.v?.n)}));
   if(items.some(q=>!q.v||!modes.has(q.mode)))return null;
   return {...saved,items,completedIds:Array.isArray(saved.completedIds)?new Set(saved.completedIds):undefined};
