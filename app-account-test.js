@@ -213,7 +213,7 @@ function presentLegacyAnswer(q,ok,next,silent=false){
   if(!silent)playFeedbackSound(ok);
   if(!ok){showAnswerCard(q.v,!q.custom,next,silent);window.PageState?.checkpoint();return;}
   document.getElementById('q-feedback').innerHTML='';window.TrainingUI.showCorrect(document.getElementById('q-body'));
-  advanceTimer=setTimeout(()=>{if(session===s&&s.answered)next(false);},650);window.PageState?.checkpoint();
+  advanceTimer=setTimeout(()=>{if(session===s&&s.answered)next(!!s.wordStudy&&s.items[s.index+1]?.mode==='studyWord');},650);window.PageState?.checkpoint();
 }
 function dontKnow(){if(session.answered)return;if(session.folder){checkFolderCurrent(true);return}checkCurrent(true)}
 function nextQ(playSpeech=true){if(!session||!session.answered)return;session.index++;if(session.index>=session.items.length)finishSession();else renderQ(playSpeech)}

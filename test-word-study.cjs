@@ -28,4 +28,12 @@ s.session.index=3;s.session.answered=false;s.saveWordSession();s.session=null;s.
 assert.equal(s.session.index,3,'continuing restores the saved place');
 const saved=JSON.stringify(s.state);assert.ok(saved.includes('wordStudyV1'));
 assert.equal(words.length,23,'reference list remains intact');
+for(const [wordStudy,nextMode,expected] of [[true,'studyWord',true],[true,'customRuToEn',false],[false,'studyWord',false]]){
+  let playSpeech;
+  const session={wordStudy,index:0,items:[{}, {mode:nextMode}]};
+  const ctx={session,window:{TrainingUI:{showCorrect(){}},PageState:{checkpoint(){}}},document:{querySelector:()=>null,querySelectorAll:()=>[],getElementById:()=>({})},setPracticeActions(){},playFeedbackSound(){},setTimeout(fn){fn()},advanceTimer:null};
+  vm.createContext(ctx);vm.runInContext(source('presentLegacyAnswer'),ctx);
+  ctx.presentLegacyAnswer({},true,value=>{playSpeech=value});
+  assert.equal(playSpeech,expected,'the next new-word introduction should be spoken');
+}
 console.log('Learning batches, statuses, review and old progress checks passed.');
