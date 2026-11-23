@@ -16,7 +16,7 @@
     profile.load().then(data=>{desiredAvatar=data?.avatar_data||null;name.value=data?.display_name||fallbackName;render(name.value,desiredAvatar);ready=true;name.disabled=photo.disabled=false;}).catch(()=>{message.textContent='Не удалось загрузить профиль. Обнови страницу.';});
     async function flush(){
       clearTimeout(timer);timer=null;if(!ready||saving||version===savedVersion)return;
-      saving=true;retry.hidden=true;const current=version,values={name:name.value.trim(),avatar:desiredAvatar};message.textContent='Сохранение…';
+      saving=true;retry.hidden=true;const current=version,values={name:name.value.trim(),avatar:desiredAvatar};message.textContent='';
       try{await profile.save(values);savedVersion=current;message.textContent='';}catch{message.textContent='Не удалось сохранить профиль.';retry.hidden=false;saving=false;return;}
       saving=false;if(version!==savedVersion)flush();
     }

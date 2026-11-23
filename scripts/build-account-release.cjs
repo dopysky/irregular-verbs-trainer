@@ -16,7 +16,7 @@ const release=test.replace(notice,'')
   .replace(entry,'')
   .replace('<a class="account-link" href="./">На главную</a>','<a class="account-link" href="./?guest=1">На главную</a>')
   .replace('<script src="sync-engine.js"></script>','<script src="sync-engine.js?v=3"></script>')
-  .replace('<script src="account-test.js"></script>','<script src="account-test.js?v=5"></script>')
+  .replace('<script src="account-test.js"></script>','<script src="account-test.js?v=6"></script>')
   .replace(/^[\t ]+$/gm,'');
 fs.writeFileSync(path.join(root,'account.html'),release,'utf8');
 console.log('Account page prepared.');
