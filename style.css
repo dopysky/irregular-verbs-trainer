@@ -1402,6 +1402,7 @@ html[data-theme="dark"] .selected-progress-ring:after{background:#241f2b!importa
   -webkit-appearance:none!important;
   width:21px!important;
   height:21px!important;
+  padding:0!important;
   margin:0!important;
   border:2px solid #a98cc8!important;
   border-radius:6px!important;
