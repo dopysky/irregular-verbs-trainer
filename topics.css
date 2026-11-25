@@ -118,3 +118,24 @@ html[data-theme="dark"] #practice :is(.question,.question-translation) .word-hin
   .dinner-frames .scene-captions>div{padding:6px 4px;overflow-wrap:anywhere}
   .dinner-frames .scene-captions span,.dinner-frames .scene-captions small{font-size:12px}
 }
+
+/* Смысловые разделы подготовленных карточек Continuous. */
+[data-rule^="PCN-"] .scene-captions{grid-template-columns:1fr}
+.rule-sections{display:grid;gap:12px;min-width:0}
+.rule-section{min-width:0;padding:16px;background:var(--page);border:1px solid var(--line);border-radius:14px;overflow-wrap:anywhere}
+#practice .rule-section h4{font-family:inherit!important;font-size:15px;line-height:1.35;margin:0 0 9px;color:var(--accent)}
+.rule-section p{margin:0;line-height:1.55}
+.rule-section p + .rule-form-chips,.rule-formula + p,.rule-section p + .rule-pairs{margin-top:12px}
+.rule-formula{font-size:16px;font-weight:700;line-height:1.45;color:var(--ink);padding:11px 13px;background:var(--surface);border:1px solid var(--line);border-radius:10px}
+.rule-form-chips{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,145px),1fr));gap:8px}
+.rule-form-chips>div{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px;background:var(--surface);border:1px solid var(--line);border-radius:10px}
+.rule-form-chips span{font-size:14px}.rule-form-chips strong{font-size:17px;color:var(--accent)}
+.rule-pairs{display:grid;gap:10px}
+.rule-pair{padding:12px;background:var(--surface);border:1px solid var(--line);border-radius:11px}
+.rule-pair-examples{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.rule-pair-examples>div{min-width:0}.rule-pair-examples b{display:block;color:var(--sub);font-size:12px;letter-spacing:.02em;margin-bottom:5px}
+.rule-pair-examples span,.rule-pair-examples small{display:block}.rule-pair-examples span{font-size:16px;line-height:1.45}.rule-pair-examples strong{color:var(--accent)}
+.rule-pair-examples small{font-size:14px;color:var(--sub);line-height:1.45;margin-top:3px}
+.rule-pair p{margin:10px 0 0;color:var(--sub);font-size:14px;line-height:1.45}
+@media(max-width:700px){.rule-section{padding:14px}.rule-pair-examples{grid-template-columns:1fr;gap:10px}.rule-copy{font-size:16px}}
+.rule-intro{margin-bottom:20px}

@@ -91,6 +91,20 @@
       ? `<figcaption class="scene-captions" style="--caption-count:${captions.length}">${captions.map(c=>`<div>${exampleText(c)}</div>`).join('')}</figcaption>`
       : ''}</figure>`;
   }
+  function emphasizedExample([english,translation],focus){
+    const index=english.indexOf(focus);
+    const words=index<0?esc(english):esc(english.slice(0,index))+'<strong>'+esc(focus)+'</strong>'+esc(english.slice(index+focus.length));
+    return '<span lang="en">'+words+'</span><small>'+esc(translation)+'</small>';
+  }
+  function renderRuleSections(sections){
+    return '<div class="rule-sections">'+sections.map(section=>
+      '<section class="rule-section"><h4>'+esc(section.title)+'</h4>'+
+      (section.formula?'<div class="rule-formula">'+esc(section.formula)+'</div>':'')+
+      (section.text?'<p>'+esc(section.text)+'</p>':'')+
+      (section.chips?'<div class="rule-form-chips">'+section.chips.map(([subject,form])=>'<div><span>'+esc(subject)+'</span><strong>'+esc(form)+'</strong></div>').join('')+'</div>':'')+
+      (section.pairs?'<div class="rule-pairs">'+section.pairs.map(pair=>'<div class="rule-pair"><div class="rule-pair-examples"><div><b>Состояние</b>'+emphasizedExample(pair.left,pair.focus[0])+'</div><div><b>Действие</b>'+emphasizedExample(pair.right,pair.focus[1])+'</div></div><p>'+esc(pair.note)+'</p></div>').join('')+'</div>':'')+
+      '</section>').join('')+'</div>';
+  }
   function renderRule(card){
     const layout=card.id==='P16'?' dinner-rule':card.figures.length>1?' rule-with-gallery':'';
     const dinner=card.id==='P16'?'<div class="dinner-frames">'+window.GrammarCards.dinnerFeedback.map(renderFigure).join('')+'</div>':'';
@@ -99,7 +113,7 @@
       <div class="rule-card-body">
         <div class="rule-figures">${card.figures.map(renderFigure).join('')}</div>${dinner}
         <div class="rule-copy">
-          <p>${esc(card.rule)}</p>${card.note?`<p class="rule-card-note">${esc(card.note)}</p>`:''}
+          ${card.sections ? renderRuleSections(card.sections) : `<p>${esc(card.rule)}</p>`}${card.note?`<p class="rule-card-note">${esc(card.note)}</p>`:''}
         </div>
       </div>
     </article>`;
@@ -107,7 +121,7 @@
   function detail(t) {
     page={kind:'rules',topic:t.id};
     session=null;selectedTopic=t.id;save();
-    show(breadcrumb(t)+'<div class="practice-heading"><div><h2>Правила и примеры</h2><p class="muted">'+esc(t.title)+' · Карточки: '+t.cards.length+'</p></div>'+button('Начать практику','start:'+t.id,true)+'</div><div class="rule-list">'+t.cards.map(renderRule).join('')+'</div><div class="practice-actions">'+button('Перейти к практике','start:'+t.id,true)+'</div>');
+    show(breadcrumb(t)+'<div class="practice-heading"><div><h2>Правила и примеры</h2><p class="muted">'+esc(t.title)+' · Карточки: '+t.cards.length+'</p></div>'+button('Начать практику','start:'+t.id,true)+'</div>'+(t.intro?'<div class="rule-intro">'+renderRuleSections(t.intro)+'</div>':'')+'<div class="rule-list">'+t.cards.map(renderRule).join('')+'</div><div class="practice-actions">'+button('Перейти к практике','start:'+t.id,true)+'</div>');
   }
   function start(t, review) {
     navigateHash(t.id);

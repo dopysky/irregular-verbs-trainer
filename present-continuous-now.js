@@ -97,6 +97,39 @@
     ]
   }
 ];
+  const intro = [{
+    title:'Что такое Continuous?',
+    text:'Continuous — это форма английского глагола, которая помогает показать действие в процессе. Чтобы её построить, перед глаголом ставим am, is, are, was или were, а к самому глаголу добавляем -ing. Например: She is reading — она сейчас читает; She was reading — она читала в какой-то момент в прошлом.'
+  }, {
+    title:'Состояние или действие?',
+    text:'Один и тот же глагол может обозначать состояние или действие — в зависимости от смысла. Когда говорим о состоянии или мнении, обычно используем глагол без окончания -ing: I think this is a good idea — Я считаю, что это хорошая идея. Когда говорим о действии в процессе, можем поставить am / is / are или was / were перед глаголом и добавить к нему -ing: I’m thinking about your idea — Я обдумываю твою идею. Ниже ты увидишь другие примеры.'
+  }];
+  cards[0].sections = [
+    {title:'Когда говорим о настоящем', text:'Present означает «настоящее». Present Continuous помогает сказать, что действие происходит прямо сейчас, в момент речи. Представь фотографию происходящего. Слова-подсказки: now — сейчас, at the moment — в данный момент.'},
+    {title:'Как построить', formula:'кто? + am / is / are + действие с -ing', text:'Выбери am, is или are в зависимости от того, о ком или о чём говоришь. I — я; he — он; she — она; it — оно; you — ты или вы; we — мы; they — они. С одним человеком или предметом ставим is, с несколькими — are.', chips:[['I','am'],['he / she / it','is'],['you / we / they','are']]},
+    {title:'Как сказать «не»', formula:'кто? + am / is / are + not + действие с -ing', text:'Чтобы сказать, что действие не происходит, поставь not после am, is или are.'}
+  ];
+  cards[1].sections = [
+    {title:'Когда говорим о прошлом', text:'Past означает «прошедшее». Past Continuous показывает действие в процессе в определённый момент прошлого. Мы словно рассматриваем кадр из прошлого: сама форма не говорит, когда действие началось или закончилось. Можно назвать момент: at three yesterday — вчера в три, или период: all morning — всё утро.'},
+    {title:'Как построить', formula:'кто? + was / were + действие с -ing', text:'Выбери was или were в зависимости от того, о ком или о чём говоришь.', chips:[['I / he / she / it','was'],['you / we / they','were']]},
+    {title:'Как сказать «не»', formula:"кто? + was not / were not + действие с -ing", text:"Поставь not после was или were. Сокращённые формы: was not → wasn't, were not → weren't."}
+  ];
+  cards[2].sections = [
+    {title:'Вопрос с ответом «да» или «нет»', text:'Поставь am, is, are, was или were перед тем, о ком спрашиваешь. Слово, обозначающее действие, оставь с -ing. Например: Is she painting? — Она рисует?', formula:'am / is / are / was / were + кто? + действие с -ing?'},
+    {title:'Вопрос со словом «что», «где» или «почему»', text:'Сначала поставь вопросительное слово, затем am, is, are, was или were. Например: What are you doing? — Что ты сейчас делаешь? What were you doing? — Что ты делал в тот момент?', formula:'вопросительное слово + am / is / are / was / were + кто? + действие с -ing?'},
+    {title:'Краткие ответы', text:"В коротком ответе повтори am, is, are, was или were из вопроса: Yes, I am. / No, I'm not. Yes, she is. / No, she isn't. Yes, they were. / No, they weren't. После Yes не сокращай is или are: говорим Yes, she is, а не Yes, she's."}
+  ];
+  cards[3].sections = [
+    {title:'Как добавить -ing', text:'Обычно просто добавляем -ing: play → playing. Если слово заканчивается на e, которая не произносится, убираем её: make → making. Если слово заканчивается на ie, меняем ie на y: lie → lying. В некоторых коротких словах последняя согласная удваивается: run → running, sit → sitting. Буквы w, x и y в конце не удваиваются: snow → snowing, mix → mixing.'},
+    {title:'Состояние или действие?', text:"Один и тот же глагол может обозначать состояние или действие — в зависимости от смысла. Слова know — знать, need — нуждаться, want — хотеть, like — нравиться обычно называют состояние. В таком значении мы обычно не добавляем к ним -ing и не строим с ними форму Continuous. Например: I need help — Мне нужна помощь. Некоторые глаголы могут обозначать действие: I'm thinking about the question — Я обдумываю вопрос. Поэтому один и тот же глагол может использоваться по-разному."},
+    {title:'Сравни значения', pairs:[
+      {left:['I think this is a good idea','Я считаю, что это хорошая идея'],right:['I’m thinking about your idea','Я обдумываю твою идею'],focus:['think','thinking'],note:'Здесь think выражает мнение, а thinking — процесс обдумывания.'},
+      {left:['She has a car','У неё есть машина'],right:['She’s having lunch','Она сейчас обедает'],focus:['has','having'],note:'Has говорит о том, что машина ей принадлежит; having lunch — о действии: она обедает.'},
+      {left:['I see a bird','Я вижу птицу'],right:['I’m seeing my doctor tomorrow','Завтра я встречаюсь с врачом'],focus:['see','seeing'],note:'See здесь означает «вижу»; seeing — «встречаюсь». Во втором примере форма с -ing показывает запланированную встречу в будущем.'},
+      {left:['The soup tastes good','Суп вкусный'],right:['He’s tasting the soup','Он пробует суп'],focus:['tastes','tasting'],note:'Tastes описывает вкус супа; tasting — действие: он пробует суп.'},
+      {left:['He is quiet','Он спокойный'],right:['He is being quiet today','Сегодня он ведёт себя тихо'],focus:['is','is being'],note:'Is quiet описывает человека; is being quiet today — то, как он ведёт себя сегодня.'}
+    ], text:'Посмотри на смысл: слева речь о состоянии, мнении или признаке; справа — о действии, встрече или поведении. Состояние обычно выражаем без формы с -ing; действие или процесс можем показать с её помощью. Глагол be может встречаться и без -ing: например, He is quiet — Он спокойный.'}
+  ];
   const exercises = [
   {
     "id": "present-continuous-now-C01",
@@ -967,12 +1000,19 @@
     "correct_display": "He is running now."
   }
 ];
+  // В практике убираем только завершающую точку, не меняя данные для проверки ответов.
+  const withoutFinalDot = value => typeof value === 'string' ? value.replace(/\.(?=\s*(?:\([^()]+\))?\s*$)/, '') : value;
+  for (const q of exercises) {
+    for (const key of ['material','translation','correct_sentence','correct_display','full_translation_prompt','feedback_explanation']) q[key] = withoutFinalDot(q[key]);
+    if (q.options) q.options = q.options.map(withoutFinalDot);
+    if (q.choice_feedback) q.choice_feedback = Object.fromEntries(Object.entries(q.choice_feedback).map(([key,value]) => [withoutFinalDot(key), withoutFinalDot(value)]));
+  }
   // Варианты ответа расположены в разном порядке.
   let choiceIndex = 0;
   for (const q of exercises.filter(q => q.mode === 'choice')) {
     const n = choiceIndex++ % q.options.length;
     q.options = q.options.slice(n).concat(q.options.slice(0, n));
-    if (!q.material.includes('___')) q.correct_display = q.correct_sentence = q.answer;
+    if (!q.material.includes('___')) q.correct_display = q.correct_sentence = withoutFinalDot(q.answer);
   }
   // Допускаем распространённые порядки обстоятельства времени, числа и сокращения.
   for (const q of exercises.filter(q => q.mode === 'full')) {
@@ -998,5 +1038,5 @@
     }
     q.full_translation_accepted_answers = [...variants].filter(v => v !== q.full_translation_answer);
   }
-  window.TRAINING_TOPICS.push({id:"present-continuous-now",title:"Present и Past Continuous",description:"Действия сейчас и в прошлом",words:["am","is","are","was","were"],cards,exercises});
+  window.TRAINING_TOPICS.push({id:"present-continuous-now",title:"Present и Past Continuous",intro,description:"Действия сейчас и в прошлом",words:["am","is","are","was","were"],cards,exercises});
 })();
