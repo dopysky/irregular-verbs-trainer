@@ -7,6 +7,7 @@ assert(!keys.includes('Системная клавиатура'));
 assert(keys.includes('KOKORA')&&keys.includes('⌫')&&keys.includes('↵'));
 assert(css.includes('user-select:none')&&css.includes('-webkit-user-select:none'));
 assert(sound.includes('assets/sounds/incorrect-270300.mp3'));
-assert(html.includes('favicon-k.png')&&sw.includes('favicon-k.png'));
+assert(html.includes('favicon-chick.png')&&sw.includes('favicon-chick.png'));
+assert(fs.existsSync(__dirname+'/favicon-chick.png'));
 assert(fs.existsSync(__dirname+'/assets/sounds/incorrect-270300.mp3'));
 console.log('Rule examples, keyboard and assets match specification');

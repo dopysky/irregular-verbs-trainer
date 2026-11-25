@@ -107,7 +107,7 @@
   function detail(t) {
     page={kind:'rules',topic:t.id};
     session=null;selectedTopic=t.id;save();
-    show(breadcrumb(t)+'<div class="practice-heading"><div><h2>Правила и примеры</h2><p class="muted">'+esc(t.title)+' · '+t.cards.length+' карточек</p></div>'+button('Начать практику','start:'+t.id,true)+'</div><div class="rule-list">'+t.cards.map(renderRule).join('')+'</div><div class="practice-actions">'+button('Перейти к практике','start:'+t.id,true)+'</div>');
+    show(breadcrumb(t)+'<div class="practice-heading"><div><h2>Правила и примеры</h2><p class="muted">'+esc(t.title)+' · Карточки: '+t.cards.length+'</p></div>'+button('Начать практику','start:'+t.id,true)+'</div><div class="rule-list">'+t.cards.map(renderRule).join('')+'</div><div class="practice-actions">'+button('Перейти к практике','start:'+t.id,true)+'</div>');
   }
   function start(t, review) {
     navigateHash(t.id);
@@ -224,7 +224,7 @@
       const material=q.correctSentence;
       const russian=q.source.russian;
       const translation=russian&&!(singleBlank&&q.translation)&&normalize(russian)!==normalize(q.translation)&&normalize(russian)!==normalize(q.material)?russian:'';
-      f.innerHTML=window.TrainingUI.reviewCard({material,translation,explanation:skipped?'':explanation(q),audio:false,actions:false,neutral:skipped,detailsHTML:scene?`<div class="review-scene">${sceneImage(scene)}</div>`:''});
+      f.innerHTML=window.TrainingUI.reviewCard({material,translation,explanation:skipped?'':(q.source.choice_feedback?.[value] || explanation(q)),audio:false,actions:false,neutral:skipped,detailsHTML:scene?`<div class="review-scene">${sceneImage(scene)}</div>`:''});
       actions.innerHTML=window.TrainingUI.reviewActions({audio:false,nextId:'topic-review-next'});actions.hidden=false;
       const advance=app.querySelector('#topic-review-next');
       advance.onclick=next;advance.focus({preventScroll:true});
