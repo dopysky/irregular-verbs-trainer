@@ -108,6 +108,7 @@ html[data-theme="dark"] #practice :is(.question,.question-translation) .word-hin
 .word-hint-card span{font-size:14px;color:var(--sub);margin-top:4px}
 #practice .word-hint-card button{flex:none;padding:0;width:36px;min-height:36px;font-size:21px}
 @media(max-width:700px){
+  [data-rule="PCN-R01"] .scene-captions{grid-template-columns:1fr}
   .rule-card{padding:17px}
   #practice .rule-card h3{font-size:19px;margin-bottom:14px}
   .rule-card-body,.rule-with-gallery .rule-figures,.rule-with-gallery .rule-figures:has(> :nth-child(3)){grid-template-columns:1fr}

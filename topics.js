@@ -224,7 +224,7 @@
       const material=q.correctSentence;
       const russian=q.source.russian;
       const translation=russian&&!(singleBlank&&q.translation)&&normalize(russian)!==normalize(q.translation)&&normalize(russian)!==normalize(q.material)?russian:'';
-      f.innerHTML=window.TrainingUI.reviewCard({material,translation,explanation:skipped?'':(q.source.choice_feedback?.[value] || explanation(q)),audio:false,actions:false,neutral:skipped,detailsHTML:scene?`<div class="review-scene">${sceneImage(scene)}</div>`:''});
+      f.innerHTML=window.TrainingUI.reviewCard({material,translation,explanation:skipped&&!q.source.explain_skip?'':(q.source.choice_feedback?.[value] || explanation(q)),audio:false,actions:false,neutral:skipped,detailsHTML:scene?`<div class="review-scene">${sceneImage(scene)}</div>`:''});
       actions.innerHTML=window.TrainingUI.reviewActions({audio:false,nextId:'topic-review-next'});actions.hidden=false;
       const advance=app.querySelector('#topic-review-next');
       advance.onclick=next;advance.focus({preventScroll:true});
