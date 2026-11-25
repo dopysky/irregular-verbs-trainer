@@ -1,3 +1,4 @@
+// Проверка интерфейса и ресурсов сайта
 const assert=require('node:assert/strict'),fs=require('node:fs');
 const read=f=>fs.readFileSync(__dirname+'/'+f,'utf8');
 const topics=read('topics.js'),keys=read('keyboard.js'),css=read('keyboard.css'),sound=read('training-sound.js'),html=read('index.html'),sw=read('sw.js');
