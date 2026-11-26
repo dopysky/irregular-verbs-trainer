@@ -1,0 +1,4 @@
+const fs=require('fs'),vm=require('vm'),assert=require('assert');const c={window:{TRAINING_TOPICS:[]}};for(const p of ['like-would-like.js','present-continuous-now.js'])vm.runInNewContext(fs.readFileSync(p,'utf8'),c);
+for(const t of c.window.TRAINING_TOPICS){for(const q of t.exercises){assert(q.word_hints?.length, q.id+' нет подсказок');let prompt=q.mode==='full'||q.hints_on_prompt?q.material:q.translation;for(const h of q.word_hints){assert(prompt.includes(h[0]),q.id+' нет слова '+h[0]);assert(h[1],q.id+' нет перевода');}}}
+const like=c.window.TRAINING_TOPICS[0];assert(like.cards.every(c=>c.sections?.length));assert(like.cards[0].figures[0].captions.some(c=>/likes? to read/i.test(c[0])));assert(fs.readFileSync('index.html','utf8').includes('id="home-personal-dict"'));
+console.log('Hints, rules, example and dictionary button: OK');

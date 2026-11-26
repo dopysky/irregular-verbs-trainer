@@ -1539,3 +1539,7 @@ html[data-theme="dark"] body.home-page .home-heading:after{background:#b57860!im
   body.home-page .home-heading .home-logo{font-family:'UnboundedMobile',Arial,sans-serif!important;font-size:50px!important}
   body.home-page .home-brand-copy{padding-left:13px}
 }
+
+/* Компактный переход в личный словарь. */
+body.home-page .home-heading button.personal-caption{display:inline-flex;align-items:center;min-height:32px;padding:5px 10px!important;border:1px solid var(--line,#e8e0ee)!important;border-radius:9px!important;background:var(--surface,#fff)!important;box-shadow:none!important;cursor:pointer;white-space:nowrap}
+body.home-page .home-heading button.personal-caption:focus-visible{outline:3px solid var(--accent,#7951cb);outline-offset:3px}

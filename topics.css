@@ -6,7 +6,7 @@ html[data-theme="dark"] body.unified-site{--ink:#f6effb;--sub:#b8abc6;--surface:
 .unified-site.home-page header,.unified-site:not(.home-page) header{display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:flex-end!important}
 .unified-site.home-page header>.header-actions:first-child,.unified-site:not(.home-page) header>.header-actions:first-child{display:flex!important;width:auto!important;justify-self:end!important}
 .unified-site .home-heading h2{font-size:42px!important}
-.unified-site #blocks{grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:1fr;align-items:stretch}
+.unified-site #blocks{grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:1fr;align-items:stretch}
 .unified-site #blocks>.group-card{display:flex;flex-direction:column;min-width:0;height:100%}
 .unified-site #blocks .group-card-top{align-items:flex-start;flex-wrap:wrap}
 .unified-site #blocks .group-card-top>div{min-width:0;flex-basis:100%}
@@ -139,3 +139,6 @@ html[data-theme="dark"] #practice :is(.question,.question-translation) .word-hin
 .rule-pair p{margin:10px 0 0;color:var(--sub);font-size:14px;line-height:1.45}
 @media(max-width:700px){.rule-section{padding:14px}.rule-pair-examples{grid-template-columns:1fr;gap:10px}.rule-copy{font-size:16px}}
 .rule-intro{margin-bottom:20px}
+
+@media(min-width:651px) and (max-width:1050px){.unified-site #blocks{grid-template-columns:repeat(2,minmax(0,1fr))}}
+[data-rule^="LWL-"] .scene-captions{grid-template-columns:1fr}
