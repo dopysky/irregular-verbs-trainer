@@ -525,6 +525,7 @@ nav('scroll-top').onclick=()=>window.scrollTo({top:0,behavior:'smooth'});
 window.addEventListener('scroll',()=>{const b=document.getElementById('scroll-top');if(b)b.classList.toggle('show',window.scrollY>650)},{passive:true});
 nav('study-btn').onclick=startStudy;
 nav('home-open-dict').onclick=()=>{show('dictionary');window.scrollTo({top:0,behavior:'smooth'})};
+nav('home-personal-dict').onclick=()=>{show('dictionary');window.scrollTo({top:0,behavior:'smooth'})};
 nav('continue-btn').onclick=()=>startMixed(groupPercent(selectedGroup)>=100?'groupRepeat':'new',selectedGroup);
 nav('learn-start').onclick=()=>startMixed('new',selectedGroup);
 nav('learn-finish').onclick=()=>{show('home');window.scrollTo({top:0,behavior:'smooth'});};
