@@ -663,7 +663,8 @@
       "feedback_explanation": "Полка пустая: книг нет. После are ставим no, без дополнительного not.",
       "rule_id": "2",
       "instruction": "Впиши ответ",
-      "translation": ""
+      "translation": "На пустой полке нет книг",
+      "word_hints": [["пустой", "empty", "пустой"], ["полке", "shelf", "полка"]]
     },
     {
       "id": "there-is-there-are-G12",
@@ -783,7 +784,7 @@
       ],
       "correct_sentence": "There are no chairs in the room",
       "correct_display": "There are no chairs in the room",
-      "feedback_explanation": "Отсутствие передают no или not any; chairs — множественное число.",
+      "feedback_explanation": "Здесь возможны два варианта: There are no chairs in the room или There aren’t any chairs in the room. После aren’t используем any. Chairs — множественное число, поэтому are; в начале конструкции пишем there.",
       "word_hints": [
         [
           "стульев",
