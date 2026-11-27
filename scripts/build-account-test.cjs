@@ -37,6 +37,7 @@ html=html.replace('Прогресс сохраняется в этом брау�
 html=html.replace(/<script src="([^"?]+)(?:\?[^"]*)?"><\/script>/g,(_,src)=>'<script type="text/plain" data-account-src="'+({'app.js':'app-account-test.js','topics.js':'topics-account-test.js','page-state.js':'page-state-account-test.js'}[src]||src)+'"></script>');
 html=html.replace('data-account-src="keyboard.js"','data-account-src="'+keyboardSrc+'"');
 html=html.replace('data-account-src="app-account-test.js"','data-account-src="app-account-test.js?v=54.33"');
+html=html.replace('data-account-src="topics-account-test.js"','data-account-src="topics-account-test.js?v=54.27"');
 html=html.replace('data-account-src="training-sound.js"','data-account-src="training-sound.js?v=54.16"');
 html=html.replace('</body>','<script src="assets/vendor/supabase-2.119.0.js"></script><script src="account-session.js"></script><script src="account-profile.js"></script><script src="account-profile-ui.js?v=3"></script><script src="cloud-progress.js"></script><script src="sync-engine.js"></script><script src="account-storage.js"></script><script src="account-test.js"></script></body>');
 write('account-test.html',html);
