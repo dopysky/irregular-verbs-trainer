@@ -784,7 +784,7 @@
       ],
       "correct_sentence": "There are no chairs in the room",
       "correct_display": "There are no chairs in the room",
-      "feedback_explanation": "Здесь возможны два варианта: There are no chairs in the room или There aren’t any chairs in the room. После aren’t используем any. Chairs — множественное число, поэтому are; в начале конструкции пишем there.",
+      "feedback_explanation": "Чтобы сказать, что стульев совсем нет, можно использовать There are no chairs in the room или There aren’t any chairs in the room. Слово any в этом варианте подчёркивает отсутствие. Chairs — множественное число, поэтому are; в начале конструкции пишем there.",
       "word_hints": [
         [
           "стульев",
