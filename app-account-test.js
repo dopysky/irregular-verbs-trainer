@@ -50,6 +50,10 @@ function due(v){return st(v).due&&st(v).due<=Date.now()}
 function todayCount(){const d=new Date().toDateString();if(state.todayDate!==d){Object.values(state.v||{}).forEach(x=>x.today=0);state.todayDate=d}return Object.values(state.v||{}).reduce((a,x)=>a+(x.today||0),0)}
 function renderBlocks(targetId='blocks'){
   const box=document.getElementById(targetId);if(!box)return;
+  if(targetId==='verb-blocks'){
+    box.innerHTML=window.VerbSemanticGroups.groups.map(g=>{const words=visibleFolderWords(g.id),p=folderPercent(g.id);return `<button class="group-card" data-semantic-group="${htmlEscape(g.id)}"><div class="group-card-top"><div><div class="block-title">${htmlEscape(g.name)}</div><div class="block-meta">${countLabel(words.length)}</div></div><span class="badge">${p}%</span></div><div class="topic-word-art" aria-hidden="true">${words.slice(0,3).map(w=>`<span>${htmlEscape(w.word)}</span>`).join('')}</div><div class="progress"><div class="bar" style="width:${p}%"></div></div></button>`}).join('');
+    box.querySelectorAll('[data-semantic-group]').forEach(card=>card.onclick=()=>{selectedFolder=card.dataset.semanticGroup;save();show('dictionary')});return;
+  }
   const selected=groupKey(selectedGroup);
   box.innerHTML=LEARNING_GROUPS.map((g,i)=>{
     const n=i+1, key=g.id, vs=groupVerbs(key), p=groupPercent(key), sel=key===selected;
@@ -273,12 +277,19 @@ function finishSession(){
   document.getElementById('result-home').textContent=session.folder?'В словарь':'К блокам';
   show('result');
 }
-function visibleFolderWords(id){return window.VocabularyImport.visibleWords(state,id).map(record=>window.VerbVocabulary.resolve(record,verbs,window.VocabularyPronunciation)).filter(Boolean);}
+function semanticGroup(id){return window.VerbSemanticGroups.groups.find(g=>g.id===id)}
+function visibleFolderWords(id){const group=semanticGroup(id);const records=group?group.words.split(' ').map(word=>verbs.find(v=>v.inf===word)).filter(Boolean).map(v=>({id:window.VerbVocabulary.wordId(v.n),verbNumber:v.n,preset:true})):window.VocabularyImport.visibleWords(state,id);return records.map(record=>window.VerbVocabulary.resolve(record,verbs,window.VocabularyPronunciation)).filter(Boolean);}
 function vocabularyReview(){if(!state.vocabularyReviewV1||typeof state.vocabularyReviewV1!=='object')state.vocabularyReviewV1={};return state.vocabularyReviewV1;}
 function vocabularyBank(folderId){return visibleFolderWords(folderId).flatMap(v=>folderModes(folderId).map(mode=>({id:v.id+'::'+mode,mode,source:{id:v.id},v})));}
 function renderDictionary(){
   const custom=state.customFolders||{}; const myId=state.myWordsFolder;
-  const folders=[{id:myId,name:'Мои слова',count:visibleFolderWords(myId).length,built:false,system:true},...Object.entries(custom).filter(([id,f])=>id!==myId&&normalize(f.name)!=='мои слова'&&!window.VocabularyImport.isExcludedFolder(f)).map(([id,f])=>({id,name:f.name,count:visibleFolderWords(id).length,built:false,managed:!!f.managed||!!f.sourceBlock}))];
+  const selectedSemantic=semanticGroup(selectedFolder);
+  document.getElementById('dict-tools').classList.toggle('semantic-tools',!!selectedSemantic);
+  document.getElementById('folders').closest('.panel').classList.toggle('hidden',!!selectedSemantic);
+  const dictionaryBack=document.querySelector('#dictionary [data-home]');
+  dictionaryBack.textContent=selectedSemantic?'К группам глаголов':'К блокам';
+  dictionaryBack.onclick=()=>window.englishPractice.navigate(selectedSemantic?'verbs':'all');
+  const folders=selectedSemantic?[{id:selectedSemantic.id,name:selectedSemantic.name,count:visibleFolderWords(selectedSemantic.id).length,managed:true}]:[{id:myId,name:'Мои слова',count:visibleFolderWords(myId).length,built:false,system:true},...Object.entries(custom).filter(([id,f])=>id!==myId&&normalize(f.name)!=='мои слова'&&!window.VocabularyImport.isExcludedFolder(f)).map(([id,f])=>({id,name:f.name,count:visibleFolderWords(id).length,built:false,managed:!!f.managed||!!f.sourceBlock}))];
   if(!folders.some(f=>f.id===selectedFolder))selectedFolder=window.VerbVocabulary.defaultFolder(state);
   document.getElementById('folders').innerHTML=folders.map(f=>{const fp=folderPercent(f.id);return `<div class="folder-card ${selectedFolder===f.id?'selected':''}" data-folder-card="${f.id}" role="button" tabindex="0"><div class="folder-card-head"><h3>📁 ${htmlEscape(f.name)}</h3><span class="badge ${fp>=100?'good':''}">${fp}%</span></div><div class="muted">${countLabel(f.count)}</div><div class="progress"><div class="bar ${fp>=100?'good':''}" style="width:${fp}%"></div></div>${window.VocabularyImport.canDeleteFolder(state,f.id)?'<button class="folder-delete" data-delete-folder="'+f.id+'" title="Удалить папку" aria-label="Удалить папку">×</button>':''}</div>`}).join('');
   document.querySelectorAll('[data-folder-card]').forEach(card=>card.onclick=()=>{selectedFolder=card.dataset.folderCard;save();renderDictionary();requestAnimationFrame(()=>{document.getElementById('dict-title')?.closest('.panel')?.scrollIntoView({behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'start'});});});
@@ -409,7 +420,7 @@ function renderQFolder(playSpeech=true){
   legacyInputDispose?.();legacyInputDispose=null;stopPronunciation();setPracticeActions(false);
   const q=session.items[session.index],v=q.v;
   session.answered=false;
-  const folderName=state.customFolders?.[selectedFolder]?.name||(selectedFolder==='irregular'?'Неправильные глаголы':'Мои слова');
+  const folderName=semanticGroup(selectedFolder)?.name||state.customFolders?.[selectedFolder]?.name||(selectedFolder==='irregular'?'Неправильные глаголы':'Мои слова');
   document.getElementById('q-meta').innerHTML=`<div class="training-heading">${htmlEscape(folderName)}</div><div class="training-badges"><span class="badge">${session.index+1} / ${session.items.length}</span><span class="badge">${folderPercent(session.folderId)}% прогресс</span></div>`;
   document.getElementById('q-bar').style.width=(session.index/session.items.length*100)+'%';
   document.getElementById('q-feedback').innerHTML=''; document.getElementById('q-hint').textContent='';
@@ -524,8 +535,8 @@ nav('finish-training').onclick=()=>{if(session){session.answered=true;const targ
 nav('scroll-top').onclick=()=>window.scrollTo({top:0,behavior:'smooth'});
 window.addEventListener('scroll',()=>{const b=document.getElementById('scroll-top');if(b)b.classList.toggle('show',window.scrollY>650)},{passive:true});
 nav('study-btn').onclick=startStudy;
-nav('home-open-dict').onclick=()=>{show('dictionary');window.scrollTo({top:0,behavior:'smooth'})};
-nav('home-personal-dict').onclick=()=>{show('dictionary');window.scrollTo({top:0,behavior:'smooth'})};
+nav('home-open-dict').onclick=()=>{if(semanticGroup(selectedFolder))selectedFolder=window.VerbVocabulary.defaultFolder(state);show('dictionary');window.scrollTo({top:0,behavior:'smooth'})};
+nav('home-personal-dict').onclick=()=>{if(semanticGroup(selectedFolder))selectedFolder=window.VerbVocabulary.defaultFolder(state);show('dictionary');window.scrollTo({top:0,behavior:'smooth'})};
 nav('continue-btn').onclick=()=>startMixed(groupPercent(selectedGroup)>=100?'groupRepeat':'new',selectedGroup);
 nav('learn-start').onclick=()=>startMixed('new',selectedGroup);
 nav('learn-finish').onclick=()=>{show('home');window.scrollTo({top:0,behavior:'smooth'});};
@@ -624,7 +635,7 @@ window.legacyTrainer = {
   open: show,
   pronounce:text=>speak(text,true),
   renderGroups:()=>renderBlocks('verb-blocks'),
-  start:()=>startMixed(groupPercent(selectedGroup)>=100?'groupRepeat':'new',selectedGroup),
+  start:()=>startMixed(groupPercent('mixed')>=100?'groupRepeat':'new','mixed'),
   review:startReview,
   dashboard:renderMotivation,
   paint:paintRing,
@@ -667,7 +678,7 @@ function restoreLegacyPage(data){
   if(!data||!['home','learn','dictionary','errors','cards','quiz','result'].includes(data.view))return false;
   if(data.view==='errors'){show('home');return true;}
   if(data.group!==undefined)selectedGroup=data.group;
-  if(data.folder&&state.customFolders[data.folder])selectedFolder=data.folder;
+  if(data.folder&&(state.customFolders[data.folder]||semanticGroup(data.folder)))selectedFolder=data.folder;
   if(data.view==='quiz'||data.view==='result'){
     const restored=decodeStudySession(data.session);if(!restored||data.view==='quiz'&&!restored.items[restored.index])return false;
     session=restored;

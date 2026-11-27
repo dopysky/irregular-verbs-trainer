@@ -1,0 +1,10 @@
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+const src=fs.readFileSync(__dirname+'/app.js','utf8');
+const verbs=vm.runInNewContext(src.slice(0,src.indexOf('const LEARNING_GROUPS'))+';verbs');
+const groups=require('./verb-semantic-groups.js').groups;
+assert.equal(groups.length,8);
+const all=groups.flatMap(g=>g.words.split(' '));
+assert.equal(all.length,verbs.length);
+assert.equal(new Set(all).size,verbs.length);
+assert.deepEqual([...all].sort(),Array.from(verbs,v=>v.inf).sort());
+console.log('All 151 verbs occur in exactly one semantic group.');
